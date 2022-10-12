@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="TemplateCodeGenerator.Logic.Generation.AspMvcGenerator" Collapsed="true">
+    <Position X="1" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQQAAgIAQIAEEAEAAQCAMEAACkoIAAUABAAZACAAAUA=</HashCode>
+      <FileName>Generation\AspMvcGenerator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TemplateCodeGenerator.Logic.Generation.ClassGenerator" Collapsed="true">
+    <Position X="1" Y="1.75" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>HACAAAAAABgQACEAAAIYCAASAAAAAGERBAAAAAAAIAM=</HashCode>
+      <FileName>Generation\ClassGenerator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TemplateCodeGenerator.Logic.Generation.EntityProject">
+    <Position X="10" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIAAAAAAAAAIAAKAAEgABAAIAAAEAAAgACgEIAAAA=</HashCode>
+      <FileName>Generation\EntityProject.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TemplateCodeGenerator.Logic.Generation.GeneratorObject" Collapsed="true">
+    <Position X="4" Y="0.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AQAAEAGAAAABgAgABAEkEAVAAAIgQBAoBABDAFAAQAE=</HashCode>
+      <FileName>Generation\GeneratorObject.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="SolutionProperties" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="TemplateCodeGenerator.Logic.Generation.ItemProperties" Collapsed="true">
+    <Position X="3.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>iBgBCQGIEsgEJACkQQGIFAFACCIAINEADAohIAAABDI=</HashCode>
+      <FileName>Generation\ItemProperties.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TemplateCodeGenerator.Logic.Generation.LogicGenerator" Collapsed="true">
+    <Position X="3.25" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABIAgAAQAQEAAAaIYCgEEAQCkAAAAEIIAALAAAIIwA=</HashCode>
+      <FileName>Generation\LogicGenerator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TemplateCodeGenerator.Logic.Generation.ModelGenerator" Collapsed="true">
+    <Position X="1" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>SBCABgBIAAAAAAAAAAAAAAAAAAgAAAQJAIAAAAEAgAA=</HashCode>
+      <FileName>Generation\ModelGenerator.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="ItemProperties" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="TemplateCodeGenerator.Logic.Generation.WebApiGenerator" Collapsed="true">
+    <Position X="5.75" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAEAAAIAQCAEEAACkggAAQABAABAAAAAQA=</HashCode>
+      <FileName>Generation\WebApiGenerator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="TemplateCodeGenerator.Logic.Contracts.ISolutionProperties">
+    <Position X="12.25" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABgAUAAAAAIEAAMACAAAAAEAAAABEBQBAAAARAIChAA=</HashCode>
+      <FileName>Contracts\ISolutionProperties.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
