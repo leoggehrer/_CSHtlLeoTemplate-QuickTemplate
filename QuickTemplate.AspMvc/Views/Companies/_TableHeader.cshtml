@@ -1,0 +1,38 @@
+@*@GeneratedCode*@
+@model IEnumerable<QuickTemplate.AspMvc.Models.Test.Company>
+@{
+  var orderBy = (string)ViewBag.OrderBy ?? string.Empty;
+}
+<thead>
+ <tr>
+  <th>
+   @if (orderBy.StartsWith("Name") && orderBy.EndsWith("ASC"))
+    {
+     <a asp-action="OrderBy" asp-route-orderBy="Name DESC" class="btn btn-outline"><strong>Name</strong> <i class="fa fa-sort-desc"></i></a>
+    }
+   else if (orderBy.StartsWith("Name") && orderBy.EndsWith("DESC"))
+    {
+     <a asp-action="OrderBy" asp-route-orderBy="" class="btn btn-outline"><strong>Name</strong> <i class="fa fa-sort-asc"></i></a>
+    }
+   else
+    {
+     <a asp-action="OrderBy" asp-route-orderBy="Name ASC" class="btn btn-outline"><strong>Name</strong></a>
+    }
+  </th>
+  <th>
+   @if (orderBy.StartsWith("Address") && orderBy.EndsWith("ASC"))
+    {
+     <a asp-action="OrderBy" asp-route-orderBy="Address DESC" class="btn btn-outline"><strong>Address</strong> <i class="fa fa-sort-desc"></i></a>
+    }
+   else if (orderBy.StartsWith("Address") && orderBy.EndsWith("DESC"))
+    {
+     <a asp-action="OrderBy" asp-route-orderBy="" class="btn btn-outline"><strong>Address</strong> <i class="fa fa-sort-asc"></i></a>
+    }
+   else
+    {
+     <a asp-action="OrderBy" asp-route-orderBy="Address ASC" class="btn btn-outline"><strong>Address</strong></a>
+    }
+  </th>
+  <th></th>
+ </tr>
+</thead>

@@ -1,0 +1,16 @@
+@*@GeneratedCode*@
+@model QuickTemplate.AspMvc.Models.Test.Customer
+
+<tr>
+ <td>
+  @Html.DisplayFor(model => model.FirstName)
+ </td>
+ <td>
+  @Html.DisplayFor(model => model.LastName)
+ </td>
+ <td>
+  @Html.ActionLink("Edit", "Edit", new { id=Model.Id }) |
+  @Html.ActionLink("Details", "Details", new { id=Model.Id }) |
+  @Html.ActionLink("Delete", "Delete", new { id=Model.Id })
+ </td>
+</tr>

@@ -19,11 +19,8 @@ namespace QuickTemplate.ConApp
             Console.WriteLine(DateTime.Now);
             BeforeRun();
 #if DEBUG && DEVELOP_ON
-            Task.Run(async () =>
-            {
-                await Logic.Modules.Database.DbManager.DeleteDatabaseAsync();
-                await Logic.Modules.Database.DbManager.CreateDatabaseAsync();
-            }).Wait();
+            Logic.Modules.Database.DbManager.DeleteDatabaseAsync().Wait();
+            Logic.Modules.Database.DbManager.CreateDatabaseAsync().Wait();
 #endif
 
 #if ACCOUNT_ON
