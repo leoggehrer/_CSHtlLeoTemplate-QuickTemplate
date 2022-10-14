@@ -52,18 +52,21 @@ namespace TemplateComparison.ConApp
                 var handled = false;
                 var targetPaths = new List<string>();
 
-                Console.Clear();
+                PrintBusyProgress();
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 BeforeGetTargetPaths(SourcePath, targetPaths, ref handled);
                 if (handled == false)
                 {
-                    TargetPaths = GetQuickTemplateProjects(SourcePath);
+                    var searchPath = GetParentPathFrom(SourcePath, "source");
+
+                    TargetPaths = GetQuickTemplateProjects(searchPath);
                     TargetPaths = TargetPaths.Union(AddTargetPaths).ToArray();
                 }
                 else
                 {
                     TargetPaths = TargetPaths.Union(AddTargetPaths).ToArray();
                 }
+                runBusyProgress = false;
                 PrintHeader(SourcePath, TargetPaths);
                 Console.Write($"Balancing [+|1..{TargetPaths.Length}|X...Quit]: ");
 
@@ -95,22 +98,15 @@ namespace TemplateComparison.ConApp
                     {
                         var numbers = input?.Trim()
                                             .Split(',').Where(s => Int32.TryParse(s, out int n))
-                                            .Select(s => Int32.Parse(s))
+                                            .Select(s => Int32.Parse(s) - 1)
                                             .ToArray();
 
                         PrintBusyProgress();
                         foreach (var number in numbers ?? Array.Empty<int>())
                         {
-                            if (number == TargetPaths.Length + 1)
+                            if (number >= 0 && number < TargetPaths.Length)
                             {
-                                foreach (var item in TargetLabels)
-                                {
-                                    BalancingSolutions(SourcePath, SourceLabels, TargetPaths, TargetLabels);
-                                }
-                            }
-                            else if (number > 0 && number <= TargetPaths.Length)
-                            {
-                                BalancingSolutions(SourcePath, SourceLabels, new string[] { TargetPaths[number - 1] }, TargetLabels);
+                                BalancingSolutions(SourcePath, SourceLabels, new string[] { TargetPaths[number] }, TargetLabels);
                             }
                         }
                     }
@@ -283,11 +279,19 @@ namespace TemplateComparison.ConApp
 
             return AppContext.BaseDirectory[..endPos];
         }
-        private static string[] GetQuickTemplateProjects(string sourcePath)
+        private static string GetParentPathFrom(string path, string parentFolder)
         {
-            var directoryInfo = new DirectoryInfo(sourcePath);
-            var parentDirectory = directoryInfo.Parent != null ? directoryInfo.Parent.FullName : SourcePath;
-            var qtDirectories = Directory.GetDirectories(parentDirectory, "QT*", SearchOption.AllDirectories)
+            var directoryInfo = new DirectoryInfo(path);
+
+            while (directoryInfo != null && directoryInfo.Name.Equals(parentFolder, StringComparison.CurrentCultureIgnoreCase) == false)
+            {
+                directoryInfo = directoryInfo.Parent;
+            }
+            return directoryInfo != null ? directoryInfo.FullName : path;
+        }
+        private static string[] GetQuickTemplateProjects(string searchPath)
+        {
+            var qtDirectories = Directory.GetDirectories(searchPath, "QT*", SearchOption.AllDirectories)
                                          .Where(d => d.Replace(UserPath, String.Empty).Contains('.') == false)
                                          .ToList();
             return qtDirectories.ToArray();

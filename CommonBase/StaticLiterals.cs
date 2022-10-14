@@ -27,7 +27,7 @@ namespace CommonBase
             {
                 "TemplateCodeGenerator.ConApp",
                 "TemplateCodeGenerator.Logic",
-                "TemplateComparsion.ConApp",
+                "TemplateComparison.ConApp",
                 "TemplateCopier.ConApp",
                 "TemplatePreprocessor.ConApp",
             };
@@ -44,11 +44,11 @@ namespace CommonBase
         public static string[] ProjectExtensions { get; private set; }
         public static string[] SolutionToolProjects { get; private set; }
 
-        public static string[] GenerationIgnoreFolders { get; }
+        public static string[] GenerationIgnoreFolders { get; private set; }
         public static string GeneratedCodeLabel => "@GeneratedCode";
         public static string CustomizedAndGeneratedCodeLabel => "@CustomAndGeneratedCode";
         public static string IgnoreLabel => "@Ignore";
-        public static string BaseCodeLabel => "@CodeCopy";
+        public static string BaseCodeLabel => "@BaseCode";
         public static string CodeCopyLabel => "@CodeCopy";
         public static string CSharpFileExtension => ".cs";
         public static string SourceFileExtensions => "*.css|*.cs|*.ts|*.cshtml|*.razor|*.razor.cs|*.template";

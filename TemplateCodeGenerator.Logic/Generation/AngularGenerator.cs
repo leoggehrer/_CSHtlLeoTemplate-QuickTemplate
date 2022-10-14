@@ -105,7 +105,7 @@ namespace TemplateCodeGenerator.Logic.Generation
 
             result.Add("}");
             result.AddRange(result.Source.Eject().Distinct());
-            result.FormatCSharpCode();
+            result.FormatCode();
             FinishCreateEnum(type, result.Source);
             return result;
         }
@@ -174,6 +174,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             imports.Add(StaticLiterals.AngularCustomImportEndLabel);
 
             InsertTypeImports(imports, result.Source);
+            result.FormatCode();
             FinishCreateModel(type, result.Source);
             return result;
         }
@@ -233,6 +234,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Source.Insert(result.Source.Count - 1, StaticLiterals.AngularCustomCodeBeginLabel);
             result.Source.InsertRange(result.Source.Count - 1, ReadCustomModelCode(projectPath, result));
             result.Source.Insert(result.Source.Count - 1, StaticLiterals.AngularCustomCodeEndLabel);
+            result.FormatCode();
             FinishCreateService(type, result.Source);
             return result;
         }
@@ -515,9 +517,9 @@ namespace TemplateCodeGenerator.Logic.Generation
                 {
                     if (pi.Name.Equals($"{typeName}Id"))
                     {
-                        var name = $"{other.Name[1..]}s";
+                        var name = $"{other.Name}s";
 
-                        result.Add($"{char.ToLower(name[0])}{name[1..]}: {other.Name[1..]}[];");
+                        result.Add($"{char.ToLower(name[0])}{name[1..]}: {other.Name}[];");
                     }
                 }
             }
@@ -529,9 +531,9 @@ namespace TemplateCodeGenerator.Logic.Generation
 
                     if (pi.Name.Equals($"{otherName}Id"))
                     {
-                        var name = $"{other.Name[1..]}";
+                        var name = $"{other.Name}";
 
-                        result.Add($"{char.ToLower(name[0])}{name[1..]}: {other.Name[1..]};");
+                        result.Add($"{char.ToLower(name[0])}{name[1..]}: {other.Name};");
                     }
                     else if (pi.Name.StartsWith($"{otherName}Id_"))
                     {
@@ -539,9 +541,9 @@ namespace TemplateCodeGenerator.Logic.Generation
 
                         if (data.Length == 2)
                         {
-                            var name = $"{other.Name[1..]}_{data[1]}";
+                            var name = $"{other.Name}_{data[1]}";
 
-                            result.Add($"{char.ToLower(name[0])}{name[1..]}: {other.Name[1..]};");
+                            result.Add($"{char.ToLower(name[0])}{name[1..]}: {other.Name};");
                         }
                     }
                 }

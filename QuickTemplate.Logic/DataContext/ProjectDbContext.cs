@@ -1,5 +1,7 @@
 ﻿//@CodeCopy
 //MdStart
+using Microsoft.Extensions.Logging;
+
 namespace QuickTemplate.Logic.DataContext
 {
     /// <summary>

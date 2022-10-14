@@ -1,8 +1,5 @@
 ﻿//@CodeCopy
 //MdStart
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -10,11 +7,15 @@ namespace CommonBase.Extensions
 {
     public static partial class FormatterExtensions
     {
-        public static IEnumerable<string> FormatCSharpCode(this IEnumerable<string> lines, bool removeBlockComments = true, bool removeLineComments = true)
+        public static IEnumerable<string> FormatCode(this IEnumerable<string> lines)
         {
-            return lines.FormatCSharpCode(0, removeBlockComments, removeLineComments);
+            return lines.FormatCode(0, true, true);
         }
-        public static IEnumerable<string> FormatCSharpCode(this IEnumerable<string> lines, int indent, bool removeBlockComments, bool removeLineComments)
+        public static IEnumerable<string> FormatCode(this IEnumerable<string> lines, bool removeBlockComments, bool removeLineComments)
+        {
+            return lines.FormatCode(0, removeBlockComments, removeLineComments);
+        }
+        public static IEnumerable<string> FormatCode(this IEnumerable<string> lines, int indent, bool removeBlockComments, bool removeLineComments)
         {
             var result = new List<string>();
             var text = lines.ToText();
@@ -32,7 +33,7 @@ namespace CommonBase.Extensions
 
                 if (text.HasFullCodeBlock())
                 {
-                    text.FormatCSharpCodeBlock(indent, result);
+                    text.FormatCodeBlock(indent, result);
                 }
                 else
                 {
@@ -126,7 +127,7 @@ namespace CommonBase.Extensions
             }
             return codeBegin > 0 && codeBegin == codeEnd;
         }
-        private static string TrimCSharpLine(this string text)
+        private static string TrimCodeLine(this string text)
         {
             if (string.IsNullOrEmpty(text) == false)
             {
@@ -195,13 +196,13 @@ namespace CommonBase.Extensions
                     }
                     else
                     {
-                        result.AddRange(item.SplitCSharpAssignments());
+                        result.AddRange(item.SplitAssignments());
                     }
                 }
             }
             return result;
         }
-        private static IEnumerable<string> SplitCSharpAssignments(this string line)
+        private static IEnumerable<string> SplitAssignments(this string line)
         {
             var result = new List<string>();
             var startIdx = -1;
@@ -212,7 +213,7 @@ namespace CommonBase.Extensions
             {
                 if (IsAssignmentSemicolon(line, partialEndIdx))
                 {
-                    result.Add(line.Partialstring(partialStartIdx + 1, partialEndIdx).TrimCSharpLine());
+                    result.Add(line.Partialstring(partialStartIdx + 1, partialEndIdx).TrimCodeLine());
                     partialStartIdx = partialEndIdx;
                     startIdx = partialStartIdx;
                 }
@@ -221,7 +222,7 @@ namespace CommonBase.Extensions
                     startIdx++;
                 }
             }
-            var endPartial = line.Partialstring(partialStartIdx + 1, line.Length - 1).TrimCSharpLine();
+            var endPartial = line.Partialstring(partialStartIdx + 1, line.Length - 1).TrimCodeLine();
 
             if (endPartial.Length > 0)
             {
@@ -229,7 +230,7 @@ namespace CommonBase.Extensions
             }
             return result;
         }
-        private static IEnumerable<string> SplitCSharpLine(this string line)
+        private static IEnumerable<string> SplitLine(this string line)
         {
             var result = new List<string>();
             var lines = new List<string>(line.SplitSourceLine());
@@ -262,7 +263,7 @@ namespace CommonBase.Extensions
                     {
                         if (sIdx > 1)
                         {
-                            string partLine = lines[i].Partialstring(0, sIdx - 1).TrimCSharpLine();
+                            string partLine = lines[i].Partialstring(0, sIdx - 1).TrimCodeLine();
 
                             if (partLine.Length > 0)
                                 result.Add(partLine);
@@ -271,7 +272,7 @@ namespace CommonBase.Extensions
                         result.Add(blockBegin);
                         if (sIdx + 2 < lines[i].Length - 1)
                         {
-                            string partLine = lines[i].Partialstring(sIdx + 2, lines[i].Length - 1).TrimCSharpLine();
+                            string partLine = lines[i].Partialstring(sIdx + 2, lines[i].Length - 1).TrimCodeLine();
 
                             if (partLine.Length > 0)
                                 result.Add(partLine);
@@ -281,7 +282,7 @@ namespace CommonBase.Extensions
                     {
                         if (sIdx > 1)
                         {
-                            string partLine = lines[i].Partialstring(0, sIdx - 1).TrimCSharpLine();
+                            string partLine = lines[i].Partialstring(0, sIdx - 1).TrimCodeLine();
 
                             if (partLine.Length > 0)
                                 result.Add(partLine);
@@ -290,7 +291,7 @@ namespace CommonBase.Extensions
                         result.Add(blockEnd);
                         if (sIdx + 2 < lines[i].Length - 1)
                         {
-                            string partLine = lines[i].Partialstring(sIdx + 2, lines[i].Length - 1).TrimCSharpLine();
+                            string partLine = lines[i].Partialstring(sIdx + 2, lines[i].Length - 1).TrimCodeLine();
 
                             if (partLine.Length > 0)
                                 result.Add(partLine);
@@ -298,13 +299,13 @@ namespace CommonBase.Extensions
                     }
                     else
                     {
-                        result.AddRange(lines[i].SplitCSharpLine('[', ']'));
+                        result.AddRange(lines[i].SplitLine('[', ']'));
                     }
                 }
             }
             return result;
         }
-        private static IEnumerable<string> SplitCSharpLine(this string line, char left, char right)
+        private static IEnumerable<string> SplitLine(this string line, char left, char right)
         {
             var lastIdx = -1;
             var startIdx = -1;
@@ -330,10 +331,10 @@ namespace CommonBase.Extensions
                    && (endIdx = IndexOf(line, startIdx + 1, right)) > startIdx
                    && endIdx - startIdx > 1)
             {
-                result.Add(line.Partialstring(startIdx, endIdx).TrimCSharpLine());
+                result.Add(line.Partialstring(startIdx, endIdx).TrimCodeLine());
                 lastIdx = startIdx = endIdx;
             }
-            string endPartial = line.Partialstring(lastIdx + 1, line.Length - 1).TrimCSharpLine();
+            string endPartial = line.Partialstring(lastIdx + 1, line.Length - 1).TrimCodeLine();
 
             if (endPartial.Length > 0)
             {
@@ -362,14 +363,14 @@ namespace CommonBase.Extensions
             return limiterCount % 2 > 0;
         }
 
-        private static void FormatCSharpCodeBlock(this string text, int indent, List<string> lines)
+        private static void FormatCodeBlock(this string text, int indent, List<string> lines)
         {
             var beginPos = 0;
             var endPos = 0;
 
             void AddCodeLines(string txt, int idt, List<string> list)
             {
-                var items = txt.SplitCSharpLine();
+                var items = txt.SplitLine();
 
                 list.AddRange(items.Where(l => l.Length > 0)
                     .Select(l => l.StartsWith("#") ? l : l.SetIndent(idt))
@@ -380,9 +381,9 @@ namespace CommonBase.Extensions
             {
                 AddCodeLines(text.Partialstring(0, beginPos - 1), indent, lines);
                 lines.Add("{".SetIndent(indent));
-                text.Partialstring(beginPos + 1, endPos - 1).FormatCSharpCodeBlock(indent + 1, lines);
+                text.Partialstring(beginPos + 1, endPos - 1).FormatCodeBlock(indent + 1, lines);
                 lines.Add("}".SetIndent(indent));
-                text.Partialstring(endPos + 1, text.Length - 1).FormatCSharpCodeBlock(indent, lines);
+                text.Partialstring(endPos + 1, text.Length - 1).FormatCodeBlock(indent, lines);
             }
             else
             {
