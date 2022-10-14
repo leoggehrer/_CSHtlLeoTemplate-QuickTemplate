@@ -17,6 +17,8 @@ namespace TemplateComparison.ConApp
             UserPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             SourcePath = GetCurrentSolutionPath();
             TargetPaths = Array.Empty<string>();
+            SourceLabels = new string[] { StaticLiterals.BaseCodeLabel };
+            TargetLabels = new string[] { StaticLiterals.CodeCopyLabel };
             ClassConstructed();
         }
         static partial void ClassConstructing();
@@ -29,8 +31,8 @@ namespace TemplateComparison.ConApp
         private static string[] TargetPaths { get; set; }
         private static string[] AddTargetPaths { get; set; } = Array.Empty<string>();
         private static string[] SearchPatterns => StaticLiterals.SourceFileExtensions.Split('|');
-        private static readonly string[] SourceLabels = new string[] { StaticLiterals.BaseCodeLabel };
-        private static readonly string[] TargetLabels = new string[] { StaticLiterals.CodeCopyLabel };
+        private static string[] SourceLabels { get; set; }
+        private static string[] TargetLabels { get; set; }
         #endregion Properties
 
         private static void Main(/*string[] args*/)
@@ -137,6 +139,11 @@ namespace TemplateComparison.ConApp
             Console.SetCursorPosition(0, 0);
             Console.WriteLine("Template Comparison");
             Console.WriteLine("===================");
+            Console.WriteLine();
+            for (int i = 0; i < SourceLabels.Length && i < TargetLabels.Length; i++)
+            {
+                Console.WriteLine($"{SourceLabels[i]} => {TargetLabels[i]}");
+            }
             Console.WriteLine();
             Console.WriteLine($"Source: {sourcePath}");
             Console.WriteLine();
