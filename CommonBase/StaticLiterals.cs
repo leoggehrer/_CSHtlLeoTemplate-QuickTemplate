@@ -46,11 +46,12 @@ namespace CommonBase
 
         public static string[] GenerationIgnoreFolders { get; private set; }
         public static string GeneratedCodeLabel => "@GeneratedCode";
-        public static string CustomizedAndGeneratedCodeLabel => "@CustomAndGeneratedCode";
+        public static string GeneratedAndCustomizedCodeLabel => "@GeneratedAndCustomizedCode";
         public static string IgnoreLabel => "@Ignore";
         public static string BaseCodeLabel => "@BaseCode";
         public static string CodeCopyLabel => "@CodeCopy";
         public static string CSharpFileExtension => ".cs";
+        public static string TypeScriptFileExtension => ".ts";
         public static string SourceFileExtensions => "*.css|*.cs|*.ts|*.cshtml|*.razor|*.razor.cs|*.template";
     }
 }

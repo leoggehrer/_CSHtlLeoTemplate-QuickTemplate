@@ -10,9 +10,10 @@ namespace TemplateCodeGenerator.Logic
         public static string GeneratedCodeFileName => "_GeneratedCode.cs";
         public static string SourceFileExtensions => CommonStaticLiterals.SourceFileExtensions;
         public static string CSharpFileExtension => CommonStaticLiterals.CSharpFileExtension;
+        public static string TypeScriptFileExtension => CommonStaticLiterals.TypeScriptFileExtension;
         public static string CSharpHtmlFileExtension => $"{CommonStaticLiterals.CSharpFileExtension}html";
         public static string GeneratedCodeLabel => CommonStaticLiterals.GeneratedCodeLabel;
-        public static string CustomizedAndGeneratedCodeLabel => CommonStaticLiterals.CustomizedAndGeneratedCodeLabel;
+        public static string GeneratedAndCustomizedCodeLabel => CommonStaticLiterals.GeneratedAndCustomizedCodeLabel;
 
         public static string AngularCustomImportBeginLabel => "//@CustomImportBegin";
         public static string AngularCustomImportEndLabel => "//@CustomImportEnd";

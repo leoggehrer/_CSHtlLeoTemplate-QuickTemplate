@@ -1,7 +1,5 @@
 ﻿//@CodeCopy
 //MdStart
-using System.Collections.Generic;
-
 namespace TemplateCodeGenerator.Logic.Contracts
 {
     public interface IGeneratedItem

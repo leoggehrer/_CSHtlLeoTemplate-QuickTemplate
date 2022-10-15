@@ -38,6 +38,8 @@ namespace TemplateCodeGenerator.ConApp
             RunApp();
         }
         #region Console methods
+        private static readonly bool canBusyPrint = true;
+        private static bool runBusyProgress = false;
         private static void RunApp()
         {
             var toGroupFile = false;
@@ -46,28 +48,10 @@ namespace TemplateCodeGenerator.ConApp
 
             while (input.Equals("x") == false)
             {
-                var menuIndex = 0;
                 var maxWaiting = 10 * 60 * 1000;    // 10 minutes
-                var sourceSolutionName = GetSolutionNameByPath(SolutionPath);
 
-                Console.Clear();
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine("Template Code Generator");
-                Console.WriteLine("=======================");
-                Console.WriteLine();
-                Console.WriteLine($"Code generation for: {sourceSolutionName}");
-                Console.WriteLine($"From file path:  {SolutionPath}");
-                Console.WriteLine($"Generation into: {(toGroupFile ? "Group files" : "Single files")}");
-                Console.WriteLine();
-                Console.WriteLine($"[{++menuIndex}] Change source path");
-                Console.WriteLine($"[{++menuIndex}] Compile solution...");
-                Console.WriteLine($"[{++menuIndex}] Compile logic project...");
-                Console.WriteLine($"[{++menuIndex}] Change group file flag");
-                Console.WriteLine($"[{++menuIndex}] Delete generation files...");
-                Console.WriteLine($"[{++menuIndex}] Start code generation...");
-                Console.WriteLine("[x|X] Exit");
-                Console.WriteLine();
-                Console.Write("Choose: ");
+                runBusyProgress = false;
+                PrintHeader(SolutionPath, toGroupFile);
 
                 input = Console.ReadLine()?.ToLower() ?? String.Empty;
                 Console.ForegroundColor = saveForeColor;
@@ -77,16 +61,20 @@ namespace TemplateCodeGenerator.ConApp
 
                     if (select == 1)
                     {
+                        PrintBusyProgress();
+
                         var solutionPath = GetCurrentSolutionPath();
                         var searchPath = GetParentPathFrom(SourcePath, "source");
                         var qtProjects = GetQuickTemplateProjects(searchPath).Union(new[] { solutionPath }).ToArray();
+
+                        runBusyProgress = false;
 
                         for (int i = 0; i < qtProjects.Length; i++)
                         {
                             if (i == 0)
                                 Console.WriteLine();
 
-                            Console.WriteLine($"Change path to: [{i + 1, 2}] {qtProjects[i]}");
+                            Console.WriteLine($"Change path to: [{i + 1,2}] {qtProjects[i]}");
                         }
                         Console.WriteLine();
                         Console.Write("Select or enter source path: ");
@@ -194,19 +182,60 @@ namespace TemplateCodeGenerator.ConApp
                     }
                     if (select == 5)
                     {
-                        Generator.DeleteGeneratedFiles(SolutionPath);
+                        Generator.DeleteGeneratedFiles(SolutionPath, new[] { StaticLiterals.GeneratedCodeLabel });
                     }
                     if (select == 6)
                     {
                         var generatedItems = Generator.Generate(solutionProperties);
 
-                        Generator.DeleteGeneratedFiles(SolutionPath);
+                        Generator.DeleteGeneratedFiles(SolutionPath, new[] { StaticLiterals.GeneratedCodeLabel, StaticLiterals.GeneratedAndCustomizedCodeLabel });
                         Logic.Writer.WriteToGroupFile = toGroupFile;
                         Logic.Writer.WriteAll(SolutionPath, solutionProperties, generatedItems);
                     }
                     Thread.Sleep(700);
                 }
             }
+
+            static void PrintHeader(string sourceSolutionPath, bool toGroupFile)
+            {
+                var menuIndex = 0;
+                var sourceSolutionName = GetSolutionNameByPath(sourceSolutionPath);
+
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine("Template Code Generator");
+                Console.WriteLine("=======================");
+                Console.WriteLine();
+                Console.WriteLine($"Code generation for: {sourceSolutionName}");
+                Console.WriteLine($"From file path:  {sourceSolutionPath}");
+                Console.WriteLine($"Generation into: {(toGroupFile ? "Group files" : "Single files")}");
+                Console.WriteLine();
+                Console.WriteLine($"[{++menuIndex}] Change source path");
+                Console.WriteLine($"[{++menuIndex}] Compile solution...");
+                Console.WriteLine($"[{++menuIndex}] Compile logic project...");
+                Console.WriteLine($"[{++menuIndex}] Change group file flag");
+                Console.WriteLine($"[{++menuIndex}] Delete generation files...");
+                Console.WriteLine($"[{++menuIndex}] Start code generation...");
+                Console.WriteLine("[x|X] Exit");
+                Console.WriteLine();
+                Console.Write("Choose: ");
+            }
+        }
+        private static void PrintBusyProgress()
+        {
+            Console.WriteLine();
+            runBusyProgress = true;
+            Task.Factory.StartNew(async () =>
+            {
+                while (runBusyProgress)
+                {
+                    if (canBusyPrint)
+                    {
+                        Console.Write(".");
+                    }
+                    await Task.Delay(250).ConfigureAwait(false);
+                }
+            });
         }
         #endregion Console methods
 

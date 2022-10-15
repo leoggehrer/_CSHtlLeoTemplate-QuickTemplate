@@ -17,7 +17,6 @@ namespace TemplateCodeGenerator.Logic.Generation
         public bool GenerateServices { get; set; }
 
         #region AngularApp-Definitions
-        public static string CodeExtension => "ts";
         public string EnumsSubFolder => Path.Combine("src", "app", "core", "enums", "gen");
         public string ModelsSubFolder => Path.Combine("src", "app", "core", "models", "gen");
         public string ServicesSubFolder => Path.Combine("src", "app", "core", "services", "http", "gen");
@@ -85,11 +84,11 @@ namespace TemplateCodeGenerator.Logic.Generation
         public IGeneratedItem CreateEnumFromType(Type type)
         {
             var subPath = ConvertFileItem(CreateSubPathFromType(type));
-            var fileName = $"{ConvertFileItem(type.Name)}.{CodeExtension}";
+            var fileName = $"{ConvertFileItem(type.Name)}{StaticLiterals.TypeScriptFileExtension}";
             var result = new Models.GeneratedItem(Common.UnitType.Angular, Common.ItemType.TypeScriptEnum)
             {
                 FullName = CreateTypeScriptFullName(type),
-                FileExtension = CodeExtension,
+                FileExtension = StaticLiterals.TypeScriptFileExtension,
                 SubFilePath = Path.Combine(EnumsSubFolder, subPath, fileName),
             };
 
@@ -100,12 +99,12 @@ namespace TemplateCodeGenerator.Logic.Generation
             {
                 var value = Enum.Parse(type, item);
 
-                result.Add($"{item} = {(int)value},");
+                result.Add($"  {item} = {(int)value},");
             }
 
             result.Add("}");
             result.AddRange(result.Source.Eject().Distinct());
-            result.FormatCode();
+            //result.FormatCode();
             FinishCreateEnum(type, result.Source);
             return result;
         }
@@ -135,13 +134,13 @@ namespace TemplateCodeGenerator.Logic.Generation
             var subPath = ConvertFileItem(CreateSubPathFromType(type));
             var projectPath = Path.Combine(SolutionProperties.SolutionPath, SolutionProperties.AngularAppProjectName);
             var entityName = ItemProperties.CreateEntityName(type);
-            var fileName = $"{ConvertFileItem(entityName)}.{CodeExtension}";
+            var fileName = $"{ConvertFileItem(entityName)}{StaticLiterals.TypeScriptFileExtension}";
             var typeProperties = type.GetAllPropertyInfos();
             var declarationTypeName = string.Empty;
             var result = new Models.GeneratedItem(Common.UnitType.Angular, Common.ItemType.TypeScriptModel)
             {
                 FullName = CreateTypeScriptFullName(type),
-                FileExtension = CodeExtension,
+                FileExtension = StaticLiterals.TypeScriptFileExtension,
                 SubFilePath = Path.Combine(ModelsSubFolder, subPath, fileName),
             };
 
@@ -155,14 +154,13 @@ namespace TemplateCodeGenerator.Logic.Generation
                     declarationTypeName = item.DeclaringType.Name;
                     result.Add($"/** {declarationTypeName} **/");
                 }
-
                 result.AddRange(CreateTypeScriptProperty(item));
             }
             result.AddRange(CreateModelToModelFromModels(type, types));
             result.Add("}");
 
             result.Source.Insert(result.Source.Count - 1, StaticLiterals.AngularCustomCodeBeginLabel);
-            result.Source.InsertRange(result.Source.Count - 1, ReadCustomModelCode(projectPath, result));
+            result.Source.InsertRange(result.Source.Count - 1, ReadCustomCode(projectPath, result));
             result.Source.Insert(result.Source.Count - 1, StaticLiterals.AngularCustomCodeEndLabel);
 
             var imports = new List<string>();
@@ -170,11 +168,11 @@ namespace TemplateCodeGenerator.Logic.Generation
             imports.AddRange(CreateTypeImports(type, types));
             imports.AddRange(CreateModelToModelImports(type, types));
             imports.Add(StaticLiterals.AngularCustomImportBeginLabel);
-            imports.AddRange(ReadCustomModelImports(projectPath, result));
+            imports.AddRange(ReadCustomImports(projectPath, result));
             imports.Add(StaticLiterals.AngularCustomImportEndLabel);
 
             InsertTypeImports(imports, result.Source);
-            result.FormatCode();
+            //result.FormatCode();
             FinishCreateModel(type, result.Source);
             return result;
         }
@@ -203,11 +201,11 @@ namespace TemplateCodeGenerator.Logic.Generation
             var subPath = ConvertFileItem(CreateSubPathFromType(type));
             var projectPath = Path.Combine(SolutionProperties.SolutionPath, SolutionProperties.AngularAppProjectName);
             var entityName = ItemProperties.CreateEntityName(type);
-            var fileName = $"{ConvertFileItem($"{entityName}Service")}.{CodeExtension}";
+            var fileName = $"{ConvertFileItem($"{entityName}Service")}{StaticLiterals.TypeScriptFileExtension}";
             var result = new Models.GeneratedItem(Common.UnitType.Angular, Common.ItemType.TypeScriptService)
             {
                 FullName = CreateTypeScriptFullName(type),
-                FileExtension = CodeExtension,
+                FileExtension = StaticLiterals.TypeScriptFileExtension,
                 SubFilePath = Path.Combine(ServicesSubFolder, subPath, fileName),
             };
 
@@ -219,7 +217,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add(CreateImport("@app-core-models", entityName, subPath));
 
             result.Add(StaticLiterals.AngularCustomImportBeginLabel);
-            result.AddRange(ReadCustomModelImports(projectPath, result));
+            result.AddRange(ReadCustomImports(projectPath, result));
             result.Add(StaticLiterals.AngularCustomImportEndLabel);
             
             result.Add("@Injectable({");
@@ -232,9 +230,9 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add("}");
 
             result.Source.Insert(result.Source.Count - 1, StaticLiterals.AngularCustomCodeBeginLabel);
-            result.Source.InsertRange(result.Source.Count - 1, ReadCustomModelCode(projectPath, result));
+            result.Source.InsertRange(result.Source.Count - 1, ReadCustomCode(projectPath, result));
             result.Source.Insert(result.Source.Count - 1, StaticLiterals.AngularCustomCodeEndLabel);
-            result.FormatCode();
+            //result.FormatCode();
             FinishCreateService(type, result.Source);
             return result;
         }
@@ -273,7 +271,7 @@ namespace TemplateCodeGenerator.Logic.Generation
         }
 
         #region Helpers
-        public IEnumerable<string> ReadCustomModelImports(string sourcePath, Models.GeneratedItem generatedItem)
+        public IEnumerable<string> ReadCustomImports(string sourcePath, Models.GeneratedItem generatedItem)
         {
             var result = new List<string>();
             var filePath = Path.Combine(sourcePath, generatedItem.SubFilePath);
@@ -293,7 +291,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             }
             return result;
         }
-        public IEnumerable<string> ReadCustomModelCode(string sourcePath, Models.GeneratedItem generatedItem)
+        public IEnumerable<string> ReadCustomCode(string sourcePath, Models.GeneratedItem generatedItem)
         {
             var result = new List<string>();
             var filePath = Path.Combine(sourcePath, generatedItem.SubFilePath);
@@ -453,7 +451,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             {
                 result.Add($"{Char.ToLower(propertyInfo.Name[0])}{propertyInfo.Name[1..]}: {propertyInfo.PropertyType.Name[1..]};");
             }
-            return result;
+            return result.SetIndent(1);
         }
         private static IEnumerable<string> CreateModelToModelImports(Type type, IEnumerable<Type> types)
         {
@@ -548,7 +546,7 @@ namespace TemplateCodeGenerator.Logic.Generation
                     }
                 }
             }
-            return result;
+            return result.SetIndent(1);
         }
         #endregion Helpers
     }
