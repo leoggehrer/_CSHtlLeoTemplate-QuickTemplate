@@ -59,8 +59,7 @@ namespace TemplatePreprocessor.ConApp
                 Console.WriteLine();
                 Console.WriteLine($"Definition-Values: {string.Join(" ", Defines)}");
                 Console.WriteLine();
-                Console.WriteLine($"Set definition-values in '{sourceSolutionName}'");
-                Console.WriteLine($"                         '{SourcePath}'");
+                Console.WriteLine($"Set definition-values '{sourceSolutionName}' from: {SourcePath}");
                 Console.WriteLine();
                 Console.WriteLine($"[{++menuIndex}] Change source path");
 
@@ -81,8 +80,7 @@ namespace TemplatePreprocessor.ConApp
                     if (select == 1)
                     {
                         var solutionPath = GetCurrentSolutionPath();
-                        var searchPath = GetParentPathFrom(solutionPath, "source");
-                        var qtProjects = GetQuickTemplateProjects(searchPath).Union(new[] { solutionPath }).ToArray();
+                        var qtProjects = GetQuickTemplateProjects(solutionPath).Union(new[] { solutionPath }).ToArray();
 
                         for (int i = 0; i < qtProjects.Length; i++)
                         {
@@ -188,19 +186,11 @@ namespace TemplatePreprocessor.ConApp
 
             return fileInfo != null ? Path.GetFileNameWithoutExtension(fileInfo.Name) : string.Empty;
         }
-        private static string GetParentPathFrom(string path, string parentFolder)
+        private static string[] GetQuickTemplateProjects(string sourcePath)
         {
-            var directoryInfo = new DirectoryInfo(path);
-
-            while (directoryInfo != null && directoryInfo.Name.Equals(parentFolder, StringComparison.CurrentCultureIgnoreCase) == false)
-            {
-                directoryInfo = directoryInfo.Parent;
-            }
-            return directoryInfo != null ? directoryInfo.FullName : path;
-        }
-        private static string[] GetQuickTemplateProjects(string searchPath)
-        {
-            var qtDirectories = Directory.GetDirectories(searchPath, "QT*", SearchOption.AllDirectories)
+            var directoryInfo = new DirectoryInfo(sourcePath);
+            var parentDirectory = directoryInfo.Parent != null ? directoryInfo.Parent.FullName : SourcePath;
+            var qtDirectories = Directory.GetDirectories(parentDirectory, "QT*", SearchOption.AllDirectories)
                                          .Where(d => d.Replace(UserPath, String.Empty).Contains('.') == false)
                                          .ToList();
             return qtDirectories.ToArray();

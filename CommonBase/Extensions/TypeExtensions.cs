@@ -10,6 +10,11 @@ namespace CommonBase.Extensions
 {
     public static partial class TypeExtensions
     {
+        public class Extend
+        {
+            public Type? Type { get; set; }
+            public List<Extend> Extends { get; set; } = new();
+        }
         public static void CheckInterface(this Type? type, string argName)
         {
             if (type == null)
@@ -21,6 +26,10 @@ namespace CommonBase.Extensions
         public static bool IsNullableType(this Type type)
         {
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+        }
+        public static bool IsGenericCollectionType(this Type type)
+        {
+            return type.FullName!.StartsWith($"{nameof(System)}.{nameof(System.Collections)}.{nameof(System.Collections.Generic)}");
         }
         /// <summary>
         /// Determine whether a type is simple (String, Decimal, DateTime, etc) 
@@ -103,24 +112,147 @@ namespace CommonBase.Extensions
             }
             return result;
         }
-
-        public static IEnumerable<Type> GetBaseClasses(this Type type)
+        public static string GetSourceTypeName(this Type type)
         {
-            static void GetBaseClassesRec(Type type, List<Type> baseClasses)
+            var result = type.Name;
+
+            if (type.IsGenericType)
             {
-                if (type.BaseType != null)
+                result = result.Substring(0, "`");
+                result += "<";
+                for (int i = 0; i < type.GetGenericArguments().Length; i++)
                 {
-                    if (baseClasses.Contains(type.BaseType) == false)
+                    if (i > 0)
                     {
-                        baseClasses.Add(type.BaseType);
+                        result += ", ";
                     }
-                    GetBaseClassesRec(type.BaseType, baseClasses);
+                    result += GetSourceTypeName(type.GetGenericArguments()[i]);
+                }
+                result += ">";
+            }
+            return result;
+        }
+
+        public static Extend GetInterfaceHierarchy(this Type type)
+        {
+            var result = new Extend { Type = type };
+
+            static void GetInterfaceHierarchyRec(Extend root)
+            {
+                root.Extends = root.Type!.GetAllInterfaces()
+                                            .Select(e => new Extend { Type = e })
+                                            .ToList();
+                foreach (var item in root.Extends)
+                {
+                    GetInterfaceHierarchyRec(item);
+                }
+            }
+
+            if (type.IsInterface)
+            {
+                GetInterfaceHierarchyRec(result);
+            }
+            return result;
+        }
+        public static IEnumerable<Type> GetClassHierarchy(this Type type)
+        {
+            var result = new List<Type>();
+
+            if (type.IsClass)
+            {
+                var run = type.BaseType;
+
+                result.Add(type);
+                while (run != null && run.Name.Equals("object", StringComparison.CurrentCultureIgnoreCase) == false)
+                {
+                    result.Add(run);
+                    run = run.BaseType;
+                }
+            }
+            return result;
+        }
+        public static IEnumerable<Type> GetAllInterfaces(this Type type)
+        {
+            static void GetBaseInterfaces(Type type, List<Type> interfaces)
+            {
+                var run = type;
+
+                while (run != null)
+                {
+                    foreach (var item in run.GetInterfaces())
+                    {
+                        if (interfaces.Contains(item) == false)
+                        {
+                            interfaces.Add(item);
+                        }
+                        GetBaseInterfaces(item, interfaces);
+                    }
+                    run = run.BaseType;
                 }
             }
             var result = new List<Type>();
 
-            GetBaseClassesRec(type, result);
+            GetBaseInterfaces(type, result);
             return result;
+        }
+        public static IEnumerable<Type> GetDeclaredInterfaces(this Type type)
+        {
+            var run = type.BaseType;
+            IEnumerable<Type> result = type.GetInterfaces();
+
+            foreach (var item in result)
+            {
+                result = result.Except(item.GetAllInterfaces());
+            }
+            while (run != null)
+            {
+                result = result.Except(run.GetInterfaces());
+                foreach (var item in result)
+                {
+                    result = result.Except(item.GetAllInterfaces());
+                }
+                run = run.BaseType;
+            }
+            return result;
+        }
+        public static IEnumerable<Type> GetRelations(this Type type)
+        {
+            return type.GetRelations(0);
+        }
+        public static IEnumerable<Type> GetRelations(this Type type, int maxDeep)
+        {
+            static IEnumerable<Type> GetRelationsRec(Type type, List<Type> relations, int maxDeep, int deep)
+            {
+                var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+                foreach (var item in type.GetFields(bindingFlags))
+                {
+                    if (item.FieldType.IsValueType == false)
+                    {
+                        if (item.FieldType.IsGenericType
+                            && item.FieldType.GetGenericArguments().Any(e => (e.IsClass || e.IsInterface) && e != typeof(string)))
+                        {
+                            relations.Add(item.FieldType);
+                            if (maxDeep < deep)
+                            {
+                                GetRelationsRec(item.FieldType, relations, maxDeep, deep + 1);
+                            }
+                        }
+                        else if ((item.FieldType.IsClass || item.FieldType.IsInterface) && item.FieldType != typeof(string))
+                        {
+                            relations.Add(item.FieldType);
+                            if (maxDeep < deep)
+                            {
+                                GetRelationsRec(item.FieldType, relations, maxDeep, deep + 1);
+                            }
+                        }
+                    }
+                }
+                return relations;
+            }
+            var result = new List<Type>();
+
+            return GetRelationsRec(type, result, maxDeep, 0);
         }
         public static IEnumerable<Type> GetBaseInterfaces(this Type type)
         {
@@ -138,6 +270,24 @@ namespace CommonBase.Extensions
             var result = new List<Type>();
 
             GetBaseInterfaces(type, result);
+            return result;
+        }
+        public static IEnumerable<FieldInfo> GetAllClassFields(this Type type)
+        {
+            var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            var result = new List<FieldInfo>();
+
+            if (type.IsClass)
+            {
+                var run = type.BaseType;
+
+                result.AddRange(type.GetFields(bindingFlags));
+                while (run != null && run.Name.Equals("object", StringComparison.CurrentCultureIgnoreCase) == false)
+                {
+                    result.AddRange(run.GetFields(bindingFlags));
+                    run = run.BaseType;
+                }
+            }
             return result;
         }
 

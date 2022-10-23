@@ -17,6 +17,7 @@ namespace TemplateComparison.ConApp
             UserPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             SourcePath = GetCurrentSolutionPath();
             TargetPaths = Array.Empty<string>();
+            AddTargetPaths = Array.Empty<string>();
             SourceLabels = new string[] { StaticLiterals.BaseCodeLabel };
             TargetLabels = new string[] { StaticLiterals.CodeCopyLabel };
             ClassConstructed();
@@ -29,7 +30,7 @@ namespace TemplateComparison.ConApp
         private static string UserPath { get; set; }
         private static string SourcePath { get; set; }
         private static string[] TargetPaths { get; set; }
-        private static string[] AddTargetPaths { get; set; } = Array.Empty<string>();
+        private static string[] AddTargetPaths { get; set; }
         private static string[] SearchPatterns => StaticLiterals.SourceFileExtensions.Split('|');
         private static string[] SourceLabels { get; set; }
         private static string[] TargetLabels { get; set; }
@@ -54,21 +55,18 @@ namespace TemplateComparison.ConApp
                 var handled = false;
                 var targetPaths = new List<string>();
 
-                PrintBusyProgress();
+                Console.Clear();
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 BeforeGetTargetPaths(SourcePath, targetPaths, ref handled);
                 if (handled == false)
                 {
-                    var searchPath = GetParentPathFrom(SourcePath, "source");
-
-                    TargetPaths = GetQuickTemplateProjects(searchPath);
+                    TargetPaths = GetQuickTemplateProjects(SourcePath);
                     TargetPaths = TargetPaths.Union(AddTargetPaths).ToArray();
                 }
                 else
                 {
                     TargetPaths = TargetPaths.Union(AddTargetPaths).ToArray();
                 }
-                runBusyProgress = false;
                 PrintHeader(SourcePath, TargetPaths);
                 Console.Write($"Balancing [+|1..{TargetPaths.Length}|X...Quit]: ");
 
@@ -100,15 +98,22 @@ namespace TemplateComparison.ConApp
                     {
                         var numbers = input?.Trim()
                                             .Split(',').Where(s => Int32.TryParse(s, out int n))
-                                            .Select(s => Int32.Parse(s) - 1)
+                                            .Select(s => Int32.Parse(s))
                                             .ToArray();
 
                         PrintBusyProgress();
                         foreach (var number in numbers ?? Array.Empty<int>())
                         {
-                            if (number >= 0 && number < TargetPaths.Length)
+                            if (number == TargetPaths.Length + 1)
                             {
-                                BalancingSolutions(SourcePath, SourceLabels, new string[] { TargetPaths[number] }, TargetLabels);
+                                foreach (var item in TargetLabels)
+                                {
+                                    BalancingSolutions(SourcePath, SourceLabels, TargetPaths, TargetLabels);
+                                }
+                            }
+                            else if (number > 0 && number <= TargetPaths.Length)
+                            {
+                                BalancingSolutions(SourcePath, SourceLabels, new string[] { TargetPaths[number - 1] }, TargetLabels);
                             }
                         }
                     }
@@ -135,16 +140,10 @@ namespace TemplateComparison.ConApp
         private static void PrintHeader(string sourcePath, string[] targetPaths)
         {
             var index = 0;
-
             Console.Clear();
             Console.SetCursorPosition(0, 0);
             Console.WriteLine("Template Comparison");
             Console.WriteLine("===================");
-            Console.WriteLine();
-            for (int i = 0; i < SourceLabels.Length && i < TargetLabels.Length; i++)
-            {
-                Console.WriteLine($"{SourceLabels[i]} => {TargetLabels[i]}");
-            }
             Console.WriteLine();
             Console.WriteLine($"Source: {sourcePath}");
             Console.WriteLine();
@@ -287,19 +286,11 @@ namespace TemplateComparison.ConApp
 
             return AppContext.BaseDirectory[..endPos];
         }
-        private static string GetParentPathFrom(string path, string parentFolder)
+        private static string[] GetQuickTemplateProjects(string sourcePath)
         {
-            var directoryInfo = new DirectoryInfo(path);
-
-            while (directoryInfo != null && directoryInfo.Name.Equals(parentFolder, StringComparison.CurrentCultureIgnoreCase) == false)
-            {
-                directoryInfo = directoryInfo.Parent;
-            }
-            return directoryInfo != null ? directoryInfo.FullName : path;
-        }
-        private static string[] GetQuickTemplateProjects(string searchPath)
-        {
-            var qtDirectories = Directory.GetDirectories(searchPath, "QT*", SearchOption.AllDirectories)
+            var directoryInfo = new DirectoryInfo(sourcePath);
+            var parentDirectory = directoryInfo.Parent != null ? directoryInfo.Parent.FullName : SourcePath;
+            var qtDirectories = Directory.GetDirectories(parentDirectory, "QT*", SearchOption.AllDirectories)
                                          .Where(d => d.Replace(UserPath, String.Empty).Contains('.') == false)
                                          .ToList();
             return qtDirectories.ToArray();

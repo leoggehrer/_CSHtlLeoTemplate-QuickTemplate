@@ -8,10 +8,26 @@ namespace CommonBase.Extensions
 {
     public static partial class StringExtensions
     {
+        public static string Separator { get; set; } = ";";
+        public static string NullText { get; set; } = "<NULL>";
+        private static Regex Trimmer { get; } = new Regex(@"\s\s+");
+
         public static void CheckNotNullOrEmpty(this string? source, string argName)
         {
             if (string.IsNullOrEmpty(source))
                 throw new ArgumentException("String is null or empty!", argName);
+        }
+
+        public static string Substring(this string source, int index, string text)
+        {
+            var result = string.Empty;
+            var ofIdx = source.IndexOf(text);
+
+            if (ofIdx >= 0 && ofIdx - index >= 0)
+            {
+                result = source.Substring(index, ofIdx);
+            }
+            return result;
         }
 
         public static bool TryParse(this string value, Type type, out object? typeValue)
@@ -122,10 +138,6 @@ namespace CommonBase.Extensions
         {
             return string.IsNullOrEmpty(source) ? defaultValue : source;
         }
-
-        public static string Separator { get; set; } = ";";
-        public static string NullText { get; set; } = "<NULL>";
-        private static Regex Trimmer { get; } = new Regex(@"\s\s+");
 
         public partial class DivideInfo : TagInfo
         {
@@ -397,7 +409,7 @@ namespace CommonBase.Extensions
             if (text != null)
             {
                 for (int i = 0; i < count; i++)
-                    sb.Append("    ");        // Four spaces for one indent.
+                    sb.Append("  ");        // Four spaces for one indent.
             }
             sb.Append(text);
             return sb.ToString();

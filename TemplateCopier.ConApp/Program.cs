@@ -65,8 +65,7 @@ namespace TemplateCopier.ConApp
                     if (select == 1)
                     {
                         var solutionPath = GetCurrentSolutionPath();
-                        var searchPath = GetParentPathFrom(solutionPath, "source");
-                        var qtProjects = GetQuickTemplateProjects(searchPath).Union(new[] { solutionPath }).ToArray();
+                        var qtProjects = GetQuickTemplateProjects(solutionPath).Union(new[] { solutionPath }).ToArray();
 
                         for (int i = 0; i < qtProjects.Length; i++)
                         {
@@ -94,8 +93,7 @@ namespace TemplateCopier.ConApp
                     else if (select == 2)
                     {
                         var solutionPath = GetCurrentSolutionPath();
-                        var searchPath = GetParentPathFrom(solutionPath, "source");
-                        var qtProjects = GetQuickTemplateProjects(searchPath).Union(new[] { solutionPath }).ToArray();
+                        var qtProjects = GetQuickTemplateProjects(solutionPath).Union(new[] { solutionPath }).ToArray();
                         var qtPaths = qtProjects.Select(p => GetParentDirectory(p)).Distinct().OrderBy(p => p).ToArray();
 
                         for (int i = 0; i < qtPaths.Length; i++)
@@ -201,19 +199,11 @@ namespace TemplateCopier.ConApp
 
             return fileInfo != null ? Path.GetFileNameWithoutExtension(fileInfo.Name) : string.Empty;
         }
-        private static string GetParentPathFrom(string path, string parentFolder)
+        private static string[] GetQuickTemplateProjects(string sourcePath)
         {
-            var directoryInfo = new DirectoryInfo(path);
-
-            while (directoryInfo != null && directoryInfo.Name.Equals(parentFolder, StringComparison.CurrentCultureIgnoreCase) == false)
-            {
-                directoryInfo = directoryInfo.Parent;
-            }
-            return directoryInfo != null ? directoryInfo.FullName : path;
-        }
-        private static string[] GetQuickTemplateProjects(string searchPath)
-        {
-            var qtDirectories = Directory.GetDirectories(searchPath, "QT*", SearchOption.AllDirectories)
+            var directoryInfo = new DirectoryInfo(sourcePath);
+            var parentDirectory = directoryInfo.Parent != null ? directoryInfo.Parent.FullName : SourcePath;
+            var qtDirectories = Directory.GetDirectories(parentDirectory, "QT*", SearchOption.AllDirectories)
                                          .Where(d => d.Replace(UserPath, String.Empty).Contains('.') == false)
                                          .ToList();
             return qtDirectories.ToArray();

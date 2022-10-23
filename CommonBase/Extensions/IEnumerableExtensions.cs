@@ -133,6 +133,13 @@ namespace CommonBase.Extensions
             }
             return result ?? Array.Empty<T>();
         }
+        /// <summary>
+        /// Performs the specified action on each element of the IEnumerable<T>.
+        /// </summary>
+        /// <typeparam name="T">The generic type T.</typeparam>
+        /// <param name="source">The collection from type T.</param>
+        /// <param name="action">The Action<T> delegate to perform on each element of the IEnumerable<T>.</param>
+        /// <returns>The same collection as source.</returns>
         public static IEnumerable<T> ForEach<T>(this IEnumerable<T> source, Action<T> action)
         {
             if (source != null && action != null)
@@ -143,6 +150,16 @@ namespace CommonBase.Extensions
                 }
             }
             return source ?? Array.Empty<T>();
+        }
+        /// <summary>
+        /// Copy the collection from source and return it.
+        /// </summary>
+        /// <typeparam name="T">The generic type T.</typeparam>
+        /// <param name="source">The collection from type T.</param>
+        /// <returns>A copy of source collection.</returns>
+        public static IEnumerable<T> Clone<T>(this IEnumerable<T> source)
+        {
+            return new List<T>(source);
         }
     }
 }

@@ -87,17 +87,17 @@ namespace TemplateCodeGenerator.Logic
             return result;
         }
 
-        public static void DeleteGeneratedFiles(string path, string[] labels)
+        public static void DeleteGeneratedFiles(string path)
         {
             Console.WriteLine("Delete all generation files...");
 
             foreach (var searchPattern in StaticLiterals.SourceFileExtensions.Split("|"))
             {
-                var deleteFiles = GetGeneratedFiles(path, searchPattern, labels);
+                var deleteFiles = GetGeneratedFiles(path, searchPattern, new[] { StaticLiterals.GeneratedCodeLabel });
 
-                foreach (var file in deleteFiles)
+                foreach (var item in deleteFiles)
                 {
-                    File.Delete(file);
+                    File.Delete(item);
                 }
             }
         }

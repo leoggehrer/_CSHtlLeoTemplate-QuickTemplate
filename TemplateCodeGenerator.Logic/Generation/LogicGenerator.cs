@@ -100,7 +100,7 @@ namespace TemplateCodeGenerator.Logic.Generation
 
             result.Add("}");
             result.EnvelopeWithANamespace(dataContextNamespace);
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
 
@@ -134,7 +134,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Source.Add("{");
             result.Source.Add("}");
             result.EnvelopeWithANamespace(ItemProperties.CreateModelNamespace(type));
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
 
@@ -184,7 +184,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add("{");
             result.Add("}");
             result.EnvelopeWithANamespace(ItemProperties.CreateContractNamespace(type));
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
         private IGeneratedItem CreateServiceContract(Type type, Common.UnitType unitType, Common.ItemType itemType)
@@ -201,7 +201,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add("{");
             result.Add("}");
             result.EnvelopeWithANamespace(ItemProperties.CreateContractNamespace(type));
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
 
@@ -248,7 +248,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.AddRange(CreatePartialConstrutor("public", controllerName, "ControllerObject other", "base(other)", null, false));
             result.Add("}");
             result.EnvelopeWithANamespace(ItemProperties.CreateControllerNamespace(type));
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
         private IEnumerable<IGeneratedItem> CreateServices()
@@ -295,7 +295,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.AddRange(CreatePartialConstrutor("public", serviceName, null, "base(ServiceBaseAddress, ServiceRequestUri)"));
             result.Add("}");
             result.EnvelopeWithANamespace(ItemProperties.CreateServiceNamespace(type));
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
 
@@ -345,7 +345,7 @@ namespace TemplateCodeGenerator.Logic.Generation
 
                 result.AddRange(templateCode.ToLines());
             }
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
 
@@ -394,7 +394,7 @@ namespace TemplateCodeGenerator.Logic.Generation
 
             result.Add("}");
             result.EnvelopeWithANamespace(factoryNamespace);
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
         private IEnumerable<string> CreateFactoryControllerMethod(Type type)

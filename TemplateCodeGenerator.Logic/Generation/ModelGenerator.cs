@@ -237,7 +237,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.AddRange(CreateGetHashCode(type));
             result.Add("}");
             result.EnvelopeWithANamespace(ItemProperties.CreateModelNamespace(type), "using System;");
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
         protected virtual IGeneratedItem CreateDelegateModelFromType(Type type, Common.UnitType unitType, Common.ItemType itemType)
@@ -291,7 +291,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.AddRange(CreateDelegateFactoryMethods(ItemProperties.CreateModelType(type), type, false));
             result.Add("}");
             result.EnvelopeWithANamespace(ItemProperties.CreateModelNamespace(type), "using System;");
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
 

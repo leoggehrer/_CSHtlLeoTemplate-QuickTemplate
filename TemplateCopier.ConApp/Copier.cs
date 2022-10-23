@@ -67,6 +67,11 @@ namespace TemplateCopier.ConApp
             ,".template"
             ,".xaml"
         };
+        private static string[] ReplaceFiles { get; } = new string[]
+        {
+             "appsettings.json"
+            ,"appsettings.Development.json"
+        };
         private static string[] ProjectExtensions { get; } = new string[]
         {
              ".asax"
@@ -379,6 +384,7 @@ namespace TemplateCopier.ConApp
         }
         private void CopyFile(string sourceFilePath, string targetFilePath, string sourceSolutionName, string targetSolutionName)
         {
+            var fileName = Path.GetFileName(sourceFilePath);
             var extension = Path.GetExtension(sourceFilePath);
             var targetDirectory = Path.GetDirectoryName(targetFilePath);
 
@@ -407,7 +413,8 @@ namespace TemplateCopier.ConApp
 
                 File.WriteAllLines(targetFilePath, targetLines.ToArray(), Encoding.Default);
             }
-            else if (ReplaceExtensions.SingleOrDefault(i => i.Equals(extension, StringComparison.CurrentCultureIgnoreCase)) != null)
+            else if (ReplaceFiles.Any(f => f.Equals(fileName, StringComparison.CurrentCultureIgnoreCase))
+                     || ReplaceExtensions.Any(i => i.Equals(extension, StringComparison.CurrentCultureIgnoreCase)))
             {
                 var targetLines = new List<string>();
                 var sourceLines = File.ReadAllLines(sourceFilePath, Encoding.Default);

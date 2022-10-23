@@ -305,17 +305,9 @@ namespace TemplateCodeGenerator.Logic
                 var sourceLines = new List<string>(item.SourceCode);
                 var filePath = Path.Combine(projectPath, item.SubFilePath);
 
-                if (item.FileExtension.Equals(StaticLiterals.CSharpHtmlFileExtension, StringComparison.CurrentCultureIgnoreCase))
+                if (item.FileExtension == Logic.StaticLiterals.CSharpHtmlFileExtension)
                 {
                     sourceLines.Insert(0, $"@*{StaticLiterals.GeneratedCodeLabel}*@");
-                }
-                else if (item.FileExtension.Equals(StaticLiterals.CSharpFileExtension, StringComparison.CurrentCultureIgnoreCase))
-                {
-                    sourceLines.Insert(0, $"//{StaticLiterals.GeneratedCodeLabel}");
-                }
-                else if (item.FileExtension.Equals(StaticLiterals.TypeScriptFileExtension, StringComparison.CurrentCultureIgnoreCase))
-                {
-                    sourceLines.Insert(0, $"//{StaticLiterals.GeneratedAndCustomizedCodeLabel}");
                 }
                 else
                 {
@@ -324,7 +316,7 @@ namespace TemplateCodeGenerator.Logic
                 WriteCodeFile(filePath, sourceLines);
             }
         }
-        private static void WriteCodeFile(string filePath, IEnumerable<string> source)
+        public static void WriteCodeFile(string filePath, IEnumerable<string> source)
         {
             var canCreate = true;
             var path = Path.GetDirectoryName(filePath);
@@ -334,7 +326,7 @@ namespace TemplateCodeGenerator.Logic
             {
                 var lines = File.ReadAllLines(filePath);
                 var header = lines.FirstOrDefault(l => l.Contains(StaticLiterals.GeneratedCodeLabel)
-                                  || l.Contains(StaticLiterals.GeneratedAndCustomizedCodeLabel));
+                                  || l.Contains(StaticLiterals.CustomizedAndGeneratedCodeLabel));
 
                 if (header != null)
                 {

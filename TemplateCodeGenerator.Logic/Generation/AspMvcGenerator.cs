@@ -105,7 +105,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Source.Add("{");
             result.Source.Add("}");
             result.EnvelopeWithANamespace(ItemProperties.CreateModelNamespace(type));
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
 
@@ -213,7 +213,7 @@ namespace TemplateCodeGenerator.Logic.Generation
 
             result.Add("}");
             result.EnvelopeWithANamespace(ItemProperties.CreateModelNamespace(type), "using System;");
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
 
@@ -285,7 +285,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add($"partial void AfterToViewModel({modelAlias} viewModel, ActionMode actionMode);");
             result.Add("}");
             result.EnvelopeWithANamespace(ItemProperties.CreateControllerNamespace(type), "using Microsoft.AspNetCore.Mvc;", accessTypeUsing, modelTypeUsing, filterTypeUsing, contractTypeUsing);
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
         private IEnumerable<IGeneratedItem> CreateServices()
@@ -416,7 +416,7 @@ namespace TemplateCodeGenerator.Logic.Generation
 
             result.Add("}");
             result.EnvelopeWithANamespace(ItemProperties.CreateControllerNamespace(type), "using Microsoft.AspNetCore.Mvc;", accessTypeUsing, modelTypeUsing, filterTypeUsing);
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
 
@@ -481,7 +481,7 @@ namespace TemplateCodeGenerator.Logic.Generation
 
             result.Add("}");
             result.EnvelopeWithANamespace(ItemProperties.Namespace);
-            result.FormatCode();
+            result.FormatCSharpCode();
             return result;
         }
 

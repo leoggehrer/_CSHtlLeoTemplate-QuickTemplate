@@ -47,9 +47,9 @@ namespace TemplateCodeGenerator.Logic.Models
             }
             Source.AddRange(codeLines);
         }
-        public void FormatCode(bool removeBlockComments = false, bool removeLineComments = false)
+        public void FormatCSharpCode(bool removeBlockComments = false, bool removeLineComments = false)
         {
-            Source.AddRange(Source.Eject().FormatCode(removeBlockComments, removeLineComments));
+            Source.AddRange(Source.Eject().FormatCSharpCode(removeBlockComments, removeLineComments));
         }
         public override string ToString()
         {
