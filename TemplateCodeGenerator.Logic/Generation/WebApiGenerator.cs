@@ -27,25 +27,18 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add(CreateAddServices());
             return result;
         }
-        private string GetGenerateDefault(Type type)
-        {
-            return EntityProject.IsAccountOrLoggingOrRevisionEntity(type) ? "False" : "True";
-        }
         public IEnumerable<IGeneratedItem> CreateModels()
         {
             var result = new List<IGeneratedItem>();
             var entityProject = EntityProject.Create(SolutionProperties);
 
-            if (GenerateModels)
+            foreach (var type in entityProject.EntityTypes)
             {
-                foreach (var type in entityProject.EntityTypes)
+                if (CanCreate(type) && QuerySetting<bool>(Common.ItemType.Model, type, StaticLiterals.Generate, GenerateModels.ToString()))
                 {
-                    if (CanCreate(type) && QuerySetting<bool>(Common.ItemType.Model, type, StaticLiterals.Generate, GetGenerateDefault(type)))
-                    {
-                        result.Add(CreateModelFromType(type, Common.UnitType.WebApi, Common.ItemType.Model));
-                        result.Add(CreateModelInheritance(type, Common.UnitType.WebApi, Common.ItemType.Model));
-                        result.Add(CreateEditModelFromType(type, Common.UnitType.WebApi, Common.ItemType.EditModel));
-                    }
+                    result.Add(CreateModelFromType(type, Common.UnitType.WebApi, Common.ItemType.Model));
+                    result.Add(CreateModelInheritance(type, Common.UnitType.WebApi, Common.ItemType.Model));
+                    result.Add(CreateEditModelFromType(type, Common.UnitType.WebApi, Common.ItemType.EditModel));
                 }
             }
             return result;
@@ -103,21 +96,18 @@ namespace TemplateCodeGenerator.Logic.Generation
             var result = new List<IGeneratedItem>();
             var entityProject = EntityProject.Create(SolutionProperties);
 
-            if (GenerateControllers)
+            foreach (var type in entityProject.EntityTypes)
             {
-                foreach (var type in entityProject.EntityTypes)
+                if (CanCreate(type) && QuerySetting<bool>(Common.ItemType.Controller, type, StaticLiterals.Generate, GenerateControllers.ToString()))
                 {
-                    if (CanCreate(type) && QuerySetting<bool>(Common.ItemType.Controller, type, StaticLiterals.Generate, GetGenerateDefault(type)))
-                    {
-                        result.Add(CreateControllerFromType(type, Common.UnitType.WebApi, Common.ItemType.Controller));
-                    }
+                    result.Add(CreateControllerFromType(type, Common.UnitType.WebApi, Common.ItemType.Controller));
                 }
             }
             return result;
         }
         private IGeneratedItem CreateControllerFromType(Type type, Common.UnitType unitType, Common.ItemType itemType)
         {
-            
+
             var visibility = "public";
             var logicProject = $"{ItemProperties.SolutionName}{StaticLiterals.LogicExtension}";
             var accessType = type.IsPublic ? ItemProperties.CreateSubType(type) : $"{logicProject}.{ItemProperties.CreateModelSubType(type)}";
@@ -175,34 +165,31 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add("partial class Program");
             result.Add("{");
 
-            if (GenerateAddServices)
+            result.Add("static partial void AddServices(WebApplicationBuilder builder)");
+            result.Add("{");
+            foreach (var type in entityProject.EntityTypes)
             {
-                result.Add("static partial void AddServices(WebApplicationBuilder builder)");
-                result.Add("{");
-                foreach (var type in entityProject.EntityTypes.Where(t => EntityProject.IsAccountOrLoggingOrRevisionEntity(t) == false))
+                var generate = CanCreate(type) && QuerySetting<bool>(Common.ItemType.AddServices, type, StaticLiterals.Generate, GenerateAddServices.ToString());
+
+                if (generate && type.IsPublic)
                 {
-                    var generate = QuerySetting<bool>(Common.ItemType.AddServices, type, StaticLiterals.Generate, "True");
+                    var accessType = ItemProperties.CreateSubType(type);
+                    var contractType = ItemProperties.CreateAccessContractType(type);
+                    var controllerType = ItemProperties.CreateLogicControllerType(type);
 
-                    if (generate && type.IsPublic)
-                    {
-                        var accessType = ItemProperties.CreateSubType(type);
-                        var contractType = ItemProperties.CreateAccessContractType(type);
-                        var controllerType = ItemProperties.CreateLogicControllerType(type);
-
-                        result.Add($"builder.Services.AddTransient<{contractType}<{accessType}>, {controllerType}>();");
-                    }
-                    else if (generate)
-                    {
-                        var logicProject = $"{ItemProperties.SolutionName}{StaticLiterals.LogicExtension}";
-                        var accessType = $"{logicProject}.{ItemProperties.CreateModelSubType(type)}";
-                        var contractType = ItemProperties.CreateAccessContractType(type);
-                        var facadeType = $"{logicProject}.{ItemProperties.CreateFacadeSubType(type)}";
-
-                        result.Add($"builder.Services.AddTransient<{contractType}<{accessType}>, {facadeType}>();");
-                    }
+                    result.Add($"builder.Services.AddTransient<{contractType}<{accessType}>, {controllerType}>();");
                 }
-                result.Add("}");
+                else if (generate)
+                {
+                    var logicProject = $"{ItemProperties.SolutionName}{StaticLiterals.LogicExtension}";
+                    var accessType = $"{logicProject}.{ItemProperties.CreateModelSubType(type)}";
+                    var contractType = ItemProperties.CreateAccessContractType(type);
+                    var facadeType = $"{logicProject}.{ItemProperties.CreateFacadeSubType(type)}";
+
+                    result.Add($"builder.Services.AddTransient<{contractType}<{accessType}>, {facadeType}>();");
+                }
             }
+            result.Add("}");
 
             result.Add("}");
             result.EnvelopeWithANamespace(ItemProperties.Namespace);

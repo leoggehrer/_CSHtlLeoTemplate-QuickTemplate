@@ -83,7 +83,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             var result = defaultValue;
             var generationSetting = GenerationSettings.FirstOrDefault(e => e.UnitType == unitType.ToString()
                                                                         && e.ItemType == itemType.ToString()
-                                                                        && e.ItemName.StartsWith(itemName)
+                                                                        && itemName.EndsWith(e.ItemName)
                                                                         && e.Name.Equals(valueName, StringComparison.CurrentCultureIgnoreCase));
 
             if (generationSetting != null)
@@ -97,7 +97,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             var result = defaultValue;
             var generationSetting = GenerationSettings.FirstOrDefault(e => e.UnitType == unitType
                                                                         && e.ItemType == itemType
-                                                                        && e.ItemName.StartsWith(itemName)
+                                                                        && itemName.EndsWith(e.ItemName)
                                                                         && e.Name.Equals(valueName, StringComparison.CurrentCultureIgnoreCase));
 
             if (generationSetting != null)

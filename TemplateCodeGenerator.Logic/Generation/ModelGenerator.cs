@@ -144,7 +144,7 @@ namespace TemplateCodeGenerator.Logic.Generation
 
         protected virtual bool CanCreate(Type type)
         {
-            bool create = true;
+            bool create = EntityProject.IsAccountOrLoggingOrRevisionEntity(type) ? false : true;
 
             CanCreateModel(type, ref create);
             return create;

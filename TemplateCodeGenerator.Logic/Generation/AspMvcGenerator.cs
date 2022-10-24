@@ -56,39 +56,29 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.AddRange(CreateViews());
             return result;
         }
-        private string GetGenerateDefault(Type type)
-        {
-            return EntityProject.IsAccountOrLoggingOrRevisionEntity(type) ? "False" : "True";
-        }
         private IEnumerable<IGeneratedItem> CreateModels()
         {
             var result = new List<IGeneratedItem>();
             var entityProject = EntityProject.Create(SolutionProperties);
             var createTypes = entityProject.EntityTypes.Union(entityProject.ServiceTypes);
 
-            if (GenerateModels)
+            foreach (var type in createTypes)
             {
-                foreach (var type in createTypes)
-                {
-                    var generate = QueryModelSetting<bool>(Common.UnitType.AspMvc, Common.ItemType.Model, type, StaticLiterals.Generate, GetGenerateDefault(type));
+                var generate = CanCreate(type) && QueryModelSetting<bool>(Common.UnitType.AspMvc, Common.ItemType.Model, type, StaticLiterals.Generate, GenerateModels.ToString());
 
-                    if (generate && CanCreate(type))
-                    {
-                        result.Add(CreateModelFromType(type, Common.UnitType.AspMvc, Common.ItemType.Model));
-                        result.Add(CreateModelInheritance(type, Common.UnitType.AspMvc, Common.ItemType.Model));
-                    }
+                if (generate)
+                {
+                    result.Add(CreateModelFromType(type, Common.UnitType.AspMvc, Common.ItemType.Model));
+                    result.Add(CreateModelInheritance(type, Common.UnitType.AspMvc, Common.ItemType.Model));
                 }
             }
-            if (GenerateFilterModels)
+            foreach (var type in createTypes)
             {
-                foreach (var type in createTypes)
-                {
-                    var generate = QueryModelSetting<bool>(Common.UnitType.AspMvc, Common.ItemType.FilterModel, type, StaticLiterals.Generate, GetGenerateDefault(type));
+                var generate = CanCreate(type) && QueryModelSetting<bool>(Common.UnitType.AspMvc, Common.ItemType.FilterModel, type, StaticLiterals.Generate, GenerateFilterModels.ToString());
 
-                    if (generate && CanCreate(type))
-                    {
-                        result.Add(CreateFilterModelFromType(type, Common.UnitType.AspMvc, Common.ItemType.FilterModel));
-                    }
+                if (generate)
+                {
+                    result.Add(CreateFilterModelFromType(type, Common.UnitType.AspMvc, Common.ItemType.FilterModel));
                 }
             }
             return result;
@@ -133,9 +123,9 @@ namespace TemplateCodeGenerator.Logic.Generation
 
             foreach (var propertyInfo in viewProperties)
             {
-                var canCreate = QueryModelSetting<bool>(unitType, Common.ItemType.Property, $"{CreateEntitiesSubTypeFromType(type)}Filter.{propertyInfo.Name}", StaticLiterals.Generate, "True");
+                var generate = QueryModelSetting<bool>(unitType, Common.ItemType.Property, $"{CreateEntitiesSubTypeFromType(type)}Filter.{propertyInfo.Name}", StaticLiterals.Generate, "True");
 
-                if (canCreate)
+                if (generate)
                 {
                     if (idx++ > 0)
                         sbHasEntityValue.Append(" || ");
@@ -222,16 +212,13 @@ namespace TemplateCodeGenerator.Logic.Generation
             var result = new List<IGeneratedItem>();
             var entityProject = EntityProject.Create(SolutionProperties);
 
-            if (GenerateControllers)
+            foreach (var type in entityProject.EntityTypes)
             {
-                foreach (var type in entityProject.EntityTypes)
+                if (CanCreate(type)
+                    && QuerySetting<bool>(Common.UnitType.Logic, Common.ItemType.Controller, type, StaticLiterals.Generate, true.ToString())
+                    && QuerySetting<bool>(Common.ItemType.Controller, type, StaticLiterals.Generate, GenerateControllers.ToString()))
                 {
-                    if (CanCreate(type)
-                        && QuerySetting<bool>(Common.UnitType.Logic, Common.ItemType.Controller, type, StaticLiterals.Generate, GetGenerateDefault(type))
-                        && QuerySetting<bool>(Common.ItemType.Controller, type, StaticLiterals.Generate, GetGenerateDefault(type)))
-                    {
-                        result.Add(CreateAccessControllerFromType(type, Common.UnitType.AspMvc, Common.ItemType.Controller));
-                    }
+                    result.Add(CreateAccessControllerFromType(type, Common.UnitType.AspMvc, Common.ItemType.Controller));
                 }
             }
             return result;
@@ -293,16 +280,13 @@ namespace TemplateCodeGenerator.Logic.Generation
             var result = new List<IGeneratedItem>();
             var entityProject = EntityProject.Create(SolutionProperties);
 
-            if (GenerateServices)
+            foreach (var type in entityProject.ServiceTypes)
             {
-                foreach (var type in entityProject.ServiceTypes)
+                if (CanCreate(type)
+                    && QuerySetting<bool>(Common.UnitType.Logic, Common.ItemType.Service, type, StaticLiterals.Generate, true.ToString())
+                    && QuerySetting<bool>(Common.ItemType.Service, type, StaticLiterals.Generate, GenerateServices.ToString()))
                 {
-                    if (CanCreate(type)
-                        && QuerySetting<bool>(Common.UnitType.Logic, Common.ItemType.Service, type, StaticLiterals.Generate, GetGenerateDefault(type))
-                        && QuerySetting<bool>(Common.ItemType.Service, type, StaticLiterals.Generate, GetGenerateDefault(type)))
-                    {
-                        result.Add(CreateServiceControllerFromType(type, Common.UnitType.AspMvc, Common.ItemType.Controller));
-                    }
+                    result.Add(CreateServiceControllerFromType(type, Common.UnitType.AspMvc, Common.ItemType.Controller));
                 }
             }
             return result;
@@ -433,51 +417,46 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add("partial class Program");
             result.Add("{");
 
-            if (GenerateAddServices)
+            result.Add("static partial void AddServices(WebApplicationBuilder builder)");
+            result.Add("{");
+            foreach (var type in entityProject.EntityTypes.Where(t => EntityProject.IsAccountOrLoggingOrRevisionEntity(t) == false))
             {
-                result.Add("static partial void AddServices(WebApplicationBuilder builder)");
-                result.Add("{");
-                foreach (var type in entityProject.EntityTypes.Where(t => EntityProject.IsAccountOrLoggingOrRevisionEntity(t) == false))
+                var generate = CanCreate(type) && QuerySetting<bool>(Common.UnitType.Logic, Common.ItemType.Controller, type, StaticLiterals.Generate, true.ToString())
+                                               && QuerySetting<bool>(Common.ItemType.AddServices, type, StaticLiterals.Generate, GenerateAddServices.ToString());
+
+                if (generate && type.IsPublic)
                 {
-                    var generate = QuerySetting<bool>(Common.UnitType.Logic, Common.ItemType.Controller, type, StaticLiterals.Generate, "True");
-                    
-                    generate = generate && QuerySetting<bool>(Common.ItemType.AddServices, type, StaticLiterals.Generate, "True");
+                    var accessType = ItemProperties.CreateSubType(type);
+                    var contractType = ItemProperties.CreateAccessContractType(type);
+                    var controllerType = ItemProperties.CreateLogicControllerType(type);
 
-                    if (generate && type.IsPublic)
-                    {
-                        var accessType = ItemProperties.CreateSubType(type);
-                        var contractType = ItemProperties.CreateAccessContractType(type);
-                        var controllerType = ItemProperties.CreateLogicControllerType(type);
-
-                        result.Add($"builder.Services.AddTransient<{contractType}<{accessType}>, {controllerType}>();");
-                    }
-                    else if (generate)
-                    {
-                        var logicProject = $"{ItemProperties.SolutionName}{StaticLiterals.LogicExtension}";
-                        var accessType = $"{logicProject}.{ItemProperties.CreateModelSubType(type)}";
-                        var contractType = ItemProperties.CreateAccessContractType(type);
-                        var facadeType = $"{logicProject}.{ItemProperties.CreateFacadeSubType(type)}";
-
-                        result.Add($"builder.Services.AddTransient<{contractType}<{accessType}>, {facadeType}>();");
-                    }
+                    result.Add($"builder.Services.AddTransient<{contractType}<{accessType}>, {controllerType}>();");
                 }
-                foreach (var type in entityProject.ServiceTypes)
+                else if (generate)
                 {
-                    var generate = QuerySetting<bool>(Common.UnitType.Logic, Common.ItemType.Service, type, StaticLiterals.Generate, "True");
-                    
-                    generate = generate && QuerySetting<bool>(Common.ItemType.AddServices, type, StaticLiterals.Generate, "True");
+                    var logicProject = $"{ItemProperties.SolutionName}{StaticLiterals.LogicExtension}";
+                    var accessType = $"{logicProject}.{ItemProperties.CreateModelSubType(type)}";
+                    var contractType = ItemProperties.CreateAccessContractType(type);
+                    var facadeType = $"{logicProject}.{ItemProperties.CreateFacadeSubType(type)}";
 
-                    if (generate)
-                    {
-                        var serviceType = ItemProperties.CreateSubType(type);
-                        var contractType = ItemProperties.CreateServiceContractType(type);
-                        var controllerType = ItemProperties.CreateLogicServiceType(type);
-
-                        result.Add($"builder.Services.AddTransient<{contractType}<{serviceType}>, {controllerType}>();");
-                    }
+                    result.Add($"builder.Services.AddTransient<{contractType}<{accessType}>, {facadeType}>();");
                 }
-                result.Add("}");
             }
+            foreach (var type in entityProject.ServiceTypes)
+            {
+                var generate = CanCreate(type) && QuerySetting<bool>(Common.UnitType.Logic, Common.ItemType.Service, type, StaticLiterals.Generate, true.ToString())
+                                               && QuerySetting<bool>(Common.ItemType.AddServices, type, StaticLiterals.Generate, GenerateAddServices.ToString());
+
+                if (generate)
+                {
+                    var serviceType = ItemProperties.CreateSubType(type);
+                    var contractType = ItemProperties.CreateServiceContractType(type);
+                    var controllerType = ItemProperties.CreateLogicServiceType(type);
+
+                    result.Add($"builder.Services.AddTransient<{contractType}<{serviceType}>, {controllerType}>();");
+                }
+            }
+            result.Add("}");
 
             result.Add("}");
             result.EnvelopeWithANamespace(ItemProperties.Namespace);
@@ -491,19 +470,16 @@ namespace TemplateCodeGenerator.Logic.Generation
             var entityProject = EntityProject.Create(SolutionProperties);
             var createTypes = entityProject.EntityTypes.Union(entityProject.ServiceTypes);
 
-            if (GenerateViews)
+            foreach (var type in createTypes)
             {
-                foreach (var type in createTypes)
+                if (CanCreate(type)
+                    && QuerySetting<bool>(Common.ItemType.View, type, StaticLiterals.Generate, GenerateViews.ToString()))
                 {
-                    if (CanCreate(type) 
-                        && QuerySetting<bool>(Common.ItemType.View, type, StaticLiterals.Generate, GetGenerateDefault(type)))
-                    {
-                        result.Add(CreatePartialTableHeaderView(type, Common.UnitType.AspMvc, Common.ItemType.View));
-                        result.Add(CreatePartialTableRowView(type, Common.UnitType.AspMvc, Common.ItemType.View));
-                        result.Add(CreatePartialEditModelView(type, Common.UnitType.AspMvc, Common.ItemType.View));
-                        result.Add(CreatePartialDisplayModelView(type, Common.UnitType.AspMvc, Common.ItemType.View));
-                        result.Add(CreatePartialFilterView(type, Common.UnitType.AspMvc, Common.ItemType.View));
-                    }
+                    result.Add(CreatePartialTableHeaderView(type, Common.UnitType.AspMvc, Common.ItemType.View));
+                    result.Add(CreatePartialTableRowView(type, Common.UnitType.AspMvc, Common.ItemType.View));
+                    result.Add(CreatePartialEditModelView(type, Common.UnitType.AspMvc, Common.ItemType.View));
+                    result.Add(CreatePartialDisplayModelView(type, Common.UnitType.AspMvc, Common.ItemType.View));
+                    result.Add(CreatePartialFilterView(type, Common.UnitType.AspMvc, Common.ItemType.View));
                 }
             }
             return result;

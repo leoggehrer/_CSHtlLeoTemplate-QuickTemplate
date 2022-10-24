@@ -96,7 +96,7 @@ namespace CommonBase.Modules.PlantUML
         {
             var result = new List<string>();
             var createdObjects = new List<object>();
-            void CreateMapStateRec(Object[] objects, List<string> lines, int deep, int maxDeep)
+            void CreateMapStateRec(Object[] objects, List<string> lines, int deep)
             {
                 static void CreateMapObjectState(Object obj, List<string> lines)
                 {
@@ -118,7 +118,7 @@ namespace CommonBase.Modules.PlantUML
                         createdObjects.Add(obj);
                         CreateMapObjectState(obj, lines);
 
-                        if (deep < maxDeep)
+                        if (deep + 1 <= maxDeep)
                         {
                             var relations = obj.GetType().GetRelations();
                             var relationFieldInfos = obj.GetType().GetAllClassFields()
@@ -134,19 +134,22 @@ namespace CommonBase.Modules.PlantUML
 
                                     CreateMapCollectionState(collection, lines);
                                     lines.Add($"{CreateObjectName(obj)}::{GetFieldName(relFieldInfo)} --> {CreateCollectionName(value)}");
-                                    foreach (var item in collection)
+                                    if (deep + 2 <= maxDeep)
                                     {
-                                        if (item != null)
+                                        foreach (var item in collection)
                                         {
-                                            CreateMapStateRec(new[] { item }, lines, deep + 1, maxDeep);
-                                            lines.Add($"{CreateCollectionName(collection)}::{counter} --> {CreateObjectName(item)}");
+                                            if (item != null)
+                                            {
+                                                CreateMapStateRec(new[] { item }, lines, deep + 2);
+                                                lines.Add($"{CreateCollectionName(collection)}::{counter} --> {CreateObjectName(item)}");
+                                            }
+                                            counter++;
                                         }
-                                        counter++;
                                     }
                                 }
                                 else if (value != null)
                                 {
-                                    CreateMapStateRec(new[] { value }, lines, deep + 1, maxDeep);
+                                    CreateMapStateRec(new[] { value }, lines, deep + 1);
                                     lines.Add($"{CreateObjectName(obj)}::{GetFieldName(relFieldInfo)} --> {CreateObjectName(value)}");
                                 }
                             }
@@ -154,7 +157,7 @@ namespace CommonBase.Modules.PlantUML
                     }
                 }
             }
-            CreateMapStateRec(objects, result, 0, maxDeep);
+            CreateMapStateRec(objects, result, 0);
             return result;
         }
         #endregion diagram creators

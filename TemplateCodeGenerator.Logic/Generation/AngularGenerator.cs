@@ -15,9 +15,9 @@ namespace TemplateCodeGenerator.Logic.Generation
 
         #region AngularApp-Definitions
         public static string CodeExtension => "ts";
-        public string EnumsSubFolder => Path.Combine("src", "app", "core", "enums", "gen");
-        public string ModelsSubFolder => Path.Combine("src", "app", "core", "models", "gen");
-        public string ServicesSubFolder => Path.Combine("src", "app", "core", "services", "http", "gen");
+        public static string EnumsSubFolder => Path.Combine("src", "app", "core", "enums", "gen");
+        public static string ModelsSubFolder => Path.Combine("src", "app", "core", "models", "gen");
+        public static string ServicesSubFolder => Path.Combine("src", "app", "core", "services", "http", "gen");
 
         public static string SourceNameSpace => "src";
         public static string ContractsNameSpace => $"{SourceNameSpace}.contracts";
@@ -41,7 +41,7 @@ namespace TemplateCodeGenerator.Logic.Generation
         }
         private bool CanCreate(Type type)
         {
-            bool create = true;
+            bool create = EntityProject.IsAccountOrLoggingOrRevisionEntity(type) ? false : true;
 
             CanCreateModel(type, ref create);
             return create;
@@ -57,24 +57,16 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.AddRange(CreateServices());
             return result;
         }
-        private string GetGenerateDefault(Type type)
-        {
-            return EntityProject.IsAccountOrLoggingOrRevisionEntity(type) ? "False" : "True";
-        }
         public IEnumerable<IGeneratedItem> CreateEnums()
         {
             var result = new List<IGeneratedItem>();
+            var entityProject = EntityProject.Create(SolutionProperties);
 
-            if (GenerateEnums)
+            foreach (var type in entityProject.EnumTypes)
             {
-                var entityProject = EntityProject.Create(SolutionProperties);
-
-                foreach (var type in entityProject.EnumTypes)
+                if (CanCreate(type) && QuerySetting<bool>(Common.ItemType.TypeScriptEnum, type, StaticLiterals.Generate, GenerateEnums.ToString()))
                 {
-                    if (CanCreate(type) && QuerySetting<bool>(Common.ItemType.TypeScriptEnum, type, StaticLiterals.Generate, GetGenerateDefault(type)))
-                    {
-                        result.Add(CreateEnumFromType(type));
-                    }
+                    result.Add(CreateEnumFromType(type));
                 }
             }
             return result;
@@ -112,17 +104,13 @@ namespace TemplateCodeGenerator.Logic.Generation
         public IEnumerable<IGeneratedItem> CreateModels()
         {
             var result = new List<IGeneratedItem>();
+            var entityProject = EntityProject.Create(SolutionProperties);
 
-            if (GenerateModels)
+            foreach (var type in entityProject.EntityTypes)
             {
-                var entityProject = EntityProject.Create(SolutionProperties);
-
-                foreach (var type in entityProject.EntityTypes)
+                if (CanCreate(type) && QuerySetting<bool>(Common.ItemType.TypeScriptModel, type, StaticLiterals.Generate, GenerateModels.ToString()))
                 {
-                    if (CanCreate(type) && QuerySetting<bool>(Common.ItemType.TypeScriptModel, type, StaticLiterals.Generate, GetGenerateDefault(type)))
-                    {
-                        result.Add(CreateModelFromType(type, entityProject.EntityTypes));
-                    }
+                    result.Add(CreateModelFromType(type, entityProject.EntityTypes));
                 }
             }
             return result;
@@ -182,14 +170,11 @@ namespace TemplateCodeGenerator.Logic.Generation
             var result = new List<IGeneratedItem>();
             var entityProject = EntityProject.Create(SolutionProperties);
 
-            if (GenerateServices)
+            foreach (var type in entityProject.EntityTypes)
             {
-                foreach (var type in entityProject.EntityTypes)
+                if (CanCreate(type) && QuerySetting<bool>(Common.ItemType.TypeScriptService, type, StaticLiterals.Generate, GenerateServices.ToString()))
                 {
-                    if (CanCreate(type) && QuerySetting<bool>(Common.ItemType.TypeScriptService, type, StaticLiterals.Generate, GetGenerateDefault(type)))
-                    {
-                        result.Add(CreateServiceFromType(type, Common.UnitType.Angular, Common.ItemType.TypeScriptService));
-                    }
+                    result.Add(CreateServiceFromType(type, Common.UnitType.Angular, Common.ItemType.TypeScriptService));
                 }
             }
             return result;
@@ -200,7 +185,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             var projectPath = Path.Combine(SolutionProperties.SolutionPath, SolutionProperties.AngularAppProjectName);
             var entityName = ItemProperties.CreateEntityName(type);
             var fileName = $"{ConvertFileItem($"{entityName}Service")}.{CodeExtension}";
-            var result = new Models.GeneratedItem(Common.UnitType.Angular, Common.ItemType.TypeScriptService)
+            var result = new Models.GeneratedItem(unitType, itemType)
             {
                 FullName = CreateTypeScriptFullName(type),
                 FileExtension = CodeExtension,
@@ -217,7 +202,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add(StaticLiterals.AngularCustomImportBeginLabel);
             result.AddRange(ReadCustomModelImports(projectPath, result));
             result.Add(StaticLiterals.AngularCustomImportEndLabel);
-            
+
             result.Add("@Injectable({");
             result.Add("  providedIn: 'root',");
             result.Add("})");
@@ -268,7 +253,7 @@ namespace TemplateCodeGenerator.Logic.Generation
         }
 
         #region Helpers
-        public IEnumerable<string> ReadCustomModelImports(string sourcePath, Models.GeneratedItem generatedItem)
+        public static IEnumerable<string> ReadCustomModelImports(string sourcePath, Models.GeneratedItem generatedItem)
         {
             var result = new List<string>();
             var filePath = Path.Combine(sourcePath, generatedItem.SubFilePath);
@@ -288,7 +273,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             }
             return result;
         }
-        public IEnumerable<string> ReadCustomModelCode(string sourcePath, Models.GeneratedItem generatedItem)
+        public static IEnumerable<string> ReadCustomModelCode(string sourcePath, Models.GeneratedItem generatedItem)
         {
             var result = new List<string>();
             var filePath = Path.Combine(sourcePath, generatedItem.SubFilePath);
@@ -345,7 +330,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             }
         }
 
-        public IEnumerable<string> CreateTypeImports(Type type, IEnumerable<Type> types)
+        public static IEnumerable<string> CreateTypeImports(Type type, IEnumerable<Type> types)
         {
             var result = new List<string>();
             var typeProperties = type.GetAllPropertyInfos();
