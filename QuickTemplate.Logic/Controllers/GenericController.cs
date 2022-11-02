@@ -21,9 +21,7 @@ namespace QuickTemplate.Logic.Controllers
         protected enum ActionType
         {
             Insert,
-            InsertArray,
             Update,
-            UpdateArray,
             Delete,
             Save,
         }
@@ -170,6 +168,11 @@ namespace QuickTemplate.Logic.Controllers
         }
         #endregion  MaxPageSize and Count
 
+        #region Before-Return
+        protected virtual TEntity BeforeReturn(TEntity entity) => entity;
+        protected virtual TEntity[] BeforeReturn(TEntity[] entities) => entities;
+        #endregion Before-Return
+
         #region Get
         /// <summary>
         /// Returns the element of type T with the identification of id.
@@ -181,7 +184,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetByIdAsync), id.ToString()).ConfigureAwait(false);
 #endif
-            return await ExecuteGetByIdAsync(id).ConfigureAwait(false);
+            var result = await ExecuteGetByIdAsync(id).ConfigureAwait(false);
+
+            return result != null ? BeforeReturn(result) : null;
         }
         /// <summary>
         /// Returns the element of type T with the identification of id.
@@ -194,7 +199,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetByIdAsync), id.ToString()).ConfigureAwait(false);
 #endif
-            return await ExecuteGetByIdAsync(id, includeItems).ConfigureAwait(false);
+            var result = await ExecuteGetByIdAsync(id, includeItems).ConfigureAwait(false);
+
+            return result != null ? BeforeReturn(result) : null;
         }
 
         /// <summary>
@@ -207,7 +214,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetAllAsync)).ConfigureAwait(false);
 #endif
-            return await ExecuteGetAllAsync().ConfigureAwait(false);
+            var result = await ExecuteGetAllAsync().ConfigureAwait(false);
+
+            return result != null ? BeforeReturn(result) : Array.Empty<TEntity>();
         }
         /// <summary>
         /// Gets all items from the repository.
@@ -219,7 +228,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetAllAsync)).ConfigureAwait(false);
 #endif
-            return await ExecuteGetAllAsync(includeItems).ConfigureAwait(false);
+            var result = await ExecuteGetAllAsync(includeItems).ConfigureAwait(false);
+
+            return result != null ? BeforeReturn(result) : Array.Empty<TEntity>();
         }
         /// <summary>
         /// Gets all items from the repository.
@@ -231,7 +242,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetAllAsync)).ConfigureAwait(false);
 #endif
-            return await ExecuteGetAllAsync(orderBy).ConfigureAwait(false);
+            var result = await ExecuteGetAllAsync(orderBy).ConfigureAwait(false);
+
+            return result != null ? BeforeReturn(result) : Array.Empty<TEntity>();
         }
         /// <summary>
         /// Gets all items from the repository.
@@ -244,7 +257,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetAllAsync)).ConfigureAwait(false);
 #endif
-            return await ExecuteGetAllAsync(orderBy, includeItems).ConfigureAwait(false);
+            var result = await ExecuteGetAllAsync(orderBy, includeItems).ConfigureAwait(false);
+
+            return result != null ? BeforeReturn(result) : Array.Empty<TEntity>();
         }
 
         /// <summary>
@@ -259,7 +274,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetPageListAsync)).ConfigureAwait(false);
 #endif
-            return await ExecuteGetPageListAsync(pageIndex, pageSize).ConfigureAwait(false);
+            var result = await ExecuteGetPageListAsync(pageIndex, pageSize).ConfigureAwait(false);
+
+            return result != null ? BeforeReturn(result) : Array.Empty<TEntity>();
         }
         /// <summary>
         /// Gets a subset of items from the repository.
@@ -274,7 +291,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetPageListAsync)).ConfigureAwait(false);
 #endif
-            return await ExecuteGetPageListAsync(pageIndex, pageSize, includeItems).ConfigureAwait(false);
+            var result = await ExecuteGetPageListAsync(pageIndex, pageSize, includeItems).ConfigureAwait(false);
+
+            return result != null ? BeforeReturn(result) : Array.Empty<TEntity>();
         }
         /// <summary>
         /// Gets a subset of items from the repository.
@@ -289,7 +308,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetPageListAsync)).ConfigureAwait(false);
 #endif
-            return await ExecuteGetPageListAsync(orderBy, pageIndex, pageSize).ConfigureAwait(false);
+            var result = await ExecuteGetPageListAsync(orderBy, pageIndex, pageSize).ConfigureAwait(false);
+
+            return result != null ? BeforeReturn(result) : Array.Empty<TEntity>();
         }
         /// <summary>
         /// Gets a subset of items from the repository.
@@ -305,7 +326,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetPageListAsync)).ConfigureAwait(false);
 #endif
-            return await ExecuteGetPageListAsync(orderBy, pageIndex, pageSize, includeItems).ConfigureAwait(false);
+            var result = await ExecuteGetPageListAsync(orderBy, pageIndex, pageSize, includeItems).ConfigureAwait(false);
+
+            return result != null ? BeforeReturn(result) : Array.Empty<TEntity>();
         }
 
         /// <summary>
@@ -399,7 +422,6 @@ namespace QuickTemplate.Logic.Controllers
             return result.ToArray();
         }
 
-
         /// <summary>
         /// Returns a subset of items from the repository.
         /// </summary>
@@ -463,7 +485,7 @@ namespace QuickTemplate.Logic.Controllers
 
                 qryCount = result.AddRangeAndCount(qry);
             } while (qryCount == MaxPageSize);
-            return result.ToArray();
+            return BeforeReturn(result.ToArray());
         }
         /// <summary>
         /// Filters a sequence of values based on a predicate.
@@ -484,7 +506,7 @@ namespace QuickTemplate.Logic.Controllers
 
                 qryCount = result.AddRangeAndCount(qry);
             } while (qryCount == MaxPageSize);
-            return result.ToArray();
+            return BeforeReturn(result.ToArray());
         }
         /// <summary>
         /// Filters a sequence of values based on a predicate.
@@ -505,7 +527,7 @@ namespace QuickTemplate.Logic.Controllers
 
                 qryCount = result.AddRangeAndCount(qry);
             } while (qryCount == MaxPageSize);
-            return result.ToArray();
+            return BeforeReturn(result.ToArray());
         }
         /// <summary>
         /// Filters a sequence of values based on a predicate.
@@ -527,7 +549,7 @@ namespace QuickTemplate.Logic.Controllers
 
                 qryCount = result.AddRangeAndCount(qry);
             } while (qryCount == MaxPageSize);
-            return result.ToArray();
+            return BeforeReturn(result.ToArray());
         }
         /// <summary>
         /// Filters a sequence of values based on a predicate.
@@ -542,7 +564,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(QueryAsync), predicate).ConfigureAwait(false);
 #endif
-            return await ExecuteQueryAsync(predicate, pageIndex, pageSize).ConfigureAwait(false);
+            var result = await ExecuteQueryAsync(predicate, pageIndex, pageSize).ConfigureAwait(false);
+
+            return result != null ? BeforeReturn(result) : Array.Empty<TEntity>();
         }
         /// <summary>
         /// Filters a sequence of values based on a predicate.
@@ -558,7 +582,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(QueryAsync), predicate).ConfigureAwait(false);
 #endif
-            return await ExecuteQueryAsync(predicate, pageIndex, pageSize, includeItems).ConfigureAwait(false);
+            var result = await ExecuteQueryAsync(predicate, pageIndex, pageSize, includeItems).ConfigureAwait(false);
+
+            return result != null ? BeforeReturn(result) : Array.Empty<TEntity>();
         }
         /// <summary>
         /// Filters a sequence of values based on a predicate.
@@ -574,7 +600,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(QueryAsync), predicate).ConfigureAwait(false);
 #endif
-            return await ExecuteQueryAsync(predicate, orderBy, pageIndex, pageSize).ConfigureAwait(false);
+            var result = await ExecuteQueryAsync(predicate, orderBy, pageIndex, pageSize).ConfigureAwait(false);
+
+            return result != null ? BeforeReturn(result) : Array.Empty<TEntity>();
         }
         /// <summary>
         /// Filters a sequence of values based on a predicate.
@@ -591,7 +619,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(QueryAsync), predicate).ConfigureAwait(false);
 #endif
-            return await ExecuteQueryAsync(predicate, orderBy, pageIndex, pageSize, includeItems).ConfigureAwait(false);
+            var result = await ExecuteQueryAsync(predicate, orderBy, pageIndex, pageSize, includeItems).ConfigureAwait(false);
+
+            return result != null ? BeforeReturn(result) : Array.Empty<TEntity>();
         }
 
         /// <summary>
@@ -702,19 +732,19 @@ namespace QuickTemplate.Logic.Controllers
 
         }
         /// <summary>
-        /// This method is called before an action is performed.
+        /// This method is called after an action is performed.
         /// </summary>
         /// <param name="actionType">Action types such as insert, edit, etc.</param>
-        /// <param name="entity">The entity that the action affects.</param>
-        protected virtual Task BeforeActionExecuteAsync(ActionType actionType, TEntity entity)
+        protected virtual void AfterActionExecute(ActionType actionType)
         {
-            return Task.FromResult(0);
+
         }
         /// <summary>
         /// This method is called after an action is performed.
         /// </summary>
         /// <param name="actionType">Action types such as insert, edit, etc.</param>
-        protected virtual void AfterActionExecute(ActionType actionType)
+        /// <param name="entity">The entity that the action affects.</param>
+        protected virtual void AfterActionExecute(ActionType actionType, TEntity entity)
         {
 
         }
@@ -731,7 +761,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(InsertAsync)).ConfigureAwait(false);
 #endif
-            return await ExecuteInsertAsync(entity).ConfigureAwait(false);
+            var result = await ExecuteInsertAsync(entity).ConfigureAwait(false);
+
+            return BeforeReturn(result);
         }
         /// <summary>
         /// The entity is being tracked by the context but does not yet exist in the repository (without authorization). 
@@ -742,11 +774,10 @@ namespace QuickTemplate.Logic.Controllers
         {
             ValidateEntity(ActionType.Insert, entity);
             BeforeActionExecute(ActionType.Insert, entity);
-            await BeforeActionExecuteAsync(ActionType.Insert, entity).ConfigureAwait(false);
             BeforeExecuteInsert(entity);
             await EntitySet.AddAsync(entity).ConfigureAwait(false);
             AfterExecuteInsert(entity);
-            AfterActionExecute(ActionType.Insert);
+            AfterActionExecute(ActionType.Insert, entity);
             return entity;
         }
         /// <summary>
@@ -772,15 +803,14 @@ namespace QuickTemplate.Logic.Controllers
             {
                 ValidateEntity(ActionType.Insert, entity);
                 BeforeActionExecute(ActionType.Insert, entity);
-                await BeforeActionExecuteAsync(ActionType.Insert, entity).ConfigureAwait(false);
                 BeforeExecuteInsert(entity);
             }
             await EntitySet.AddRangeAsync(entities).ConfigureAwait(false);
             foreach (var entity in entities)
             {
                 AfterExecuteInsert(entity);
+                AfterActionExecute(ActionType.Insert, entity);
             }
-            AfterActionExecute(ActionType.InsertArray);
             return entities;
         }
         partial void BeforeExecuteInsert(TEntity entity);
@@ -798,23 +828,24 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(UpdateAsync)).ConfigureAwait(false);
 #endif
-            return await ExecuteUpdateAsync(entity).ConfigureAwait(false);
+            var result = await ExecuteUpdateAsync(entity).ConfigureAwait(false);
+
+            return result;
         }
         /// <summary>
         /// The entity is being tracked by the context and exists in the repository, and some or all of its property values have been modified (without authorization).
         /// </summary>
         /// <param name="entity">The entity which is to be updated.</param>
         /// <returns>The the modified entity.</returns>
-        internal virtual async Task<TEntity> ExecuteUpdateAsync(TEntity entity)
+        internal virtual Task<TEntity> ExecuteUpdateAsync(TEntity entity)
         {
             ValidateEntity(ActionType.Update, entity);
             BeforeActionExecute(ActionType.Update, entity);
-            await BeforeActionExecuteAsync(ActionType.Update, entity).ConfigureAwait(false);
             BeforeExecuteUpdate(entity);
             EntitySet.Update(entity);
             AfterExecuteUpdate(entity);
-            AfterActionExecute(ActionType.Update);
-            return entity;
+            AfterActionExecute(ActionType.Update, entity);
+            return Task.Run(() => entity);
         }
         /// <summary>
         /// The entities are being tracked by the context and exists in the repository, and some or all of its property values have been modified.
@@ -833,22 +864,21 @@ namespace QuickTemplate.Logic.Controllers
         /// </summary>
         /// <param name="entities">The entities which are to be updated.</param>
         /// <returns>The updated entities.</returns>
-        internal virtual async Task<IEnumerable<TEntity>> ExecuteUpdateAsync(IEnumerable<TEntity> entities)
+        internal virtual Task<IEnumerable<TEntity>> ExecuteUpdateAsync(IEnumerable<TEntity> entities)
         {
             foreach (var entity in entities)
             {
                 ValidateEntity(ActionType.Update, entity);
                 BeforeActionExecute(ActionType.Update, entity);
-                await BeforeActionExecuteAsync(ActionType.Update, entity).ConfigureAwait(false);
                 BeforeExecuteUpdate(entity);
             }
             EntitySet.UpdateRange(entities);
             foreach (var entity in entities)
             {
                 AfterExecuteUpdate(entity);
+                AfterActionExecute(ActionType.Update, entity);
             }
-            AfterActionExecute(ActionType.UpdateArray);
-            return entities;
+            return Task.Run(() => entities);
         }
         partial void BeforeExecuteUpdate(TEntity entity);
         partial void AfterExecuteUpdate(TEntity entity);
@@ -878,11 +908,10 @@ namespace QuickTemplate.Logic.Controllers
             {
                 ValidateEntity(ActionType.Delete, entity);
                 BeforeActionExecute(ActionType.Delete, entity);
-                await BeforeActionExecuteAsync(ActionType.Delete, entity).ConfigureAwait(false);
                 BeforeExecuteDelete(entity);
                 EntitySet.Remove(entity);
                 AfterExecuteDelete(entity);
-                AfterActionExecute(ActionType.Delete);
+                AfterActionExecute(ActionType.Delete, entity);
             }
         }
         partial void BeforeExecuteDelete(TEntity entity);

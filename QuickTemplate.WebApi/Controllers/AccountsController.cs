@@ -11,7 +11,7 @@ namespace QuickTemplate.WebApi.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public partial class AccountsController : ControllerBase
+    public partial class AccountsController : ApiControllerBase
     {
         /// <summary>  
         /// This method checks the login data email/password and, if correct, returns a logon session.  

@@ -181,7 +181,7 @@ namespace TemplateCodeGenerator.Logic.Generation
         }
         private IGeneratedItem CreateServiceFromType(Type type, Common.UnitType unitType, Common.ItemType itemType)
         {
-            var subPath = ConvertFileItem(CreateSubPathFromType(type));
+            var subPath = ConvertFileItem(CreateSubPathFromType(type)).Remove("entities/", string.Empty);
             var projectPath = Path.Combine(SolutionProperties.SolutionPath, SolutionProperties.AngularAppProjectName);
             var entityName = ItemProperties.CreateEntityName(type);
             var fileName = $"{ConvertFileItem($"{entityName}Service")}.{CodeExtension}";
@@ -324,7 +324,7 @@ namespace TemplateCodeGenerator.Logic.Generation
         }
         public static void InsertTypeImports(IEnumerable<string> imports, List<string> lines)
         {
-            foreach (var item in imports.Reverse())
+            foreach (var item in imports.Reverse().Distinct())
             {
                 lines.Insert(0, item);
             }
@@ -388,29 +388,30 @@ namespace TemplateCodeGenerator.Logic.Generation
         public static IEnumerable<string> CreateTypeScriptProperty(PropertyInfo propertyInfo)
         {
             var result = new List<string>();
+            var tsPropertyName = ItemProperties.CreateTSPropertyName(propertyInfo);
 
             if (propertyInfo.PropertyType.IsEnum)
             {
                 var enumName = $"{propertyInfo.PropertyType.Name}";
 
-                result.Add($"{Char.ToLower(propertyInfo.Name[0])}{propertyInfo.Name[1..]}: {enumName};");
+                result.Add($"{tsPropertyName}: {enumName};");
             }
             else if (propertyInfo.PropertyType == typeof(DateTime)
                      || propertyInfo.PropertyType == typeof(DateTime?))
             {
-                result.Add($"{Char.ToLower(propertyInfo.Name[0])}{propertyInfo.Name[1..]}: Date;");
+                result.Add($"{tsPropertyName}: Date;");
             }
             else if (propertyInfo.PropertyType == typeof(string))
             {
-                result.Add($"{Char.ToLower(propertyInfo.Name[0])}{propertyInfo.Name[1..]}: string;");
+                result.Add($"{tsPropertyName}: string;");
             }
             else if (propertyInfo.PropertyType == typeof(bool))
             {
-                result.Add($"{Char.ToLower(propertyInfo.Name[0])}{propertyInfo.Name[1..]}: boolean;");
+                result.Add($"{tsPropertyName}: boolean;");
             }
             else if (propertyInfo.PropertyType.IsNumericType())
             {
-                result.Add($"{Char.ToLower(propertyInfo.Name[0])}{propertyInfo.Name[1..]}: number;");
+                result.Add($"{tsPropertyName}: number;");
             }
             else if (propertyInfo.PropertyType.IsGenericType)
             {
@@ -418,20 +419,20 @@ namespace TemplateCodeGenerator.Logic.Generation
 
                 if (subType.IsInterface)
                 {
-                    result.Add($"{Char.ToLower(propertyInfo.Name[0])}{propertyInfo.Name[1..]}: {subType.Name[1..]}[];");
+                    result.Add($"{tsPropertyName}: {subType.Name[1..]}[];");
                 }
                 else if (subType == typeof(Guid))
                 {
-                    result.Add($"{Char.ToLower(propertyInfo.Name[0])}{propertyInfo.Name[1..]}: string[];");
+                    result.Add($"{tsPropertyName}: string[];");
                 }
                 else
                 {
-                    result.Add($"{Char.ToLower(propertyInfo.Name[0])}{propertyInfo.Name[1..]}: {subType.Name}[];");
+                    result.Add($"{tsPropertyName}: {subType.Name}[];");
                 }
             }
             else if (propertyInfo.PropertyType.IsInterface)
             {
-                result.Add($"{Char.ToLower(propertyInfo.Name[0])}{propertyInfo.Name[1..]}: {propertyInfo.PropertyType.Name[1..]};");
+                result.Add($"{tsPropertyName}: {propertyInfo.PropertyType.Name[1..]};");
             }
             return result;
         }
@@ -497,9 +498,9 @@ namespace TemplateCodeGenerator.Logic.Generation
                 {
                     if (pi.Name.Equals($"{typeName}Id"))
                     {
-                        var name = $"{other.Name[1..]}s";
+                        var name = $"{otherName}s";
 
-                        result.Add($"{char.ToLower(name[0])}{name[1..]}: {other.Name[1..]}[];");
+                        result.Add($"{char.ToLower(name[0])}{name[1..]}: {otherName}[];");
                     }
                 }
             }
@@ -511,9 +512,9 @@ namespace TemplateCodeGenerator.Logic.Generation
 
                     if (pi.Name.Equals($"{otherName}Id"))
                     {
-                        var name = $"{other.Name[1..]}";
+                        var name = $"{otherName}";
 
-                        result.Add($"{char.ToLower(name[0])}{name[1..]}: {other.Name[1..]};");
+                        result.Add($"{char.ToLower(name[0])}{name[1..]}: {otherName};");
                     }
                     else if (pi.Name.StartsWith($"{otherName}Id_"))
                     {
@@ -521,15 +522,16 @@ namespace TemplateCodeGenerator.Logic.Generation
 
                         if (data.Length == 2)
                         {
-                            var name = $"{other.Name[1..]}_{data[1]}";
+                            var name = $"{otherName}_{data[1]}";
 
-                            result.Add($"{char.ToLower(name[0])}{name[1..]}: {other.Name[1..]};");
+                            result.Add($"{char.ToLower(name[0])}{name[1..]}: {otherName};");
                         }
                     }
                 }
             }
             return result;
         }
+
         #endregion Helpers
     }
 }

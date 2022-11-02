@@ -1,5 +1,7 @@
 ﻿//@CodeCopy
 //MdStart
+using System.Reflection;
+
 namespace TemplateCodeGenerator.Logic.Generation
 {
     internal partial class ItemProperties
@@ -13,7 +15,18 @@ namespace TemplateCodeGenerator.Logic.Generation
             ProjectExtension = projectExtension;
         }
 
+        /// <summary>
+        /// Generates the entity name from the type.
+        /// </summary>
+        /// <param name="type">The entity type.</param>
+        /// <returns>The entity name.</returns>
         public static string CreateEntityName(Type type) => type.Name;
+        /// <summary>
+        /// Generates the typescript property name from the property info.
+        /// </summary>
+        /// <param name="type">The property info object.</param>
+        /// <returns>The typescript property name.</returns>
+        public static string CreateTSPropertyName (PropertyInfo propertyInfo) => $"{Char.ToLower(propertyInfo.Name[0])}{propertyInfo.Name[1..]}";
         public string CreateSubType(Type type)
         {
             return type.FullName!.Replace($"{Namespace}.", string.Empty);

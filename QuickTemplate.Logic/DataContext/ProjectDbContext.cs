@@ -102,6 +102,39 @@ namespace QuickTemplate.Logic.DataContext
         static partial void AfterOnModelCreating(ModelBuilder modelBuilder);
 
         /// <summary>
+        /// Discards all changes in the current context.
+        /// </summary>
+        /// <returns>Number of changed entities.</returns>
+        public Task<int> RejectChangesAsync()
+        {
+            return Task.Run(() =>
+            {
+                int count = 0;
+
+                foreach (var entry in ChangeTracker.Entries().Where(x => x.State != EntityState.Unchanged).ToList())
+                {
+                    switch (entry.State)
+                    {
+                        case EntityState.Modified:
+                            count++;
+                            entry.CurrentValues.SetValues(entry.OriginalValues);
+                            entry.State = EntityState.Unchanged;
+                            break;
+                        case EntityState.Added:
+                            count++;
+                            entry.State = EntityState.Detached;
+                            break;
+                        case EntityState.Deleted:
+                            count++;
+                            entry.State = EntityState.Unchanged;
+                            break;
+                    }
+                }
+                return count;
+            });
+        }
+
+        /// <summary>
         /// Determines the DbSet depending on the type E
         /// </summary>
         /// <typeparam name="E">The entity type E</typeparam>
