@@ -14,7 +14,7 @@ namespace TemplateComparison.ConApp
                        ? Environment.GetEnvironmentVariable("HOME")
                        : Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
 
-            UserPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            UserPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "source");
             SourcePath = GetCurrentSolutionPath();
             TargetPaths = Array.Empty<string>();
             AddTargetPaths = Array.Empty<string>();
@@ -57,10 +57,10 @@ namespace TemplateComparison.ConApp
 
                 Console.Clear();
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                BeforeGetTargetPaths(SourcePath, targetPaths, ref handled);
+                BeforeGetTargetPaths(UserPath, targetPaths, ref handled);
                 if (handled == false)
                 {
-                    TargetPaths = GetQuickTemplateProjects(SourcePath);
+                    TargetPaths = GetQuickTemplateProjects(UserPath);
                     TargetPaths = TargetPaths.Union(AddTargetPaths).ToArray();
                 }
                 else
@@ -147,13 +147,13 @@ namespace TemplateComparison.ConApp
             Console.WriteLine();
             Console.WriteLine($"Source: {sourcePath}");
             Console.WriteLine();
-            Console.WriteLine("   Add path:      [ +] ADD...");
+            Console.WriteLine(" Add path:      [ +] ADD...");
             Console.WriteLine();
             foreach (var target in targetPaths)
             {
-                Console.WriteLine($"   Balancing for: [{++index,2}] {target}");
+                Console.WriteLine($" Balancing for: [{++index,2}] {target}");
             }
-            Console.WriteLine("   Balancing for: [ a] ALL...");
+            Console.WriteLine(" Balancing for: [ a] ALL...");
             Console.WriteLine();
 
             if (Directory.Exists(sourcePath) == false)
@@ -164,7 +164,7 @@ namespace TemplateComparison.ConApp
             {
                 if (Directory.Exists(item) == false)
                 {
-                    Console.WriteLine($"   Target-Path '{item}' not exists");
+                    Console.WriteLine($" Target-Path '{item}' not exists");
                 }
             }
             Console.WriteLine();
@@ -286,12 +286,11 @@ namespace TemplateComparison.ConApp
 
             return AppContext.BaseDirectory[..endPos];
         }
-        private static string[] GetQuickTemplateProjects(string sourcePath)
+        private static string[] GetQuickTemplateProjects(string path)
         {
-            var directoryInfo = new DirectoryInfo(sourcePath);
-            var parentDirectory = directoryInfo.Parent != null ? directoryInfo.Parent.FullName : SourcePath;
-            var qtDirectories = Directory.GetDirectories(parentDirectory, "QT*", SearchOption.AllDirectories)
-                                         .Where(d => d.Replace(UserPath, String.Empty).Contains('.') == false)
+            var directoryInfo = new DirectoryInfo(path);
+            var qtDirectories = Directory.GetDirectories(path, "QT*", SearchOption.AllDirectories)
+                                         .Where(d => d.Replace(path, String.Empty).Contains('.') == false)
                                          .ToList();
             return qtDirectories.ToArray();
         }
