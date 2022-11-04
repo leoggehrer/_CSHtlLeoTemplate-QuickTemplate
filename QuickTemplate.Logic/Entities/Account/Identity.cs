@@ -36,8 +36,7 @@ namespace QuickTemplate.Logic.Entities.Account
         #endregion transient properties
 
         // Navigation properties
-        [ForeignKey("RoleId")]
-        public List<Role> Roles { get; set; } = new();
+        public List<IdentityXRole> IdentityXRoles { get; set; } = new();
         public List<LoginSession> LoginSessions { get; set; } = new();
     }
 }

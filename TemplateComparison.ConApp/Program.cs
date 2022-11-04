@@ -57,6 +57,7 @@ namespace TemplateComparison.ConApp
 
                 Console.Clear();
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
+                PrintBusyProgress();
                 BeforeGetTargetPaths(UserPath, targetPaths, ref handled);
                 if (handled == false)
                 {
@@ -67,6 +68,8 @@ namespace TemplateComparison.ConApp
                 {
                     TargetPaths = TargetPaths.Union(AddTargetPaths).ToArray();
                 }
+
+                runBusyProgress = false;
                 PrintHeader(SourcePath, TargetPaths);
                 Console.Write($"Balancing [+|1..{TargetPaths.Length}|X...Quit]: ");
 
@@ -118,11 +121,12 @@ namespace TemplateComparison.ConApp
                         }
                     }
                 }
-                runBusyProgress = false;
             } while (running);
         }
         private static void PrintBusyProgress()
         {
+            var sign = "\\";
+
             Console.WriteLine();
             runBusyProgress = true;
             Task.Factory.StartNew(async () =>
@@ -131,7 +135,11 @@ namespace TemplateComparison.ConApp
                 {
                     if (canBusyPrint)
                     {
-                        Console.Write(".");
+                        if (Console.CursorLeft > 0)
+                           Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+
+                        Console.Write($".{sign}");
+                        sign = sign == "\\" ? "/" : "\\";
                     }
                     await Task.Delay(250).ConfigureAwait(false);
                 }
@@ -140,6 +148,7 @@ namespace TemplateComparison.ConApp
         private static void PrintHeader(string sourcePath, string[] targetPaths)
         {
             var index = 0;
+
             Console.Clear();
             Console.SetCursorPosition(0, 0);
             Console.WriteLine("Template Comparison");

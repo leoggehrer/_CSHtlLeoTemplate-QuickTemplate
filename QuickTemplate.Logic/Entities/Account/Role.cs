@@ -14,7 +14,7 @@ namespace QuickTemplate.Logic.Entities.Account
         public string? Description { get; set; }
 
         // Navigation properties
-        [ForeignKey("IdentityId")]
+        [NotMapped]
         public List<Identity> Identities { get; set; } = new();
     }
 }

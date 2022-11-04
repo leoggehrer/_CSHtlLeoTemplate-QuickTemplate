@@ -35,25 +35,6 @@ namespace QuickTemplate.Logic.Models.Account
             get => Source.Description;
             set => Source.Description = value;
         }
-        public System.Collections.Generic.List<QuickTemplate.Logic.Models.Account.Identity> Identities
-        {
-            get => Source.Identities.Select(e => QuickTemplate.Logic.Models.Account.Identity.Create(e)).ToList();
-            set => Source.Identities = value.Select(e => e.Source).ToList();
-        }
-        internal void CopyProperties(QuickTemplate.Logic.Entities.Account.Role other)
-        {
-            bool handled = false;
-            BeforeCopyProperties(other, ref handled);
-            if (handled == false)
-            {
-                Designation = other.Designation;
-                Description = other.Description;
-                Identities = other.Identities.Select(e => QuickTemplate.Logic.Models.Account.Identity.Create((object)e)).ToList();
-                RowVersion = other.RowVersion;
-                Id = other.Id;
-            }
-            AfterCopyProperties(other);
-        }
         partial void BeforeCopyProperties(QuickTemplate.Logic.Entities.Account.Role other, ref bool handled);
         partial void AfterCopyProperties(QuickTemplate.Logic.Entities.Account.Role other);
         internal void CopyProperties(QuickTemplate.Logic.Models.Account.Role other)
@@ -64,7 +45,6 @@ namespace QuickTemplate.Logic.Models.Account
             {
                 Designation = other.Designation;
                 Description = other.Description;
-                Identities = other.Identities;
                 RowVersion = other.RowVersion;
                 Id = other.Id;
             }
@@ -84,7 +64,7 @@ namespace QuickTemplate.Logic.Models.Account
         }
         public override int GetHashCode()
         {
-            return HashCode.Combine(Designation, Description, Identities, RowVersion, Id);
+            return HashCode.Combine(Designation, Description, RowVersion, Id);
         }
         public static QuickTemplate.Logic.Models.Account.Role Create()
         {

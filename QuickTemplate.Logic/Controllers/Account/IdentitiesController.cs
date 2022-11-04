@@ -6,7 +6,6 @@ namespace QuickTemplate.Logic.Controllers.Account
     [Modules.Security.Authorize("SysAdmin", "AppAdmin")]
     internal sealed partial class IdentitiesController : GenericController<Entities.Account.Identity>, Contracts.Account.IIdentitiesAccess<Entities.Account.Identity>
     {
-        internal override IEnumerable<string> Includes => new string[] { "Roles" };
         public IdentitiesController()
         {
         }
@@ -35,44 +34,47 @@ namespace QuickTemplate.Logic.Controllers.Account
         }
         internal Task<Entities.Account.Identity?> GetValidIdentityByEmailAsync(string email)
         {
-            return EntitySet.Include(e => e.Roles)
+            return EntitySet.Include(e => e.IdentityXRoles)
+                            .ThenInclude(e => e.Role)
                             .FirstOrDefaultAsync(e => e.State == Modules.Common.State.Active
                                                    && e.AccessFailedCount < 4
                                                    && e.Email.ToLower() == email.ToLower());
         }
 
-        public async Task AddRoleAsync(int id, int roleId)
+        public async Task AddRoleAsync(int identityId, int roleId)
         {
             await CheckAuthorizationAsync(GetType(), nameof(AddRoleAsync)).ConfigureAwait(false);
 
             using var roleCtrl = new RolesController(this);
-            var role = await roleCtrl.GetByIdAsync(roleId).ConfigureAwait(false);
+            var role = await roleCtrl.ExecuteGetByIdAsync(roleId).ConfigureAwait(false);
 
             if (role != null)
             {
-                var entity = await GetByIdAsync(id).ConfigureAwait(false);
+                var identity = await ExecuteGetByIdAsync(identityId).ConfigureAwait(false);
 
-                if (entity != null)
+                if (identity != null)
                 {
-                    entity.Roles.Add(role);
+                    using var identityXRolesCtrl = new IdentityXRolesController(this);
+                    var identityXRole = new Entities.Account.IdentityXRole
+                    {
+                        Role = role,
+                        Identity = identity,
+                    };
+                    await identityXRolesCtrl.InsertAsync(identityXRole).ConfigureAwait(false);
                 }
             }
         }
-        public async Task RemoveRoleAsync(int id, int roleId)
+        public async Task RemoveRoleAsync(int identityId, int roleId)
         {
             await CheckAuthorizationAsync(GetType(), nameof(RemoveRoleAsync)).ConfigureAwait(false);
 
-            using var roleCtrl = new RolesController(this);
-            var role = await roleCtrl.GetByIdAsync(roleId).ConfigureAwait(false);
+            using var identityXRolesCtrl = new IdentityXRolesController(this);
+            var identityXRoles = await identityXRolesCtrl.ExecuteQueryAsync(e => e.IdentityId == identityId && e.RoleId == roleId)
+                                                         .ConfigureAwait(false);
 
-            if (role != null)
+            if (identityXRoles.Length == 1)
             {
-                var entity = await GetByIdAsync(id).ConfigureAwait(false);
-
-                if (entity != null)
-                {
-                    entity.Roles.Remove(role);
-                }
+                await identityXRolesCtrl.DeleteAsync(identityXRoles[0].Id).ConfigureAwait(false);
             }
         }
     }

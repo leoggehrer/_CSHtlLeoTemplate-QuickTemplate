@@ -41,6 +41,9 @@ namespace QuickTemplate.Logic.Modules.Account
 
             if (identityCount == 0)
             {
+                using var rolesCtrl = new Controllers.Account.RolesController(identitiesCtrl);
+                using var identityXRolesCtrl = new Controllers.Account.IdentityXRolesController(identitiesCtrl);
+
                 try
                 {
                     var (Hash, Salt) = CreatePasswordHash(password);
@@ -58,8 +61,14 @@ namespace QuickTemplate.Logic.Modules.Account
                         PasswordSalt = Salt,
                         EnableJwtAuth = enableJwtAuth,
                     };
-                    identity.Roles.Add(role);
+                    var IdentityXRole = new IdentityXRole
+                    {
+                        Identity = identity,
+                        Role = role,
+                    };
 
+                    await rolesCtrl.InsertAsync(role).ConfigureAwait(false);
+                    await identityXRolesCtrl.InsertAsync(IdentityXRole).ConfigureAwait(false);
                     await identitiesCtrl.InsertAsync(identity).ConfigureAwait(false);
                     await identitiesCtrl.SaveChangesAsync().ConfigureAwait(false);
                 }
@@ -83,7 +92,6 @@ namespace QuickTemplate.Logic.Modules.Account
             try
             {
                 var (Hash, Salt) = CreatePasswordHash(password);
-
                 var identity = new Identity
                 {
                     Guid = Guid.NewGuid().ToString(),
@@ -98,6 +106,7 @@ namespace QuickTemplate.Logic.Modules.Account
                 if (roles.Length > 0)
                 {
                     using var rolesCtrl = new Controllers.Account.RolesController(identitiesCtrl);
+                    using var identityXRolesCtrl = new Controllers.Account.IdentityXRolesController(identitiesCtrl);
                     var rolesInDb = await rolesCtrl.GetAllAsync().ConfigureAwait(false);
 
                     foreach (var role in roles)
@@ -107,11 +116,27 @@ namespace QuickTemplate.Logic.Modules.Account
 
                         if (dbRole != null)
                         {
-                            identity.Roles.Add(dbRole);
+                            var identityXRole = new IdentityXRole
+                            {
+                                RoleId = dbRole.Id,
+                                Identity = identity,
+                            };
+                            await identityXRolesCtrl.InsertAsync(identityXRole).ConfigureAwait(false);
                         }
                         else
                         {
-                            identity.Roles.Add(new Role() { Designation = accRole });
+                            var newRole = new Role
+                            {
+                                Designation = accRole,
+                                Description = "Created by the system.",
+                            };
+                            var identityXRole = new IdentityXRole
+                            {
+                                Role = newRole,
+                                Identity = identity,
+                            };
+                            await rolesCtrl.InsertAsync(newRole).ConfigureAwait(false);
+                            await identityXRolesCtrl.InsertAsync(identityXRole).ConfigureAwait(false);
                         }
                         await identitiesCtrl.InsertAsync(identity).ConfigureAwait(false);
                     }
@@ -367,7 +392,8 @@ namespace QuickTemplate.Logic.Modules.Account
                 {
                     using var identitiesCtrl = new Controllers.Account.IdentitiesController(sessionsCtrl);
                     var identity = await identitiesCtrl.EntitySet
-                                                       .Include(e => e.Roles)
+                                                       .Include(e => e.IdentityXRoles)
+                                                       .ThenInclude(e => e.Role)
                                                        .FirstOrDefaultAsync(e => e.Id == session.IdentityId)
                                                        .ConfigureAwait(false);
 
@@ -376,7 +402,7 @@ namespace QuickTemplate.Logic.Modules.Account
                         session.Name = identity.Name;
                         session.Email = identity.Email;
                         session.Identity = identity;
-                        session.Roles.AddRange(identity.Roles);
+                        session.Roles.AddRange(identity.IdentityXRoles.Select(e => e.Role!));
                         session.JsonWebToken = JsonWebToken.GenerateToken(new Claim[]
                         {
                             new Claim(ClaimTypes.Email, identity.Email),
@@ -416,7 +442,7 @@ namespace QuickTemplate.Logic.Modules.Account
                         session.Name = identity.Name;
                         session.Email = identity.Email;
                         session.Identity = identity;
-                        session.Roles.AddRange(identity.Roles);
+                        session.Roles.AddRange(identity.IdentityXRoles.Select(e => e.Role!));
                         session.JsonWebToken = JsonWebToken.GenerateToken(new Claim[]
                         {
                             new Claim(ClaimTypes.Email, identity.Email),
@@ -454,7 +480,7 @@ namespace QuickTemplate.Logic.Modules.Account
                         OptionalInfo = optionalInfo,
                         Identity = identity,
                     };
-                    session.Roles.AddRange(identity.Roles);
+                    session.Roles.AddRange(identity.IdentityXRoles.Select(e => e.Role!));
                     session.JsonWebToken = JsonWebToken.GenerateToken(new Claim[]
                     {
                         new Claim(ClaimTypes.Email, identity.Email),

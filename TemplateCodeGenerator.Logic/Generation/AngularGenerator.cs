@@ -117,6 +117,8 @@ namespace TemplateCodeGenerator.Logic.Generation
         }
         public IGeneratedItem CreateModelFromType(Type type, IEnumerable<Type> types)
         {
+            if (type.Name.Equals("Comment"))
+                ;
             var subPath = ConvertFileItem(CreateSubPathFromType(type));
             var projectPath = Path.Combine(SolutionProperties.SolutionPath, SolutionProperties.AngularAppProjectName);
             var entityName = ItemProperties.CreateEntityName(type);
@@ -138,12 +140,18 @@ namespace TemplateCodeGenerator.Logic.Generation
                 if (declarationTypeName.Equals(item.DeclaringType!.Name) == false)
                 {
                     declarationTypeName = item.DeclaringType.Name;
-                    result.Add($"/** {declarationTypeName} **/");
+                    //                    result.Add($"/** {declarationTypeName} **/");
                 }
-
                 result.AddRange(CreateTypeScriptProperty(item));
             }
-            result.AddRange(CreateModelToModelFromModels(type, types));
+
+            foreach (var item in CreateModelToModelFromModels(type, types))
+            {
+                if (result.Source.Contains(item) == false)
+                {
+                    result.Add(item);
+                }
+            }
             result.Add("}");
 
             result.Source.Insert(result.Source.Count - 1, StaticLiterals.AngularCustomCodeBeginLabel);
@@ -181,7 +189,7 @@ namespace TemplateCodeGenerator.Logic.Generation
         }
         private IGeneratedItem CreateServiceFromType(Type type, Common.UnitType unitType, Common.ItemType itemType)
         {
-            var subPath = ConvertFileItem(CreateSubPathFromType(type)).Remove("entities/", string.Empty);
+            var subPath = ConvertFileItem(CreateSubPathFromType(type));
             var projectPath = Path.Combine(SolutionProperties.SolutionPath, SolutionProperties.AngularAppProjectName);
             var entityName = ItemProperties.CreateEntityName(type);
             var fileName = $"{ConvertFileItem($"{entityName}Service")}.{CodeExtension}";

@@ -57,8 +57,8 @@ namespace QuickTemplate.Logic.Models.Account
         }
         public System.Collections.Generic.List<QuickTemplate.Logic.Models.Account.Role> Roles
         {
-            get => Source.Roles.Select(e => QuickTemplate.Logic.Models.Account.Role.Create(e)).ToList();
-            set => Source.Roles = value.Select(e => e.Source).ToList();
+            get => Source.IdentityXRoles.Select(e => QuickTemplate.Logic.Models.Account.Role.Create(e.Role!)).ToList();
+            set => Source.IdentityXRoles = value.Select(e => new Entities.Account.IdentityXRole { IdentityId = e.Id, Identity = Source, RoleId = e.Source.Id, Role = e.Source }).ToList();
         }
         internal void CopyProperties(QuickTemplate.Logic.Entities.Account.Identity other)
         {
@@ -72,7 +72,7 @@ namespace QuickTemplate.Logic.Models.Account
                 TimeOutInMinutes = other.TimeOutInMinutes;
                 AccessFailedCount = other.AccessFailedCount;
                 State = other.State;
-                Roles = other.Roles.Select(e => QuickTemplate.Logic.Models.Account.Role.Create((object)e)).ToList();
+                Roles = other.IdentityXRoles.Select(e => QuickTemplate.Logic.Models.Account.Role.Create((object)e.Role!)).ToList();
                 RowVersion = other.RowVersion;
                 Id = other.Id;
             }

@@ -29,29 +29,37 @@ namespace TemplatePreprocessor.ConApp
         static partial void ClassConstructing();
         static partial void ClassConstructed();
         #endregion Class-Constructors
+        
+        #region Properties
         private static string? HomePath { get; set; }
         private static string UserPath { get; set; }
         private static string SourcePath { get; set; }
         private static string[] Defines { get; set; }
+        #endregion Properties
 
         private static void Main(/*string[] args*/)
         {
             RunApp();
         }
 
+        #region Console methods
+        private static readonly bool canBusyPrint = true;
+        private static bool runBusyProgress = false;
         private static void RunApp()
         {
             var input = string.Empty;
             var saveForeColor = Console.ForegroundColor;
 
+            PrintBusyProgress();
             while (input.Equals("x") == false)
             {
                 var menuIndex = 0;
                 var sourceSolutionName = GetSolutionNameByPath(SourcePath);
-                
+
                 // Read defines from the solution
                 Defines = GetPreprocessorDefinesInProjectFiles(SourcePath);
 
+                runBusyProgress = false;
                 Console.Clear();
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine("Template Preprocessor");
@@ -77,6 +85,7 @@ namespace TemplatePreprocessor.ConApp
                 Console.ForegroundColor = saveForeColor;
                 if (Int32.TryParse(input, out var select))
                 {
+                    PrintBusyProgress();
                     if (select == 1)
                     {
                         var solutionPath = GetCurrentSolutionPath();
@@ -123,11 +132,33 @@ namespace TemplatePreprocessor.ConApp
                         SetPreprocessorDefinesInProjectFiles(SourcePath, Defines);
                         EditPreprocessorDefinesInRazorFiles(SourcePath, Defines);
                     }
+                    runBusyProgress = false;
                 }
                 Console.ResetColor();
             }
         }
+        private static void PrintBusyProgress()
+        {
+            var sign = "\\";
 
+            Console.WriteLine();
+            runBusyProgress = true;
+            Task.Factory.StartNew(async () =>
+            {
+                while (runBusyProgress)
+                {
+                    if (canBusyPrint)
+                    {
+                        if (Console.CursorLeft > 0)
+                            Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+
+                        Console.Write($".{sign}");
+                        sign = sign == "\\" ? "/" : "\\";
+                    }
+                    await Task.Delay(250).ConfigureAwait(false);
+                }
+            });
+        }
         private static void PrintSolutionDirectives(string path, params string[] excludeDirectives)
         {
             var files = Directory.GetFiles(path, "*.cs", SearchOption.AllDirectories);
@@ -150,6 +181,7 @@ namespace TemplatePreprocessor.ConApp
                 }
             }
         }
+        #endregion Console methods
 
         private static string GetCurrentSolutionPath()
         {
