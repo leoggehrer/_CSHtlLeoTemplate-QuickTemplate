@@ -117,8 +117,6 @@ namespace TemplateCodeGenerator.Logic.Generation
         }
         public IGeneratedItem CreateModelFromType(Type type, IEnumerable<Type> types)
         {
-            if (type.Name.Equals("Comment"))
-                ;
             var subPath = ConvertFileItem(CreateSubPathFromType(type));
             var projectPath = Path.Combine(SolutionProperties.SolutionPath, SolutionProperties.AngularAppProjectName);
             var entityName = ItemProperties.CreateEntityName(type);
