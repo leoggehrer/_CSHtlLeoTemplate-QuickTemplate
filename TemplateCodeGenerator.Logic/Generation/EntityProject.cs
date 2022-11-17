@@ -76,7 +76,7 @@ namespace TemplateCodeGenerator.Logic.Generation
                                                                       && t.FullName!.Contains($"{StaticLiterals.EntitiesFolder}.{StaticLiterals.LoggingFolder}.") == false
                                                                       && t.FullName!.Contains($"{StaticLiterals.EntitiesFolder}.{StaticLiterals.LoggingFolder}.") == false
 
-                                                                      && t.Name.Equals(StaticLiterals.IdentityEntityName) == false
+                                                                      && t.Name.Equals(StaticLiterals.EntityObjectName) == false
                                                                       && t.Name.Equals(StaticLiterals.VersionEntityName) == false);
         public IEnumerable<Type> ServiceTypes => AssemblyTypes.Where(t => t.IsClass
                                                                        && t.IsAbstract == false
@@ -98,10 +98,24 @@ namespace TemplateCodeGenerator.Logic.Generation
         {
             return type.Namespace!.Contains($".{StaticLiterals.Revision}");
         }
+        public static bool IsSecureEntity(Type type)
+        {
+            return type.FullName!.Contains($".{StaticLiterals.SecureIdentity}")
+                   || type.FullName!.Contains($".{StaticLiterals.LoginSession}");
+        }
         public static bool IsAccountOrLoggingOrRevisionEntity(Type type)
         {
             return IsAccountEntity(type) || IsLoggingEntity(type) || IsRevisionEntity(type);
         }
+        public static bool IsLoggingOrRevisionEntity(Type type)
+        {
+            return IsLoggingEntity(type) || IsRevisionEntity(type);
+        }
+        public static bool _IsSecureOrLoggingOrRevisionEntity(Type type)
+        {
+            return IsSecureEntity(type) || IsLoggingEntity(type) || IsRevisionEntity(type);
+        }
+
     }
 }
 //MdEnd

@@ -159,6 +159,31 @@ namespace QuickTemplate.Logic.Modules.RestApi
             }
             return result;
         }
+
+#if GUID_ON
+        public async Task<T?> GetByGuidAsync<T>(string requestUri, Guid id)
+        {
+            T? result;
+            using var client = CreateClient();
+            var response = await client.GetAsync($"{requestUri}/ByGuid/{id}").ConfigureAwait(false);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var contentData = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
+                result = await JsonSerializer.DeserializeAsync<T>(contentData, DeserializerOptions).ConfigureAwait(false);
+            }
+            else
+            {
+                var stringData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var errorMessage = $"{response.ReasonPhrase}: {stringData}";
+
+                System.Diagnostics.Debug.WriteLine("{0} ({1})", (int)response.StatusCode, errorMessage);
+                throw new LogicException(errorMessage);
+            }
+            return result;
+        }
+#endif
         public async Task<T[]> GetAsync<T>(string requestUri)
         {
             T[]? result;

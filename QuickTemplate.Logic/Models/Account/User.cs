@@ -4,7 +4,7 @@
 namespace QuickTemplate.Logic.Models.Account
 {
     using System;
-    public partial class User : VersionModel
+    public partial class User : VersionObject
     {
         static User()
         {
@@ -49,7 +49,6 @@ namespace QuickTemplate.Logic.Models.Account
                 IdentityId = other.IdentityId;
                 FirstName = other.FirstName;
                 LastName = other.LastName;
-                RowVersion = other.RowVersion;
                 Id = other.Id;
             }
             AfterCopyProperties(other);
@@ -65,7 +64,6 @@ namespace QuickTemplate.Logic.Models.Account
                 IdentityId = other.IdentityId;
                 FirstName = other.FirstName;
                 LastName = other.LastName;
-                RowVersion = other.RowVersion;
                 Id = other.Id;
             }
             AfterCopyProperties(other);
@@ -77,14 +75,14 @@ namespace QuickTemplate.Logic.Models.Account
             bool result = false;
             if (obj is Models.Account.User other)
             {
-                result = IsEqualsWith(RowVersion, other.RowVersion)
+                result = IsEqualsWith(IdentityId, other.IdentityId)
                 && Id == other.Id;
             }
             return result;
         }
         public override int GetHashCode()
         {
-            return HashCode.Combine(IdentityId, FirstName, LastName, RowVersion, Id);
+            return HashCode.Combine(IdentityId, FirstName, LastName, Id);
         }
         public static QuickTemplate.Logic.Models.Account.User Create()
         {

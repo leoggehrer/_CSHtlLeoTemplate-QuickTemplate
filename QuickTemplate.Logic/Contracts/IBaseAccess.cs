@@ -19,6 +19,13 @@ namespace QuickTemplate.Logic.Contracts
         /// Gets the maximum page size.
         /// </summary>
         int MaxPageSize { get; }
+
+        /// <summary>
+        /// Creates a new element of type T.
+        /// </summary>
+        /// <returns>The new element.</returns>
+        T Create();
+
         /// <summary>
         /// Gets the number of quantity in the collection.
         /// </summary>
@@ -31,6 +38,14 @@ namespace QuickTemplate.Logic.Contracts
         /// <returns>Number of entities in the collection.</returns>
         Task<int> CountAsync(string predicate);
 
+#if GUID_ON
+        /// <summary>
+        /// Returns the element of type T with the identification of id.
+        /// </summary>
+        /// <param name="id">The identification.</param>
+        /// <returns>The element of the type T with the corresponding identification.</returns>
+        Task<T?> GetByGuidAsync(Guid id);
+#endif
         /// <summary>
         /// Returns the element of type T with the identification of id.
         /// </summary>

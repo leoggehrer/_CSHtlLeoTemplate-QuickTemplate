@@ -11,7 +11,7 @@ namespace QuickTemplate.Logic.UnitTest
     /// </summary>
     /// <typeparam name="T">The generic parameter of the entity.</typeparam>
     [TestClass]
-    public abstract partial class EntityUnitTest<T> where T : Entities.IdentityEntity, new()
+    public abstract partial class EntityUnitTest<T> where T : Entities.EntityObject, new()
     {
 #pragma warning disable CA2211 // Non-constant fields should not be visible
         public static int Counter = 0;
@@ -19,7 +19,13 @@ namespace QuickTemplate.Logic.UnitTest
 
         public abstract Controllers.GenericController<T> CreateController();
 
-        public List<string> IgnoreUpdateProperties = new() { nameof(Entities.IdentityEntity.Id), nameof(Entities.VersionEntity.RowVersion) };
+        public List<string> IgnoreUpdateProperties = new() 
+        { 
+            nameof(Entities.EntityObject.Id),
+#if ROWVERSION_ON
+            nameof(Entities.VersionEntity.RowVersion)
+#endif
+        };
         /// <summary>
         /// This method deletes all entities in the database.
         /// </summary>

@@ -81,7 +81,7 @@ namespace TemplateCodeGenerator.Logic.Generation
                 result.Add(string.Empty);
 
                 result.AddRange(CreateComment());
-                result.Add("partial void GetGeneratorDbSet<E>(ref DbSet<E>? dbSet, ref bool handled) where E : Entities.IdentityEntity");
+                result.Add($"partial void GetGeneratorDbSet<E>(ref DbSet<E>? dbSet, ref bool handled) where E : Entities.{StaticLiterals.EntityObjectName}");
                 result.Add("{");
 
                 foreach (var type in entityProject.EntityTypes.Where(t => EntityProject.IsAccountOrLoggingOrRevisionEntity(t) == false))

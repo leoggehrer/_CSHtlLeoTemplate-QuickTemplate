@@ -8,6 +8,12 @@ namespace QuickTemplate.WebApi.Models.Account
     /// </summary>
     public partial class AccessRole : VersionModel
     {
+#if !GUID_ON
+        /// <summary>
+        /// Gets or sets the guid.
+        /// </summary>
+        public Guid Guid { get; set; }
+#endif
         /// <summary>
         /// Gets and sets a role designation.
         /// </summary>

@@ -4,7 +4,7 @@
 namespace QuickTemplate.Logic.Entities.Revision
 {
     [Table("Histories", Schema = "revision")]
-    internal partial class History : IdentityEntity
+    internal partial class History : EntityObject
     {
         public int IdentityId { get; set; }
         public string ActionType { get; set; } = string.Empty;

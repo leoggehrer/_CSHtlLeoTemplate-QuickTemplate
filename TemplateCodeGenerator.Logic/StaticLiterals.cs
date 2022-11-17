@@ -37,23 +37,24 @@ namespace TemplateCodeGenerator.Logic
         #endregion Project Extensions
 
         #region Entity and service properties
-        public static string IdentityEntityName => "IdentityEntity";
+        public static string EntityObjectName => "EntityObject";
         public static string VersionEntityName => "VersionEntity";
-        public static string[] EntityBaseClasses => new string[] { VersionEntityName, IdentityEntityName };
+        public static string[] EntityBaseClasses => new string[] { VersionEntityName, EntityObjectName };
         public static string IdentityServiceName => "IdentityService";
         public static string VersionServiceName => "VersionService";
         public static string[] ServiceBaseClasses => new string[] { VersionServiceName, IdentityServiceName };
         public static string[] BaseClasses => EntityBaseClasses.Union(ServiceBaseClasses).ToArray();
         public static string[] IdentityProperties => new string[] { "Id" };
         public static string[] VersionProperties => new string[] { "Id", "RowVersion" };
+        public static string[] ExtendedProperties = new string[] { "Guid", "CreatedOn", "ModifiedOn", "IdentityId_CreatedBy", "IdentityId_ModifiedBy" };
+        public static string[] NoGenerationProperties => IdentityProperties.Union(VersionProperties)
+                                                                           .ToArray();
         #endregion Entity and service properties
 
         #region Model properties
-        public static string IdentityModelName => "IdentityModel";
+        public static string ModelObjectName => "ModelObject";
         public static string VersionModelName => "VersionModel";
-        public static string[] ModelBaseClasses => new string[] { VersionModelName, IdentityModelName };
-        public static string[] IdentityModelProperties => new string[] { "Id" };
-        public static string[] VersionModelProperties => new string[] { "Id", "RowVersion" };
+        public static string[] ModelBaseClasses => new string[] { VersionModelName, ModelObjectName };
         #endregion Model properties
 
         #region Folders
@@ -84,6 +85,8 @@ namespace TemplateCodeGenerator.Logic
         public static string Account => nameof(Account);
         public static string Logging => nameof(Logging);
         public static string Revision => nameof(Revision);
+        public static string SecureIdentity => nameof(SecureIdentity);
+        public static string LoginSession => nameof(LoginSession);
         #endregion Modules
     }
 }

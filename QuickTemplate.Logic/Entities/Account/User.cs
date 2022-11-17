@@ -4,7 +4,7 @@
 namespace QuickTemplate.Logic.Entities.Account
 {
     [Table("Users", Schema = "account")]
-    internal partial class User : VersionEntity
+    public partial class User : VersionObject
     {
         public int IdentityId { get; set; }
         [Required]
@@ -13,9 +13,6 @@ namespace QuickTemplate.Logic.Entities.Account
         [Required]
         [MaxLength(64)]
         public string LastName { get; set; } = string.Empty;
-
-        // Navigation properties
-        public Identity? Identity { get; set; }
     }
 }
 #endif

@@ -45,25 +45,26 @@ namespace TemplateCodeGenerator.Logic.Generation
             var result = new List<string>();
             var propertyType = GetPropertyType(propertyInfo);
             var delegateProperty = $"{delegateObjectName}.{delegatePropertyInfo.Name}";
+            var visibility = propertyInfo.GetGetMethod(true)!.IsPublic ? string.Empty : "internal ";
 
             if (ItemProperties.IsModelType(propertyType))
             {
                 if (IsArrayType(propertyInfo.PropertyType))
                 {
-                    result.Add($"get => {delegateProperty}.Select(e => {ItemProperties.ConvertEntityToModelType(propertyInfo.PropertyType.GetElementType()!.FullName!)}.Create(e)).ToArray();");
+                    result.Add($"{visibility}get => {delegateProperty}.Select(e => {ItemProperties.ConvertEntityToModelType(propertyInfo.PropertyType.GetElementType()!.FullName!)}.Create(e)).ToArray();");
                 }
                 else if (IsListType(propertyInfo.PropertyType))
                 {
-                    result.Add($"get => {delegateProperty}.Select(e => {ItemProperties.ConvertEntityToModelType(propertyInfo.PropertyType.GenericTypeArguments[0].FullName!)}.Create(e)).ToList();");
+                    result.Add($"{visibility}get => {delegateProperty}.Select(e => {ItemProperties.ConvertEntityToModelType(propertyInfo.PropertyType.GenericTypeArguments[0].FullName!)}.Create(e)).ToList();");
                 }
                 else
                 {
-                    result.Add($"get => {delegateProperty} != null ? {propertyType.Replace("?", string.Empty)}.Create({delegateProperty}) : null;");
+                    result.Add($"{visibility}get => {delegateProperty} != null ? {propertyType.Replace("?", string.Empty)}.Create({delegateProperty}) : null;");
                 }
             }
             else
             {
-                result.Add($"get => {delegateObjectName}.{delegatePropertyInfo.Name};");
+                result.Add($"{visibility}get => {delegateObjectName}.{delegatePropertyInfo.Name};");
             }
             return result;
         }
@@ -72,25 +73,26 @@ namespace TemplateCodeGenerator.Logic.Generation
             var result = new List<string>();
             var propertyType = GetPropertyType(propertyInfo);
             var delegateProperty = $"{delegateObjectName}.{delegatePropertyInfo.Name}";
+            var visibility = propertyInfo.GetSetMethod(true)!.IsPublic ? string.Empty : "internal ";
 
             if (ItemProperties.IsModelType(propertyType))
             {
                 if (IsArrayType(propertyInfo.PropertyType))
                 {
-                    result.Add($"set => {delegateProperty} = value.Select(e => e.{delegateObjectName}).ToArray();");
+                    result.Add($"{visibility}set => {delegateProperty} = value.Select(e => e.{delegateObjectName}).ToArray();");
                 }
                 else if (IsListType(propertyInfo.PropertyType))
                 {
-                    result.Add($"set => {delegateProperty} = value.Select(e => e.{delegateObjectName}).ToList();");
+                    result.Add($"{visibility}set => {delegateProperty} = value.Select(e => e.{delegateObjectName}).ToList();");
                 }
                 else
                 {
-                    result.Add($"set => {delegateProperty} = value?.{delegateObjectName};");
+                    result.Add($"{visibility}set => {delegateProperty} = value?.{delegateObjectName};");
                 }
             }
             else
             {
-                result.Add($"set => {delegateObjectName}.{delegatePropertyInfo.Name} = value;");
+                result.Add($"{visibility}set => {delegateObjectName}.{delegatePropertyInfo.Name} = value;");
             }
             return result;
         }
@@ -144,7 +146,7 @@ namespace TemplateCodeGenerator.Logic.Generation
 
         protected virtual bool CanCreate(Type type)
         {
-            bool create = EntityProject.IsAccountOrLoggingOrRevisionEntity(type) ? false : true;
+            bool create = EntityProject.IsAccountOrLoggingOrRevisionEntity(type) == false;
 
             CanCreateModel(type, ref create);
             return create;
@@ -171,7 +173,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             var visibility = QueryModelSetting<string>(unitType, itemType, type, StaticLiterals.Visibility, "public");
             var attributes = QueryModelSetting<string>(unitType, itemType, type, StaticLiterals.Attributes, string.Empty);
             var typeProperties = type.GetAllPropertyInfos();
-            var generateProperties = typeProperties.Where(e => StaticLiterals.VersionProperties.Any(p => p.Equals(e.Name)) == false) ?? Array.Empty<PropertyInfo>();
+            var generateProperties = typeProperties.Where(e => StaticLiterals.NoGenerationProperties.Any(p => p.Equals(e.Name)) == false) ?? Array.Empty<PropertyInfo>();
             var result = new Models.GeneratedItem(unitType, itemType)
             {
                 FullName = CreateModelFullNameFromType(type),
@@ -244,7 +246,7 @@ namespace TemplateCodeGenerator.Logic.Generation
         {
             var modelName = CreateModelName(type);
             var typeProperties = type.GetAllPropertyInfos();
-            var generateProperties = typeProperties.Where(e => StaticLiterals.VersionProperties.Any(p => p.Equals(e.Name)) == false) ?? Array.Empty<PropertyInfo>();
+            var generateProperties = typeProperties.Where(e => StaticLiterals.NoGenerationProperties.Any(p => p.Equals(e.Name)) == false) ?? Array.Empty<PropertyInfo>();
             var result = new Models.GeneratedItem(unitType, itemType)
             {
                 FullName = CreateModelFullNameFromType(type),

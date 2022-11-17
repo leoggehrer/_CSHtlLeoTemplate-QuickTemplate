@@ -4,7 +4,7 @@
 namespace QuickTemplate.Logic.Models.Logging
 {
     using System;
-    public partial class ActionLog : VersionModel
+    public partial class ActionLog : ModelObject
     {
         static ActionLog()
         {

@@ -1,17 +1,15 @@
 ﻿//@CodeCopy
 //MdStart
-
-using QuickTemplate.Logic.Contracts;
-using System.Collections;
-
 namespace QuickTemplate.Logic.Models
 {
-    public abstract partial class IdentityModel : IIdentifyable
+    using QuickTemplate.Logic.Contracts;
+    using System.Collections;
+    public abstract partial class ModelObject : IIdentifyable
     {
         private int _id;
-        protected Entities.IdentityEntity? _source;
+        protected Entities.EntityObject? _source;
 
-        internal virtual Entities.IdentityEntity Source
+        internal virtual Entities.EntityObject Source
         {
             get => _source!;
             set => _source = value;
@@ -19,7 +17,7 @@ namespace QuickTemplate.Logic.Models
         /// <summary>
         /// ID of the entity (primary key)
         /// </summary>
-        public virtual int Id 
+        public virtual int Id
         {
             get => Source?.Id ?? _id;
             set
@@ -30,6 +28,7 @@ namespace QuickTemplate.Logic.Models
                     _id = value;
             }
         }
+
         /// <summary>
         /// Determines whether two object instances are equal
         /// </summary>

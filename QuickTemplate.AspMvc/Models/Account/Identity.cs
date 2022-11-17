@@ -1,13 +1,12 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON
-using QuickTemplate.Logic.Modules.Common;
-
 namespace QuickTemplate.AspMvc.Models.Account
 {
+    using QuickTemplate.Logic.Modules.Common;
     public class Identity : VersionModel
     {
-        public AccessRole[]? AccessRoleList { get; set; }
+        public AccessRole[] AccessRoleList { get; set; } = Array.Empty<AccessRole>();
 
         public AccessRole[] AddAccessRoleList
         {
@@ -26,8 +25,10 @@ namespace QuickTemplate.AspMvc.Models.Account
                 return result;
             }
         }
-
-        public string Guid { get; set; } = string.Empty;
+        /// <summary>
+        /// Gets or sets the guid.
+        /// </summary>
+        public Guid Guid { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public int TimeOutInMinutes { get; set; } = 30;
@@ -39,16 +40,7 @@ namespace QuickTemplate.AspMvc.Models.Account
         {
             var result = new Identity();
 
-            result.Id = source.Id;
-            result.RowVersion = source.RowVersion;
-            result.Guid = source.Guid;
-            result.Name = source.Name;
-            result.Email = source.Email;
-            result.TimeOutInMinutes = source.TimeOutInMinutes;
-            result.AccessFailedCount = source.AccessFailedCount;
-            result.State = source.State;
-
-            result.AccessRoles = source.Roles.Select(r => Models.Account.AccessRole.Create(r)).ToList();
+            result.CopyFrom(source);
             return result;
         }
     }

@@ -4,7 +4,7 @@
 namespace QuickTemplate.Logic.Entities.Logging
 {
     [Table("ActionLogs", Schema = "logging")]
-    internal partial class ActionLog : IdentityEntity
+    internal partial class ActionLog : EntityObject
     {
         public int IdentityId { get; internal set; }
         public DateTime Time { get; internal set; }

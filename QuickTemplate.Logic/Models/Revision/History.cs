@@ -4,7 +4,7 @@
 namespace QuickTemplate.Logic.Models.Revision
 {
     using System;
-    public partial class History : VersionModel
+    public partial class History : ModelObject
     {
         static History()
         {

@@ -406,6 +406,7 @@ namespace CommonBase.Modules.PlantUML
             foreach (var item in obj.GetType().GetFields(bindingFlags))
             {
                 counter++;
+               // result.Add("{static}" + $"{item.FieldType.Name} {GetFieldName(item)} => {GetStateValue(obj, item)}");
                 result.Add("{static}" + $"{GetFieldName(item)} => {GetStateValue(obj, item)}");
             }
             if (counter > 0)
@@ -415,6 +416,7 @@ namespace CommonBase.Modules.PlantUML
             foreach (var item in obj.GetType().GetAllClassFields())
             {
                 counter++;
+//                result.Add($"{item.FieldType.Name} {GetFieldName(item)} => {GetStateValue(obj, item)}");
                 result.Add($"{GetFieldName(item)} => {GetStateValue(obj, item)}");
             }
             //if (counter > 0)

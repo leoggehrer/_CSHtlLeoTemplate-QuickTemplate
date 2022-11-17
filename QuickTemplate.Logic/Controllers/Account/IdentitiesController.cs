@@ -4,7 +4,7 @@
 namespace QuickTemplate.Logic.Controllers.Account
 {
     [Modules.Security.Authorize("SysAdmin", "AppAdmin")]
-    internal sealed partial class IdentitiesController : GenericController<Entities.Account.Identity>, Contracts.Account.IIdentitiesAccess<Entities.Account.Identity>
+    internal sealed partial class IdentitiesController : GenericController<Entities.Account.SecureIdentity>, Contracts.Account.IIdentitiesAccess<Entities.Account.SecureIdentity>
     {
         public IdentitiesController()
         {
@@ -14,11 +14,11 @@ namespace QuickTemplate.Logic.Controllers.Account
         {
         }
 
-        protected override void BeforeActionExecute(ActionType actionType, Entities.Account.Identity entity)
+        protected override void BeforeActionExecute(ActionType actionType, Entities.Account.SecureIdentity entity)
         {
             if (actionType == ActionType.Insert)
             {
-                entity.Guid = Guid.NewGuid().ToString();
+                entity.Guid = Guid.NewGuid();
             }
             else if (actionType == ActionType.Update)
             {
@@ -32,7 +32,7 @@ namespace QuickTemplate.Logic.Controllers.Account
             }
             base.BeforeActionExecute(actionType, entity);
         }
-        internal Task<Entities.Account.Identity?> GetValidIdentityByEmailAsync(string email)
+        internal Task<Entities.Account.SecureIdentity?> GetValidIdentityByEmailAsync(string email)
         {
             return EntitySet.Include(e => e.IdentityXRoles)
                             .ThenInclude(e => e.Role)

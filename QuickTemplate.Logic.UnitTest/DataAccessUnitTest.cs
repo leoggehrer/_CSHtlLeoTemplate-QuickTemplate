@@ -19,7 +19,13 @@ namespace QuickTemplate.Logic.UnitTest
 
         public abstract IDataAccess<TAccessModel> CreateDataAccess();
 
-        public List<string> IgnoreUpdateProperties = new() { nameof(IIdentifyable.Id), nameof(IVersionable.RowVersion) };
+        public List<string> IgnoreUpdateProperties = new() 
+        {
+            nameof(IIdentifyable.Id),
+#if ROWVERSION_ON
+            nameof(IVersionable.RowVersion) 
+#endif
+        };
         /// <summary>
         /// This method deletes all entities in the database.
         /// </summary>

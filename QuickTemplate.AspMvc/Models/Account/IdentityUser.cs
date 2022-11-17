@@ -8,7 +8,7 @@ namespace QuickTemplate.AspMvc.Models.Account
         public Identity[]? IdentityList { get; set; }
 
         public string IdentityEmail { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// Gets or sets the identity id.
         /// </summary>
@@ -22,7 +22,7 @@ namespace QuickTemplate.AspMvc.Models.Account
         /// </summary>
         public string LastName { get; set; } = string.Empty;
 
-                /// <summary>
+        /// <summary>
         /// Creates an instance of Identity and copies the properties of the same name from the object parameter. 
         /// </summary>
         /// <param name="source">The object to copy.</param>

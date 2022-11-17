@@ -4,7 +4,7 @@
 namespace QuickTemplate.Logic.Models.Account
 {
     using System;
-    public partial class Identity : VersionModel
+    public partial class Identity : VersionObject
     {
         static Identity()
         {
@@ -20,12 +20,12 @@ namespace QuickTemplate.Logic.Models.Account
         }
         partial void Constructing();
         partial void Constructed();
-        new internal QuickTemplate.Logic.Entities.Account.Identity Source
+        new internal QuickTemplate.Logic.Entities.Account.SecureIdentity Source
         {
-            get => (QuickTemplate.Logic.Entities.Account.Identity)(_source ??= new QuickTemplate.Logic.Entities.Account.Identity());
+            get => (QuickTemplate.Logic.Entities.Account.SecureIdentity)(_source ??= new QuickTemplate.Logic.Entities.Account.SecureIdentity());
             set => _source = value;
         }
-        public System.String Guid
+        public Guid Guid
         {
             get => Source.Guid;
             set => Source.Guid = value;
@@ -55,46 +55,37 @@ namespace QuickTemplate.Logic.Models.Account
             get => Source.State;
             set => Source.State = value;
         }
-        public System.Collections.Generic.List<QuickTemplate.Logic.Models.Account.Role> Roles
-        {
-            get => Source.IdentityXRoles.Select(e => QuickTemplate.Logic.Models.Account.Role.Create(e.Role!)).ToList();
-            set => Source.IdentityXRoles = value.Select(e => new Entities.Account.IdentityXRole { IdentityId = e.Id, Identity = Source, RoleId = e.Source.Id, Role = e.Source }).ToList();
-        }
-        internal void CopyProperties(QuickTemplate.Logic.Entities.Account.Identity other)
+        internal void CopyProperties(QuickTemplate.Logic.Entities.Account.SecureIdentity other)
         {
             bool handled = false;
             BeforeCopyProperties(other, ref handled);
             if (handled == false)
             {
+                Id = other.Id;
                 Guid = other.Guid;
                 Name = other.Name;
                 Email = other.Email;
                 TimeOutInMinutes = other.TimeOutInMinutes;
                 AccessFailedCount = other.AccessFailedCount;
                 State = other.State;
-                Roles = other.IdentityXRoles.Select(e => QuickTemplate.Logic.Models.Account.Role.Create((object)e.Role!)).ToList();
-                RowVersion = other.RowVersion;
-                Id = other.Id;
             }
             AfterCopyProperties(other);
         }
-        partial void BeforeCopyProperties(QuickTemplate.Logic.Entities.Account.Identity other, ref bool handled);
-        partial void AfterCopyProperties(QuickTemplate.Logic.Entities.Account.Identity other);
+        partial void BeforeCopyProperties(QuickTemplate.Logic.Entities.Account.SecureIdentity other, ref bool handled);
+        partial void AfterCopyProperties(QuickTemplate.Logic.Entities.Account.SecureIdentity other);
         internal void CopyProperties(QuickTemplate.Logic.Models.Account.Identity other)
         {
             bool handled = false;
             BeforeCopyProperties(other, ref handled);
             if (handled == false)
             {
+                Id = other.Id;
                 Guid = other.Guid;
                 Name = other.Name;
                 Email = other.Email;
                 TimeOutInMinutes = other.TimeOutInMinutes;
                 AccessFailedCount = other.AccessFailedCount;
                 State = other.State;
-                Roles = other.Roles;
-                RowVersion = other.RowVersion;
-                Id = other.Id;
             }
             AfterCopyProperties(other);
         }
@@ -105,14 +96,13 @@ namespace QuickTemplate.Logic.Models.Account
             bool result = false;
             if (obj is Models.Account.Identity other)
             {
-                result = IsEqualsWith(RowVersion, other.RowVersion)
-                && Id == other.Id;
+                result = IsEqualsWith(this.GetType().Name, other.GetType().Name) && Id == other.Id;
             }
             return result;
         }
         public override int GetHashCode()
         {
-            return HashCode.Combine(Guid, Name, Email, TimeOutInMinutes, AccessFailedCount, HashCode.Combine(State, Roles, HashCode.Combine(RowVersion, Id)));
+            return HashCode.Combine(Guid, Name, Email, TimeOutInMinutes, AccessFailedCount, State);
         }
         public static QuickTemplate.Logic.Models.Account.Identity Create()
         {
@@ -138,7 +128,7 @@ namespace QuickTemplate.Logic.Models.Account
             AfterCreate(result, other);
             return result;
         }
-        internal static QuickTemplate.Logic.Models.Account.Identity Create(QuickTemplate.Logic.Entities.Account.Identity other)
+        internal static QuickTemplate.Logic.Models.Account.Identity Create(QuickTemplate.Logic.Entities.Account.SecureIdentity other)
         {
             BeforeCreate(other);
             var result = new QuickTemplate.Logic.Models.Account.Identity
@@ -154,8 +144,8 @@ namespace QuickTemplate.Logic.Models.Account
         static partial void AfterCreate(QuickTemplate.Logic.Models.Account.Identity instance, object other);
         static partial void BeforeCreate(QuickTemplate.Logic.Models.Account.Identity other);
         static partial void AfterCreate(QuickTemplate.Logic.Models.Account.Identity instance, QuickTemplate.Logic.Models.Account.Identity other);
-        static partial void BeforeCreate(QuickTemplate.Logic.Entities.Account.Identity other);
-        static partial void AfterCreate(QuickTemplate.Logic.Models.Account.Identity instance, QuickTemplate.Logic.Entities.Account.Identity other);
+        static partial void BeforeCreate(QuickTemplate.Logic.Entities.Account.SecureIdentity other);
+        static partial void AfterCreate(QuickTemplate.Logic.Models.Account.Identity instance, QuickTemplate.Logic.Entities.Account.SecureIdentity other);
     }
 }
 #endif

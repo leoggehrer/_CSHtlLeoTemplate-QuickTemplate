@@ -91,7 +91,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add($"public{(newPrefix ? " new " : " ")}static {itemType} Create(object other)");
             result.Add("{");
             result.Add("BeforeCreate(other);");
-            result.Add("CommonBase.Extensions.ObjectExtensions.CheckArgument(other, nameof(other));");
+            //result.Add("CommonBase.Extensions.ObjectExtensions.CheckArgument(other, nameof(other));");
             result.Add($"var result = new {itemType}();");
             result.Add("CommonBase.Extensions.ObjectExtensions.CopyFrom(result, other);");
             result.Add("AfterCreate(result, other);");
@@ -140,7 +140,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add($"public{(newPrefix ? " new " : " ")}static {itemType} Create(object other)");
             result.Add("{");
             result.Add("BeforeCreate(other);");
-            result.Add("CommonBase.Extensions.ObjectExtensions.CheckArgument(other, nameof(other));");
+            //result.Add("CommonBase.Extensions.ObjectExtensions.CheckArgument(other, nameof(other));");
             result.Add($"var result = new {itemType}();");
             result.Add("CommonBase.Extensions.ObjectExtensions.CopyFrom(result, other);");
             result.Add("AfterCreate(result, other);");
@@ -351,11 +351,15 @@ namespace TemplateCodeGenerator.Logic.Generation
         }
         public virtual IEnumerable<string> CreateDelegateAutoGet(PropertyInfo propertyInfo, string delegateObjectName, PropertyInfo delegatePropertyInfo)
         {
-            return new[] { $"get => {delegateObjectName}.{delegatePropertyInfo.Name};" };
+            var visibility = propertyInfo.GetGetMethod(true)!.IsPublic ? string.Empty : "internal ";
+
+            return new[] { $"{visibility}get => {delegateObjectName}.{delegatePropertyInfo.Name};" };
         }
         public virtual IEnumerable<string> CreateDelegateAutoSet(PropertyInfo propertyInfo, string delegateObjectName, PropertyInfo delegatePropertyInfo)
         {
-            return new[] { $"set => {delegateObjectName}.{delegatePropertyInfo.Name} = value;" };
+            var visibility = propertyInfo.GetSetMethod(true)!.IsPublic ? string.Empty : "internal ";
+
+            return new[] { $"{visibility}set => {delegateObjectName}.{delegatePropertyInfo.Name} = value;" };
         }
         /// <summary>
         /// Diese Methode erstellt den Programmcode einer Delegate-Eigenschaft (Partial-Full-Property).

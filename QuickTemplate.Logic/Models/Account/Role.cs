@@ -4,7 +4,7 @@
 namespace QuickTemplate.Logic.Models.Account
 {
     using System;
-    public partial class Role : VersionModel
+    public partial class Role : VersionObject
     {
         static Role()
         {
@@ -25,6 +25,11 @@ namespace QuickTemplate.Logic.Models.Account
             get => (QuickTemplate.Logic.Entities.Account.Role)(_source ??= new QuickTemplate.Logic.Entities.Account.Role());
             set => _source = value;
         }
+        public Guid Guid
+        {
+            get => Source.Guid;
+            set => Source.Guid = value;
+        }
         public System.String Designation
         {
             get => Source.Designation;
@@ -43,10 +48,7 @@ namespace QuickTemplate.Logic.Models.Account
             BeforeCopyProperties(other, ref handled);
             if (handled == false)
             {
-                Designation = other.Designation;
-                Description = other.Description;
-                RowVersion = other.RowVersion;
-                Id = other.Id;
+                this.CopyFrom(other);
             }
             AfterCopyProperties(other);
         }
@@ -57,14 +59,21 @@ namespace QuickTemplate.Logic.Models.Account
             bool result = false;
             if (obj is Models.Account.Role other)
             {
-                result = IsEqualsWith(RowVersion, other.RowVersion)
-                && Id == other.Id;
+#if ROWVERSION_ON
+                result = IsEqualsWith(RowVersion, other.RowVersion) && Id == other.Id;
+#else
+                result = IsEqualsWith(GetType().Name, other.GetType().Name) && Id == other.Id;
+#endif
             }
             return result;
         }
         public override int GetHashCode()
         {
-            return HashCode.Combine(Designation, Description, RowVersion, Id);
+#if ROWVERSION_ON
+            return HashCode.Combine(Guid, Designation, Description, RowVersion, Id);
+#else
+            return HashCode.Combine(Guid, Designation, Description, Id);
+#endif
         }
         public static QuickTemplate.Logic.Models.Account.Role Create()
         {

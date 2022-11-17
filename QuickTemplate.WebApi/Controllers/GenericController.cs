@@ -120,12 +120,30 @@ namespace QuickTemplate.WebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public virtual async Task<ActionResult<TOutModel?>> GetAsync(int id)
+        public virtual async Task<ActionResult<TOutModel?>> GetByIdAsync(int id)
         {
             var accessModel = await DataAccess.GetByIdAsync(id);
 
             return accessModel == null ? NotFound() : Ok(ToOutModel(accessModel));
         }
+
+#if GUID_ON
+        /// <summary>
+        /// Get a single model by Id.
+        /// </summary>
+        /// <param name="id">Id of the model to get</param>
+        /// <response code="200">Model found</response>
+        /// <response code="404">Model not found</response>
+        [HttpGet("/api/[controller]/ByGuid/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public virtual async Task<ActionResult<TOutModel?>> GetByGuidAsync(Guid id)
+        {
+            var accessModel = await DataAccess.GetByGuidAsync(id);
+
+            return accessModel == null ? NotFound() : Ok(ToOutModel(accessModel));
+        }
+#endif
 
         /// <summary>
         /// Gets a list of models.

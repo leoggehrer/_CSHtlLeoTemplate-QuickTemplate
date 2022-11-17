@@ -1,23 +1,17 @@
 ﻿//@CodeCopy
 //MdStart
 
-using QuickTemplate.Logic.Contracts;
 using System.Collections;
 
-namespace QuickTemplate.Logic.Entities
+namespace QuickTemplate.AspMvc.Models
 {
-    public abstract partial class IdentityEntity : IIdentifyable
+    public abstract partial class ModelObject
     {
         /// <summary>
         /// ID of the entity (primary key)
         /// </summary>
         [Key]
-        public int Id { get; internal set; }
-
-        //TODO: Added Guid (Guid?)
-        //TODO: Added CreatedOn (DateTime with Utc)
-        //TODO: Added ModifiedOn (DateTime? With Utc) 
-        //TODO: Added State propertiy with Delete -> set ModifiedOn
+        public int Id { get; set; }
 
         /// <summary>
         /// Determines whether two object instances are equal

@@ -3,7 +3,7 @@
 #if ACCOUNT_ON
 namespace QuickTemplate.Logic.Models.Account
 {
-    public partial class LoginSession : VersionModel
+    public partial class LoginSession : VersionObject
     {
         public int IdentityId { get; set; }
         public string SessionToken { get; set; } = string.Empty;

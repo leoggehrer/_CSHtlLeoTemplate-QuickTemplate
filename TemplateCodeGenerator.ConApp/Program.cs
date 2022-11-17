@@ -3,8 +3,6 @@
 namespace TemplateCodeGenerator.ConApp
 {
     using System.Diagnostics;
-    using TemplateCodeGenerator.Logic;
-    using TemplateCodeGenerator.Logic.Generation;
     internal partial class Program
     {
         static Program()
@@ -73,7 +71,7 @@ namespace TemplateCodeGenerator.ConApp
                 Console.ForegroundColor = saveForeColor;
                 if (Int32.TryParse(input, out var select))
                 {
-                    var solutionProperties = SolutionProperties.Create(SolutionPath);
+                    var solutionProperties = Logic.Generation.SolutionProperties.Create(SolutionPath);
 
                     if (select == 1)
                     {
@@ -193,13 +191,15 @@ namespace TemplateCodeGenerator.ConApp
                     }
                     if (select == 5)
                     {
-                        Generator.DeleteGeneratedFiles(SolutionPath);
+                        Logic.Generator.DeleteGeneratedFiles(SolutionPath);
                     }
                     if (select == 6)
                     {
-                        var generatedItems = Generator.Generate(solutionProperties);
+                        var generatedItems = Logic.Generator.Generate(solutionProperties);
 
-                        Generator.DeleteGeneratedFiles(SolutionPath);
+                        Console.WriteLine();
+                        Logic.Generator.DeleteGeneratedFiles(SolutionPath);
+                        Console.WriteLine();
                         Logic.Writer.WriteToGroupFile = toGroupFile;
                         Logic.Writer.WriteAll(SolutionPath, solutionProperties, generatedItems);
                     }

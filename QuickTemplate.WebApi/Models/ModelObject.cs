@@ -9,13 +9,14 @@ namespace QuickTemplate.WebApi.Models
     /// <summary>
     /// The model with the identity property.
     /// </summary>
-    public abstract partial class IdentityModel : IIdentifyable
+    public abstract partial class ModelObject : IIdentifyable
     {
         /// <summary>
         /// ID of the model (primary key)
         /// </summary>
         [Key]
         public int Id { get; set; }
+
         /// <summary>
         /// Determines whether two object instances are equal
         /// </summary>

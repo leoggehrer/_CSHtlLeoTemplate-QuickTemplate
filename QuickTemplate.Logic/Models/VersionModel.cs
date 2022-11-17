@@ -4,14 +4,15 @@ using QuickTemplate.Logic.Contracts;
 
 namespace QuickTemplate.Logic.Models
 {
-    public abstract partial class VersionModel : IdentityModel, IVersionable
+    public abstract partial class VersionModel : ModelObject, IVersionable
     {
-        private byte[]? _rowVersion;
         new internal virtual Entities.VersionEntity Source
         {
             get => (Entities.VersionEntity)_source!;
             set => _source = value;
         }
+#if ROWVERSION_ON
+        private byte[]? _rowVersion;
         /// <summary>
         /// Row version of the entity.
         /// </summary>
@@ -26,6 +27,7 @@ namespace QuickTemplate.Logic.Models
                     _rowVersion = value;
             }
         }
+#endif
     }
 }
 //MdEnd

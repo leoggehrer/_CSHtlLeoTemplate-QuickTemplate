@@ -1,6 +1,7 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON
+
 namespace QuickTemplate.Logic.Controllers.Account
 {
     [Modules.Security.Authorize("SysAdmin", "AppAdmin")]
@@ -12,6 +13,21 @@ namespace QuickTemplate.Logic.Controllers.Account
 
         public RolesController(ControllerObject other) : base(other)
         {
+        }
+
+        protected override void BeforeActionExecute(ActionType actionType, Entities.Account.Role entity)
+        {
+            if (actionType == ActionType.Update)
+            {
+                using var ctrl = new RolesController();
+                var dbEntity = ctrl.EntitySet.Find(entity.Id);
+
+                if (dbEntity != null)
+                {
+                    entity.Guid = dbEntity.Guid;
+                }
+            }
+            base.BeforeActionExecute(actionType, entity);
         }
     }
 }

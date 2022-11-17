@@ -60,7 +60,7 @@ namespace TemplateCodeGenerator.Logic.Generation
         {
             return assembly.GetTypes()
                            .Where(t => t.IsInterface == false
-                                    && (t.BaseType != null && t.BaseType.Name.Equals(StaticLiterals.IdentityEntityName)
+                                    && (t.BaseType != null && t.BaseType.Name.Equals(StaticLiterals.EntityObjectName)
                                         || t.BaseType != null && t.BaseType.Name.Equals(StaticLiterals.VersionEntityName)));
         }
         #endregion Assembly-Helpers

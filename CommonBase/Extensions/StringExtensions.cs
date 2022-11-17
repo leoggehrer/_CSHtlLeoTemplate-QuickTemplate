@@ -409,7 +409,7 @@ namespace CommonBase.Extensions
             if (text != null)
             {
                 for (int i = 0; i < count; i++)
-                    sb.Append("  ");        // Four spaces for one indent.
+                    sb.Append("    ");        // spaces for one indent.
             }
             sb.Append(text);
             return sb.ToString();

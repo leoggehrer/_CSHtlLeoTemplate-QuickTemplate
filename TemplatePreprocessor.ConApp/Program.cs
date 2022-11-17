@@ -23,6 +23,12 @@ namespace TemplatePreprocessor.ConApp
                 "LOGGING_OFF",
                 "REVISION_OFF",
                 "DEVELOP_OFF",
+                "ROWVERSION_ON",
+                "GUID_OFF",
+                "CREATED_OFF",
+                "MODIFIED_OFF",
+                "CREATEDBY_OFF",
+                "MODIFIEDBY_OFF",
             };
             ClassConstructed();
         }
@@ -57,7 +63,7 @@ namespace TemplatePreprocessor.ConApp
                 var sourceSolutionName = GetSolutionNameByPath(SourcePath);
 
                 // Read defines from the solution
-                Defines = GetPreprocessorDefinesInProjectFiles(SourcePath);
+                Defines = GetPreprocessorDefinesInProjectFiles(SourcePath, Defines);
 
                 runBusyProgress = false;
                 Console.Clear();
@@ -65,18 +71,19 @@ namespace TemplatePreprocessor.ConApp
                 Console.WriteLine("Template Preprocessor");
                 Console.WriteLine("=====================");
                 Console.WriteLine();
-                Console.WriteLine($"Definition-Values: {string.Join(" ", Defines)}");
+                Console.WriteLine($"Define-Values: {string.Join(" ", Defines)}");
                 Console.WriteLine();
-                Console.WriteLine($"Set definition-values '{sourceSolutionName}' from: {SourcePath}");
+                Console.WriteLine($"Set define-values '{sourceSolutionName}' from: {SourcePath}");
                 Console.WriteLine();
-                Console.WriteLine($"[{++menuIndex}] Change source path");
+                Console.WriteLine($"[{++menuIndex, -2}] Change source path");
 
                 for (int i = 0; i < Defines.Length; i++)
                 {
-                    Console.WriteLine($"[{++menuIndex}] Set definition {(Defines[i].EndsWith("_ON") ? Defines[i].Replace("_ON", "_OFF") : Defines[i].Replace("_OFF", "_ON"))}");
+                    Console.WriteLine($"[{++menuIndex, -2}] Set definition {(Defines[i].EndsWith("_ON") ? Defines[i].Replace("_ON", "_OFF") : Defines[i].Replace("_OFF", "_ON"))}");
                 }
 
-                Console.WriteLine($"[{++menuIndex}] Start assignment process...");
+                Console.WriteLine($"[{++menuIndex, -2}] Start assignment process...");
+                Console.WriteLine();
                 Console.WriteLine("[x|X] Exit");
                 Console.WriteLine();
                 Console.Write("Choose: ");
@@ -85,7 +92,6 @@ namespace TemplatePreprocessor.ConApp
                 Console.ForegroundColor = saveForeColor;
                 if (Int32.TryParse(input, out var select))
                 {
-                    PrintBusyProgress();
                     if (select == 1)
                     {
                         var solutionPath = GetCurrentSolutionPath();
@@ -116,6 +122,7 @@ namespace TemplatePreprocessor.ConApp
                     }
                     else if ((select - 2) >= 0 && (select - 2) < Defines.Length)
                     {
+                        PrintBusyProgress();
                         if (Defines[select - 2].EndsWith("_ON"))
                         {
                             Defines[select - 2] = Defines[select - 2].Replace("_ON", "_OFF");
@@ -129,6 +136,7 @@ namespace TemplatePreprocessor.ConApp
                     }
                     else if ((select - 2) == Defines.Length)
                     {
+                        PrintBusyProgress();
                         SetPreprocessorDefinesInProjectFiles(SourcePath, Defines);
                         EditPreprocessorDefinesInRazorFiles(SourcePath, Defines);
                     }
@@ -228,7 +236,7 @@ namespace TemplatePreprocessor.ConApp
             return qtDirectories.ToArray();
         }
 
-        private static string[] GetPreprocessorDefinesInProjectFiles(string path)
+        private static string[] GetPreprocessorDefinesInProjectFiles(string path, string[] startDefines)
         {
             var result = new List<string>();
             var files = Directory.GetFiles(path, "*.csproj", SearchOption.AllDirectories);
@@ -255,6 +263,16 @@ namespace TemplatePreprocessor.ConApp
                                    }
                                });
                     }
+                }
+            }
+
+            foreach (var startDefine in startDefines)
+            {
+                var tmp = result.FirstOrDefault(x => x.RemoveAll("OFF", "ON") == startDefine.RemoveAll("OFF", "ON"));
+
+                if (string.IsNullOrEmpty(tmp))
+                {
+                    result.Add(startDefine);
                 }
             }
             return result.ToArray();

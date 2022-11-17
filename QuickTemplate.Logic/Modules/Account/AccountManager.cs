@@ -3,12 +3,10 @@
 #if ACCOUNT_ON
 using CommonBase.ThreadSafe;
 using Microsoft.IdentityModel.Tokens;
-using QuickTemplate.Logic.Controllers;
 using QuickTemplate.Logic.Entities.Account;
 using QuickTemplate.Logic.Modules.Exceptions;
 using QuickTemplate.Logic.Modules.Security;
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -52,9 +50,9 @@ namespace QuickTemplate.Logic.Modules.Account
                         Designation = StaticLiterals.RoleSysAdmin,
                         Description = "Created by the system (first identity).",
                     };
-                    var identity = new Identity
+                    var identity = new SecureIdentity
                     {
-                        Guid = Guid.NewGuid().ToString(),
+                        Guid = Guid.NewGuid(),
                         Name = name,
                         Email = email,
                         PasswordHash = Hash,
@@ -92,9 +90,9 @@ namespace QuickTemplate.Logic.Modules.Account
             try
             {
                 var (Hash, Salt) = CreatePasswordHash(password);
-                var identity = new Identity
+                var identity = new SecureIdentity
                 {
-                    Guid = Guid.NewGuid().ToString(),
+                    Guid = Guid.NewGuid(),
                     Name = name,
                     Email = email,
                     PasswordHash = Hash,

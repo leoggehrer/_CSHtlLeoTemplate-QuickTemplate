@@ -1,5 +1,7 @@
 ﻿//@CodeCopy
 //MdStart
+using System.Reflection;
+
 namespace QuickTemplate.Logic.DataContext
 {
     /// <summary>
@@ -37,7 +39,7 @@ namespace QuickTemplate.Logic.DataContext
         /// Data sets for account entities
         /// </summary>
 #if ACCOUNT_ON
-        public DbSet<Entities.Account.Identity>? IdentitySet { get; set; }
+        public DbSet<Entities.Account.SecureIdentity>? IdentitySet { get; set; }
         public DbSet<Entities.Account.Role>? RoleSet { get; set; }
         public DbSet<Entities.Account.IdentityXRole>? IdentityXRolesSet { get; set; }
         public DbSet<Entities.Account.User>? UserSet { get; set; }
@@ -140,7 +142,7 @@ namespace QuickTemplate.Logic.DataContext
         /// </summary>
         /// <typeparam name="E">The entity type E</typeparam>
         /// <returns>The DbSet depending on the type E</returns>
-        public DbSet<E> GetDbSet<E>() where E : Entities.IdentityEntity
+        public DbSet<E> GetDbSet<E>() where E : Entities.EntityObject
         {
             var handled = false;
             var result = default(DbSet<E>);
@@ -154,7 +156,7 @@ namespace QuickTemplate.Logic.DataContext
             {
                 // if the ACCOUNT switched ON
 #if ACCOUNT_ON
-                if (typeof(E) == typeof(Entities.Account.Identity))
+                if (typeof(E) == typeof(Entities.Account.SecureIdentity))
                 {
                     handled = true;
                     result = IdentitySet as DbSet<E>;
@@ -203,14 +205,14 @@ namespace QuickTemplate.Logic.DataContext
         /// <typeparam name="E">The entity type E</typeparam>
         /// <param name="dbSet">The DbSet depending on the type E</param>
         /// <param name="handled">Indicates whether the method found the DbSet</param>
-        partial void GetDbSet<E>(ref DbSet<E>? dbSet, ref bool handled) where E : Entities.IdentityEntity;
+        partial void GetDbSet<E>(ref DbSet<E>? dbSet, ref bool handled) where E : Entities.EntityObject;
         /// <summary>
         /// Determines the domain project DbSet depending on the type E
         /// </summary>
         /// <typeparam name="E">The entity type E</typeparam>
         /// <param name="dbSet">The DbSet depending on the type E</param>
         /// <param name="handled">Indicates whether the method found the DbSet</param>
-        partial void GetGeneratorDbSet<E>(ref DbSet<E>? dbSet, ref bool handled) where E : Entities.IdentityEntity;
+        partial void GetGeneratorDbSet<E>(ref DbSet<E>? dbSet, ref bool handled) where E : Entities.EntityObject;
 
     }
 }

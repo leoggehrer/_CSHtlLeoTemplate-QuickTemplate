@@ -13,8 +13,8 @@ namespace QuickTemplate.Logic.Facades
     /// <typeparam name="TEntity">The entity type for the internal controller</typeparam>
     /// <inheritdoc cref="IDataAccess"/>
     internal abstract partial class GenericFacade<TModel, TEntity> : FacadeObject, IDataAccess<TModel>
-        where TModel : Models.IdentityModel, new()
-        where TEntity : Entities.IdentityEntity, new()
+        where TModel : Models.ModelObject, new()
+        where TEntity : Entities.EntityObject, new()
     {
         protected GenericController<TEntity> Controller { get; init; }
         protected GenericFacade(GenericController<TEntity> controller)
@@ -62,6 +62,19 @@ namespace QuickTemplate.Logic.Facades
         #endregion SessionToken
 #endif
 
+        #region Create
+        /// <summary>
+        /// Creates a new element of type TModel.
+        /// </summary>
+        /// <returns>The new element.</returns>
+        public TModel Create()
+        {
+            var entity = Controller.Create();
+
+            return ToModel(entity);
+        }
+        #endregion Create
+
         #region MaxPageSize and Count
         /// <summary>
         /// Gets the maximum page size.
@@ -97,6 +110,31 @@ namespace QuickTemplate.Logic.Facades
         #endregion MaxPageSize and Count
 
         #region Queries
+#if GUID_ON
+        /// <summary>
+        /// Returns the element of type T with the identification of id.
+        /// </summary>
+        /// <param name="id">The identification.</param>
+        /// <returns>The element of the type T with the corresponding identification.</returns>
+        public async Task<TModel?> GetByGuidAsync(Guid id)
+        {
+            var handled = false;
+            var result = default(TModel);
+
+            BeforeGetByGuid(ref result, id, ref handled);
+            if (handled == false || result == null)
+            {
+                var entity = await Controller.GetByGuidAsync(id).ConfigureAwait(false);
+
+                if (entity != null)
+                    result = ToModel(entity);
+            }
+            AfterGetByGuid(result);
+            return result;
+        }
+        partial void BeforeGetByGuid(ref TModel? model, Guid id, ref bool handled);
+        partial void AfterGetByGuid(TModel? model);
+#endif
         /// <summary>
         /// Returns the element of type T with the identification of id.
         /// </summary>

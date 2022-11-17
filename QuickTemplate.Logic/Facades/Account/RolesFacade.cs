@@ -72,6 +72,16 @@ namespace QuickTemplate.Logic.Facades.Account
         partial void AfterToEntity(TModel model, TEntity entity);
 
         /// <summary>
+        /// Creates a new element of type TModel.
+        /// </summary>
+        /// <returns>The new element.</returns>
+        public TModel Create()
+        {
+            var entity = Controller.Create();
+
+            return ToModel(entity);
+        }
+        /// <summary>
         /// Gets the number of quantity in the collection.
         /// </summary>
         /// <returns>Number of elements in the collection.</returns>
@@ -98,6 +108,32 @@ namespace QuickTemplate.Logic.Facades.Account
         {
             return Controller.CountAsync(predicate, includeItems);
         }
+
+#if GUID_ON
+        /// <summary>
+        /// Returns the element of type T with the identification of id.
+        /// </summary>
+        /// <param name="id">The identification.</param>
+        /// <returns>The element of the type T with the corresponding identification.</returns>
+        public async Task<TModel?> GetByGuidAsync(Guid id)
+        {
+            var handled = false;
+            var result = default(TModel);
+
+            BeforeGetByGuid(ref result, id, ref handled);
+            if (handled == false || result == null)
+            {
+                var entity = await Controller.GetByGuidAsync(id).ConfigureAwait(false);
+
+                if (entity != null)
+                    result = ToModel(entity);
+            }
+            AfterGetByGuid(result);
+            return result;
+        }
+        partial void BeforeGetByGuid(ref TModel? model, Guid id, ref bool handled);
+        partial void AfterGetByGuid(TModel? model);
+#endif
 
         /// <summary>
         /// Returns the element of type T with the identification of id.

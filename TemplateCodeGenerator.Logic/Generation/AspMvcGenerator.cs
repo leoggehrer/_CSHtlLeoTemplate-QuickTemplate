@@ -128,14 +128,18 @@ namespace TemplateCodeGenerator.Logic.Generation
                 if (generate)
                 {
                     if (idx++ > 0)
+                    {
                         sbHasEntityValue.Append(" || ");
+                    }
 
                     if (propertyInfo.PropertyType == typeof(string))
                     {
                         sbToString.Append($"{propertyInfo.Name}: " + "{(" + $"{propertyInfo.Name} ?? \"---\"" + ")} ");
+                        //sbToString.Append("{(string.IsNullOrEmpty(" + propertyInfo.Name + ") ? string.Empty : $\"" + propertyInfo.Name + ": {" + propertyInfo.Name + "}\")}\"");
                     }
                     else
                     {
+                        //sbToString.Append("{(" + propertyInfo.Name + " == null ? string.Empty : $\"" + propertyInfo.Name + ": {" + propertyInfo.Name + "}\")}\"");
                         sbToString.Append($"{propertyInfo.Name}: " + "{(" + $"{propertyInfo.Name} != null ? {propertyInfo.Name} : \"---\"" + ")} ");
                     }
                     sbHasEntityValue.Append($"{propertyInfo.Name} != null");
@@ -488,6 +492,7 @@ namespace TemplateCodeGenerator.Logic.Generation
         {
             var typeProperties = type.GetAllPropertyInfos();
             var viewProperties = typeProperties.Where(e => StaticLiterals.VersionProperties.Any(p => p.Equals(e.Name)) == false
+                                                        && StaticLiterals.ExtendedProperties.Any(p => p.Equals(e.Name)) == false
                                                         && IsListType(e.PropertyType) == false
                                                         && (e.PropertyType.IsEnum || e.PropertyType.IsValueType || e.PropertyType.IsPrimitive || IsPrimitiveNullable(e) || e.PropertyType == typeof(string)));
 
@@ -584,6 +589,8 @@ namespace TemplateCodeGenerator.Logic.Generation
 
             foreach (var item in viewProperties)
             {
+                var attribute = StaticLiterals.ExtendedProperties.Any(e => e.Equals(item.Name)) ? "readonly=\"readonly\"" : string.Empty; 
+
                 result.Add("  <div class=\"form-group\">");
                 result.Add($"   <label asp-for=\"{item.Name}\" class=\"control-label\"></label>");
                 if (item.PropertyType.IsEnum)
@@ -595,11 +602,11 @@ namespace TemplateCodeGenerator.Logic.Generation
                 }
                 else if (item.PropertyType == typeof(bool) || item.PropertyType == typeof(bool?))
                 {
-                    result.Add($"   <input asp-for=\"{item.Name}\" class=\"form-check\" />");
+                    result.Add($"   <input asp-for=\"{item.Name}\" class=\"form-check\" {attribute} />");
                 }
                 else
                 {
-                    result.Add($"   <input asp-for=\"{item.Name}\" class=\"form-control\" />");
+                    result.Add($"   <input asp-for=\"{item.Name}\" class=\"form-control\" {attribute} />");
                 }
                 result.Add($"   <span asp-validation-for=\"{item.Name}\" class=\"text-danger\"></span>");
                 result.Add("  </div>");

@@ -145,8 +145,8 @@ namespace CommonBase.Extensions
                 if (sourcePropertyInfos.TryGetValue(mapping(propertyItemTarget.Value.PropertyInfo.Name), out var propertyItemSource))
                 {
                     if (propertyItemSource.PropertyInfo.PropertyType == propertyItemTarget.Value.PropertyInfo.PropertyType
-                        && propertyItemSource.CanRead
-                        && propertyItemTarget.Value.CanWrite
+                        && ((propertyItemSource.CanReadAndIsPublic && propertyItemTarget.Value.CanWriteAndIsPublic)
+                            || (propertyItemSource.DeclaringType == propertyItemTarget.Value.DeclaringType && propertyItemSource.CanRead && propertyItemTarget.Value.CanWrite))
                         && (filter(propertyItemTarget.Value.PropertyInfo.Name)))
                     {
                         if (propertyItemSource.IsStringType)

@@ -1,17 +1,16 @@
 ﻿//@CodeCopy
 //MdStart
-
-using System.Collections;
-
-namespace QuickTemplate.AspMvc.Models
+namespace QuickTemplate.Logic.Entities
 {
-    public abstract partial class IdentityModel
+    using System.Collections;
+    public abstract partial class EntityObject : Contracts.IIdentifyable
     {
         /// <summary>
         /// ID of the entity (primary key)
         /// </summary>
         [Key]
-        public int Id { get; set; }
+        public int Id { get; internal set; }
+
         /// <summary>
         /// Determines whether two object instances are equal
         /// </summary>

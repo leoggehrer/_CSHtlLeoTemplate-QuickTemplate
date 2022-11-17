@@ -43,6 +43,17 @@ namespace QuickTemplate.Logic.Services
         {
         }
 
+        #region Create
+        /// <summary>
+        /// Creates a new element of type TService.
+        /// </summary>
+        /// <returns>The new element.</returns>
+        public TService Create()
+        {
+            return new TService();
+        }
+        #endregion Create
+
         #region MaxPageSize and Count
         /// <summary>
         /// Gets the maximum page size.
@@ -73,6 +84,20 @@ namespace QuickTemplate.Logic.Services
         #endregion  MaxPageSize and Count
 
         #region Get
+#if GUID_ON
+        /// <summary>
+        /// Returns the element of type T with the identification of id.
+        /// </summary>
+        /// <param name="id">The identification.</param>
+        /// <returns>The element of the type T with the corresponding identification.</returns>
+        public Task<TService?> GetByGuidAsync(Guid id)
+        {
+            var clientAccess = new ClientAccess(BaseAddress, SessionToken);
+
+            return clientAccess.GetByGuidAsync<TService>(RequestUri, id);
+        }
+#endif
+
         /// <summary>
         /// Returns the element of type T with the identification of id.
         /// </summary>

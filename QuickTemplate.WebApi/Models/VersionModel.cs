@@ -8,7 +8,7 @@ namespace QuickTemplate.WebApi.Models
     /// <summary>
     /// The model with the version property.
     /// </summary>
-    public abstract partial class VersionModel : IdentityModel, IVersionable
+    public abstract partial class VersionModel : ModelObject, IVersionable
     {
         /// <summary>
         /// Row version of the entity.

@@ -9,10 +9,12 @@ namespace QuickTemplate.WebApi.Models.Account
     /// </summary>
     public class AccessIdentity : VersionModel
     {
+#if !GUID_ON
         /// <summary>
         /// Gets or sets the property data.
         /// </summary>
         public string Guid { get; set; } = string.Empty;
+#endif
         /// <summary>
         /// Gets or sets the property data.
         /// </summary>

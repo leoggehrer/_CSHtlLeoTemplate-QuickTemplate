@@ -5,17 +5,13 @@ namespace QuickTemplate.Logic.Entities.Account
 {
     [Table("Roles", Schema = "account")]
     [Index(nameof(Designation), IsUnique = true)]
-    internal partial class Role : VersionEntity
+    public partial class Role : VersionObject
     {
-        [Required]
+        public Guid Guid { get; internal set; } = Guid.NewGuid();
         [MaxLength(64)]
         public string Designation { get; set; } = string.Empty;
         [MaxLength(256)]
         public string? Description { get; set; }
-
-        // Navigation properties
-        [NotMapped]
-        public List<Identity> Identities { get; set; } = new();
     }
 }
 #endif

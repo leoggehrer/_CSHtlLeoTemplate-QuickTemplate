@@ -4,10 +4,10 @@
 namespace QuickTemplate.Logic.Entities.Account
 {
     [Table("LoginSessions", Schema = "account")]
-    internal partial class LoginSession : VersionEntity
+    internal partial class LoginSession : VersionObject
     {
         private DateTime? _logoutTime;
-        private Identity? identity;
+        private SecureIdentity? identity;
 
         public int IdentityId { get; internal set; }
         public int TimeOutInMinutes { get; internal set; }
@@ -40,7 +40,7 @@ namespace QuickTemplate.Logic.Entities.Account
         [MaxLength(4096)]
         public string? OptionalInfo { get; internal set; }
 
-        #region transient properties
+        #region Transient properties
         [NotMapped]
         internal byte[] PasswordHash { get; set; } = Array.Empty<byte>();
         [NotMapped]
@@ -71,10 +71,10 @@ namespace QuickTemplate.Logic.Entities.Account
         public bool HasChanged { get; set; }
         [NotMapped]
         public List<Role> Roles { get; } = new();
-        #endregion transient properties
+        #endregion Transient properties
 
         // Navigation properties
-        public Identity? Identity
+        public SecureIdentity? Identity
         {
             get => identity;
             set
