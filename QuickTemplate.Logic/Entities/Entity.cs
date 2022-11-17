@@ -2,6 +2,9 @@
 //MdStart
 namespace QuickTemplate.Logic.Entities
 {
+#if ACCOUNT_ON
+    using QuickTemplate.Logic.Entities.Account;
+#endif
     public abstract partial class Entity : EntityObject
     {
 #if GUID_ON
