@@ -25,7 +25,7 @@ namespace QuickTemplate.Logic.Models.Revision
             get => (QuickTemplate.Logic.Entities.Revision.History)(_source ??= new QuickTemplate.Logic.Entities.Revision.History());
             set => _source = value;
         }
-        public System.Int32 IdentityId
+        public IdType IdentityId
         {
             get => Source.IdentityId;
             set => Source.IdentityId = value;
@@ -45,7 +45,7 @@ namespace QuickTemplate.Logic.Models.Revision
             get => Source.SubjectName;
             set => Source.SubjectName = value;
         }
-        public System.Int32 SubjectId
+        public IdType SubjectId
         {
             get => Source.SubjectId;
             set => Source.SubjectId = value;

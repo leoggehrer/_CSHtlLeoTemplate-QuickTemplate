@@ -6,7 +6,7 @@ namespace QuickTemplate.Logic.Entities.Account
     [Table("Users", Schema = "account")]
     public partial class User : VersionObject
     {
-        public int IdentityId { get; set; }
+        public IdType IdentityId { get; set; }
         [Required]
         [MaxLength(64)]
         public string FirstName { get; set; } = string.Empty;

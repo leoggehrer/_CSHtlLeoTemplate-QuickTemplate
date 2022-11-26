@@ -140,7 +140,7 @@ namespace QuickTemplate.Logic.Facades
         /// </summary>
         /// <param name="id">The identification.</param>
         /// <returns>The element of the type T with the corresponding identification.</returns>
-        public virtual async Task<TModel?> GetByIdAsync(int id)
+        public virtual async Task<TModel?> GetByIdAsync(IdType id)
         {
             var entity = await Controller.GetByIdAsync(id).ConfigureAwait(false);
 
@@ -152,7 +152,7 @@ namespace QuickTemplate.Logic.Facades
         /// <param name="id">The identification.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>The element of the type T with the corresponding identification (with includes).</returns>
-        public virtual async Task<TModel?> GetByIdAsync(int id, params string[] includeItems)
+        public virtual async Task<TModel?> GetByIdAsync(IdType id, params string[] includeItems)
         {
             var entity = await Controller.GetByIdAsync(id, includeItems).ConfigureAwait(false);
 
@@ -428,7 +428,7 @@ namespace QuickTemplate.Logic.Facades
         /// Removes the element from the repository with the appropriate idelement.
         /// </summary>
         /// <param name="id">The identification.</param>
-        public virtual Task DeleteAsync(int id)
+        public virtual Task DeleteAsync(IdType id)
         {
             return Controller.DeleteAsync(id);
         }

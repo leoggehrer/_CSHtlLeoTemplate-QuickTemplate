@@ -105,7 +105,7 @@ namespace QuickTemplate.Logic.UnitTest
         /// <param name="id">Id form model updated in the Database.</param>
         /// <param name="changedModel">Model containing the changes.</param>
         /// <returns>The actual model</returns>
-        public async Task<TAccessModel> Update_AccessModel_AndCheck(int id, TAccessModel changedModel)
+        public async Task<TAccessModel> Update_AccessModel_AndCheck(IdType id, TAccessModel changedModel)
         {
             using var dataAccess = CreateDataAccess();
             using var dataAccessAfter = CreateDataAccess();

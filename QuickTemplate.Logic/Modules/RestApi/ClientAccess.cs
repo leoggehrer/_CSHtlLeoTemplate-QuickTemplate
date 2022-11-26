@@ -137,29 +137,6 @@ namespace QuickTemplate.Logic.Modules.RestApi
             return result;
         }
 
-        public async Task<T?> GetByIdAsync<T>(string requestUri, int id)
-        {
-            T? result;
-            using var client = CreateClient();
-            var response = await client.GetAsync($"{requestUri}/{id}").ConfigureAwait(false);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var contentData = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                
-                result = await JsonSerializer.DeserializeAsync<T>(contentData, DeserializerOptions).ConfigureAwait(false);
-            }
-            else
-            {
-                var stringData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                var errorMessage = $"{response.ReasonPhrase}: {stringData}";
-
-                System.Diagnostics.Debug.WriteLine("{0} ({1})", (int)response.StatusCode, errorMessage);
-                throw new LogicException(errorMessage);
-            }
-            return result;
-        }
-
 #if GUID_ON
         public async Task<T?> GetByGuidAsync<T>(string requestUri, Guid id)
         {
@@ -184,6 +161,29 @@ namespace QuickTemplate.Logic.Modules.RestApi
             return result;
         }
 #endif
+        public async Task<T?> GetByIdAsync<T>(string requestUri, IdType id)
+        {
+            T? result;
+            using var client = CreateClient();
+            var response = await client.GetAsync($"{requestUri}/{id}").ConfigureAwait(false);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var contentData = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                
+                result = await JsonSerializer.DeserializeAsync<T>(contentData, DeserializerOptions).ConfigureAwait(false);
+            }
+            else
+            {
+                var stringData = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                var errorMessage = $"{response.ReasonPhrase}: {stringData}";
+
+                System.Diagnostics.Debug.WriteLine("{0} ({1})", (int)response.StatusCode, errorMessage);
+                throw new LogicException(errorMessage);
+            }
+            return result;
+        }
+
         public async Task<T[]> GetAsync<T>(string requestUri)
         {
             T[]? result;
@@ -388,7 +388,7 @@ namespace QuickTemplate.Logic.Modules.RestApi
             return result!;
         }
 
-        public async Task<T> PutAsync<T>(string requestUri, int id, T model)
+        public async Task<T> PutAsync<T>(string requestUri, IdType id, T model)
         {
             model.CheckArgument(nameof(model));
 
@@ -414,7 +414,7 @@ namespace QuickTemplate.Logic.Modules.RestApi
             return result!;
         }
 
-        public async Task DeleteAsync(string requestUri, int id)
+        public async Task DeleteAsync(string requestUri, IdType id)
         {
             using var client = CreateClient();
             var response = await client.DeleteAsync($"{requestUri}/{id}").ConfigureAwait(false);

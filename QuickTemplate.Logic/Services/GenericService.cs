@@ -103,7 +103,7 @@ namespace QuickTemplate.Logic.Services
         /// </summary>
         /// <param name="id">The identification.</param>
         /// <returns>The element of the type T with the corresponding identification.</returns>
-        public virtual Task<TService?> GetByIdAsync(int id)
+        public virtual Task<TService?> GetByIdAsync(IdType id)
         {
             var clientAccess = new ClientAccess(BaseAddress, SessionToken);
 
@@ -253,7 +253,7 @@ namespace QuickTemplate.Logic.Services
         /// Removes the service from the repository with the appropriate idservice.
         /// </summary>
         /// <param name="id">The identification.</param>
-        public virtual Task DeleteAsync(int id)
+        public virtual Task DeleteAsync(IdType id)
         {
             var clientAccess = new ClientAccess(BaseAddress, SessionToken);
 

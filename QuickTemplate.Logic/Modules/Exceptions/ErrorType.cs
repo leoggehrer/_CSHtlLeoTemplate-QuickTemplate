@@ -18,6 +18,17 @@ namespace QuickTemplate.Logic.Modules.Exceptions
         NotLogedIn,
         NotAuthorized,
         AuthorizationTimeOut,
+
+#if ACCESSRULES_ON
+        InvalidAccessRuleEntityValue,
+        InvalidAccessRuleAccessValue,
+        InvalidAccessRuleAlreadyExits,
+
+        AccessRuleViolationCanNotCreated,
+        AccessRuleViolationCanNotRead,
+        AccessRuleViolationCanNotChanged,
+        AccessRuleViolationCanNotDeleted,
+#endif
 #endif
         InvalidId,
         InvalidPageSize,

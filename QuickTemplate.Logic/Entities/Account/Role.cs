@@ -5,7 +5,7 @@ namespace QuickTemplate.Logic.Entities.Account
 {
     [Table("Roles", Schema = "account")]
     [Index(nameof(Designation), IsUnique = true)]
-    public partial class Role : VersionObject
+    public partial class Role : VersionObject, Contracts.Account.IRole
     {
         public Guid Guid { get; internal set; } = Guid.NewGuid();
         [MaxLength(64)]

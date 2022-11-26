@@ -244,6 +244,10 @@ namespace TemplateCodeGenerator.Logic.Generation
         }
         protected virtual IGeneratedItem CreateDelegateModelFromType(Type type, Common.UnitType unitType, Common.ItemType itemType)
         {
+            var entityAlias = StaticLiterals.EntityAlias;
+            var modelAlias = StaticLiterals.ModelAlias;
+            var entityType = ItemProperties.CreateSubType(type);
+            var modelType = $"{ItemProperties.CreateModelSubType(type)}";
             var modelName = CreateModelName(type);
             var typeProperties = type.GetAllPropertyInfos();
             var generateProperties = typeProperties.Where(e => StaticLiterals.NoGenerationProperties.Any(p => p.Equals(e.Name)) == false) ?? Array.Empty<PropertyInfo>();
@@ -253,6 +257,9 @@ namespace TemplateCodeGenerator.Logic.Generation
                 FileExtension = StaticLiterals.CSharpFileExtension,
                 SubFilePath = ItemProperties.CreateModelSubPath(type, string.Empty, StaticLiterals.CSharpFileExtension),
             };
+
+            result.Add($"using {entityAlias} = {entityType};");
+            result.Add($"using {modelAlias} = {modelType};");
             result.AddRange(CreateComment(type));
             CreateModelAttributes(type, result.Source);
             result.Add($"public partial class {modelName}");
@@ -261,9 +268,9 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.AddRange(CreatePartialConstrutor("public", modelName));
 
             result.Add(string.Empty);
-            result.Add($"new internal {type.FullName} Source");
+            result.Add($"new internal {entityAlias} Source");
             result.Add("{");
-            result.Add($"get => ({type.FullName})(_source ??= new {type.FullName}());");
+            result.Add($"get => ({entityAlias})(_source ??= new {entityAlias}());");
             result.Add("set => _source = value;");
             result.Add("}");
             result.Add(string.Empty);
@@ -277,22 +284,22 @@ namespace TemplateCodeGenerator.Logic.Generation
             {
                 var visibility = type.IsPublic ? "public" : "internal";
 
-                result.AddRange(CreateDelegateCopyProperties("internal", type, type.FullName!));
-                result.AddRange(CreateDelegateCopyProperties(visibility, type, ItemProperties.CreateModelType(type)));
+                result.AddRange(CreateDelegateCopyProperties("internal", type, entityAlias));
+                result.AddRange(CreateDelegateCopyProperties(visibility, type, modelAlias));
             }
             else if (unitType == Common.UnitType.WebApi)
             {
-                result.AddRange(CreateCopyProperties("public", type, ItemProperties.CreateModelType(type)));
+                result.AddRange(CreateCopyProperties("public", type, modelAlias));
             }
             else if (unitType == Common.UnitType.AspMvc)
             {
-                result.AddRange(CreateCopyProperties("public", type, ItemProperties.CreateModelType(type), p => true));
+                result.AddRange(CreateCopyProperties("public", type, modelAlias, p => true));
             }
             result.AddRange(OverrideEquals(type));
             result.AddRange(CreateGetHashCode(type));
-            result.AddRange(CreateDelegateFactoryMethods(ItemProperties.CreateModelType(type), type, false));
+            result.AddRange(CreateDelegateFactoryMethods(modelAlias, entityAlias, type.IsPublic, false));
             result.Add("}");
-            result.EnvelopeWithANamespace(ItemProperties.CreateModelNamespace(type), "using System;");
+            result.EnvelopeWithANamespace(ItemProperties.CreateModelNamespace(type));
             result.FormatCSharpCode();
             return result;
         }

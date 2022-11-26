@@ -3,6 +3,7 @@
 using QuickTemplate.Logic.Contracts;
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
+using System.Transactions;
 
 namespace QuickTemplate.WebApi.Models
 {
@@ -14,8 +15,7 @@ namespace QuickTemplate.WebApi.Models
         /// <summary>
         /// ID of the model (primary key)
         /// </summary>
-        [Key]
-        public int Id { get; set; }
+        public IdType Id { get; set; }
 
         /// <summary>
         /// Determines whether two object instances are equal

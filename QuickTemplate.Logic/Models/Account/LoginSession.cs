@@ -3,6 +3,8 @@
 #if ACCOUNT_ON
 namespace QuickTemplate.Logic.Models.Account
 {
+    using TEntity = Entities.Account.LoginSession;
+    using TModel = Models.Account.LoginSession;
     public partial class LoginSession : VersionObject
     {
         public int IdentityId { get; set; }
@@ -14,7 +16,7 @@ namespace QuickTemplate.Logic.Models.Account
         public string? OptionalInfo { get; set; }
         public Role[] Roles { get; set; } = Array.Empty<Role>();
 
-        internal static LoginSession Create(Entities.Account.LoginSession other)
+        internal static LoginSession Create(TEntity other)
         {
             BeforeCreate(other);
             var result = new LoginSession();
@@ -24,8 +26,8 @@ namespace QuickTemplate.Logic.Models.Account
             AfterCreate(result, other);
             return result;
         }
-        static partial void BeforeCreate(QuickTemplate.Logic.Entities.Account.LoginSession other);
-        static partial void AfterCreate(QuickTemplate.Logic.Models.Account.LoginSession instance, QuickTemplate.Logic.Entities.Account.LoginSession other);
+        static partial void BeforeCreate(TEntity other);
+        static partial void AfterCreate(TModel instance, TEntity other);
     }
 }
 #endif

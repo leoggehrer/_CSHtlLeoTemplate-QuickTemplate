@@ -144,19 +144,22 @@ namespace TemplateCopier.ConApp
         private static bool runBusyProgress = false;
         private static void PrintBusyProgress()
         {
-            Console.WriteLine();
-            runBusyProgress = true;
-            Task.Factory.StartNew(async () =>
+            if (runBusyProgress == false)
             {
-                while (runBusyProgress)
+                Console.WriteLine();
+                runBusyProgress = true;
+                Task.Factory.StartNew(async () =>
                 {
-                    if (canBusyPrint)
+                    while (runBusyProgress)
                     {
-                        Console.Write(".");
+                        if (canBusyPrint)
+                        {
+                            Console.Write(".");
+                        }
+                        await Task.Delay(250).ConfigureAwait(false);
                     }
-                    await Task.Delay(250).ConfigureAwait(false);
-                }
-            });
+                });
+            }
         }
         private static string GetParentDirectory(string path)
         {

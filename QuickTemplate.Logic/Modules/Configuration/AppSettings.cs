@@ -21,13 +21,13 @@ namespace QuickTemplate.Logic.Modules.Configuration
 
         public static string Get(string key)
         {
-            var result = string.Empty;
+            var result = default(string);
 
             if (Configuration != null)
             {
                 result = Configuration[key];
             }
-            return result;
+            return result ?? string.Empty;
         }
         public static string Get(string key, string defaultValue)
         {

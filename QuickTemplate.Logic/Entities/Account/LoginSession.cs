@@ -9,7 +9,7 @@ namespace QuickTemplate.Logic.Entities.Account
         private DateTime? _logoutTime;
         private SecureIdentity? identity;
 
-        public int IdentityId { get; internal set; }
+        public IdType IdentityId { get; internal set; }
         public int TimeOutInMinutes { get; internal set; }
         [Required]
         [MaxLength(128)]

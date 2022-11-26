@@ -1,12 +1,8 @@
 ﻿//@CodeCopy
 //MdStart
-using QuickTemplate.Logic.DataContext;
-
 namespace QuickTemplate.Logic.Controllers
 {
-#if ACCOUNT_ON
-    using QuickTemplate.Logic.Modules.Security;
-#endif
+    using QuickTemplate.Logic.DataContext;
     public abstract partial class ControllerObject : IDisposable
     {
         static ControllerObject()
@@ -17,94 +13,58 @@ namespace QuickTemplate.Logic.Controllers
         static partial void BeforeClassInitialize();
         static partial void AfterClassInitialize();
 
+        #region Fields
         private readonly bool contextOwner;
+        #endregion Fields
+
+        #region Properties
         internal ProjectDbContext? Context { get; private set; }
-#if ACCOUNT_ON
-        #region SessionToken
-        protected event EventHandler ChangedSessionToken;
-
-        private string? sessionToken;
-
-        /// <summary>
-        /// Sets the session token.
-        /// </summary>
-        public string SessionToken
-        {
-            internal get => sessionToken ?? string.Empty;
-            set
-            {
-                sessionToken = value;
-                ChangedSessionToken?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        private void HandleChangedSessionToken(object source, EventArgs e)
-        {
-            var handled = false;
-
-            BeforeHandleManagedMembers(ref handled);
-
-            if (handled == false)
-            {
-            }
-            AfterHandleManagedMembers();
-        }
-        partial void BeforeHandleManagedMembers(ref bool handled);
-        partial void AfterHandleManagedMembers();
-        #endregion SessionToken
-#endif
+        #endregion Properties
 
         #region Instance-Constructors
         internal ControllerObject(ProjectDbContext context)
         {
-            Constructing();
+            Constructing(context);
+
             contextOwner = true;
             Context = context;
-#if ACCOUNT_ON
-            ChangedSessionToken += HandleChangedSessionToken!;
-#endif
+
+            ConstructingSecurityPart(context);
+            ConstructingAccessPart(context);
+
+            ConstructedAccessPart();
+            ConstructedSecurityPart();
+
             Constructed();
         }
         internal ControllerObject(ControllerObject other)
         {
-            Constructing();
-            if (other is null)
-                throw new ArgumentNullException(nameof(other));
-
             if (other.Context == null)
                 throw new Modules.Exceptions.LogicException("The context from the other controller must not be null.");
 
+            Constructing(other);
+
             contextOwner = false;
             Context = other.Context;
-#if ACCOUNT_ON
-            SessionToken = other.SessionToken;
-            ChangedSessionToken += HandleChangedSessionToken!;
-#endif
+
+            ConstructingSecurityPart(other);
+            ConstructingAccessPart(other);
+
+            ConstructedAccessPart();
+            ConstructedSecurityPart();
+
             Constructed();
         }
-        partial void Constructing();
+        partial void Constructing(ProjectDbContext context);
+        partial void Constructing(ControllerObject other);
+        partial void ConstructingSecurityPart(ProjectDbContext context);
+        partial void ConstructingSecurityPart(ControllerObject other);
+        partial void ConstructingAccessPart(ProjectDbContext context);
+        partial void ConstructingAccessPart(ControllerObject other);
         partial void Constructed();
+        partial void ConstructedSecurityPart();
+        partial void ConstructedAccessPart();
         #endregion Instance-Constructors
-
-#if ACCOUNT_ON
-        protected virtual Task CheckAuthorizationAsync(Type subjectType, string action)
-        {
-            return Authorization.CheckAuthorizationAsync(SessionToken, subjectType, action, string.Empty);
-        }
-        protected virtual Task CheckAuthorizationAsync(Type subjectType, string action, string infoData)
-        {
-            return Authorization.CheckAuthorizationAsync(SessionToken, subjectType, action, infoData);
-        }
-
-        protected virtual Task CheckAuthorizationAsync(Type subjectType, string action, params string[] roles)
-        {
-            return Authorization.CheckAuthorizationAsync(SessionToken, subjectType, action, string.Empty, roles);
-        }
-        protected virtual Task CheckAuthorizationAsync(Type subjectType, string action, string infoData, params string[] roles)
-        {
-            return Authorization.CheckAuthorizationAsync(SessionToken, subjectType, action, infoData, roles);
-        }
-#endif
 
         #region Dispose pattern
         private bool disposedValue;
@@ -115,6 +75,9 @@ namespace QuickTemplate.Logic.Controllers
             {
                 if (disposing)
                 {
+                    DisposeSecurityPart();
+                    DisposeAccessPart();
+
                     if (contextOwner)
                     {
                         Context?.Dispose();
@@ -131,6 +94,8 @@ namespace QuickTemplate.Logic.Controllers
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+        partial void DisposeSecurityPart();
+        partial void DisposeAccessPart();
         #endregion Dispose pattern
     }
 }

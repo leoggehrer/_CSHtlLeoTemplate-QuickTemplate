@@ -124,7 +124,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             return result;
         }
 
-        public IEnumerable<string> CreateDelegateFactoryMethods(string itemType, Type delegateType, bool newPrefix)
+        public IEnumerable<string> CreateDelegateFactoryMethods(string itemType, string delegateName, bool isPublic, bool newPrefix)
         {
             var result = new List<string>(CreateComment());
 
@@ -157,10 +157,10 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add("return result;");
             result.Add("}");
 
-            var visibility = delegateType.IsPublic ? "public" : "internal";
+            var visibility = isPublic ? "public" : "internal";
 
             result.AddRange(CreateComment());
-            result.Add($"{visibility}{(newPrefix ? " new " : " ")}static {itemType} Create({delegateType.FullName} other)");
+            result.Add($"{visibility}{(newPrefix ? " new " : " ")}static {itemType} Create({delegateName} other)");
             result.Add("{");
             result.Add("BeforeCreate(other);");
             result.Add($"var result = new {itemType}();");
@@ -178,8 +178,8 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add($"static partial void BeforeCreate({itemType} other);");
             result.Add($"static partial void AfterCreate({itemType} instance, {itemType} other);");
 
-            result.Add($"static partial void BeforeCreate({delegateType} other);");
-            result.Add($"static partial void AfterCreate({itemType} instance, {delegateType} other);");
+            result.Add($"static partial void BeforeCreate({delegateName} other);");
+            result.Add($"static partial void AfterCreate({itemType} instance, {delegateName} other);");
             return result;
         }
         #endregion Create factory methode

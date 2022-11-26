@@ -74,7 +74,7 @@ namespace QuickTemplate.Logic
             return AccountManager.LogoutAsync(sessionToken);
         }
 
-        public static async Task<Identity> GetIdentityByAsync(string sessionToken, int id)
+        public static async Task<Identity> GetIdentityByAsync(string sessionToken, IdType id)
         {
             using var ctrl = new Controllers.Account.IdentitiesController() { SessionToken = sessionToken };
             var entity = await ctrl.GetByIdAsync(id).ConfigureAwait(false);
@@ -88,7 +88,7 @@ namespace QuickTemplate.Logic
 
             return entities.Select(e => Identity.Create(e)).ToArray();
         }
-        public static async Task<Identity> UpdateIdentityAsync(string sessionToken, int id, Identity identity)
+        public static async Task<Identity> UpdateIdentityAsync(string sessionToken, IdType id, Identity identity)
         {
             using var ctrl = new Controllers.Account.IdentitiesController() { SessionToken = sessionToken };
             var entity = await ctrl.GetByIdAsync(id).ConfigureAwait(false);
@@ -105,7 +105,7 @@ namespace QuickTemplate.Logic
             identity.CopyFrom(entity);
             return identity;
         }
-        public static async Task DeleteIdentityAsync(string sessionToken, int id)
+        public static async Task DeleteIdentityAsync(string sessionToken, IdType id)
         {
             using var ctrl = new Controllers.Account.IdentitiesController() { SessionToken = sessionToken };
             var entity = await ctrl.GetByIdAsync(id).ConfigureAwait(false);

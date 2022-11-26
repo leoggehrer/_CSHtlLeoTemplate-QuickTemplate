@@ -1,6 +1,5 @@
 ﻿//@CodeCopy
 //MdStart
-
 namespace QuickTemplate.Logic.Contracts
 {
     /// <summary>
@@ -23,7 +22,7 @@ namespace QuickTemplate.Logic.Contracts
         /// <param name="id">The identification.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>The element of the type T with the corresponding identification (with includes).</returns>
-        Task<T?> GetByIdAsync(int id, params string[] includeItems);
+        Task<T?> GetByIdAsync(IdType id, params string[] includeItems);
         /// <summary>
         /// Returns all interfaces of the elements in the collection.
         /// </summary>

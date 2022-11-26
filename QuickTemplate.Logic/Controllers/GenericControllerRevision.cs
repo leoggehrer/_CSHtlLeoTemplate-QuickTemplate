@@ -1,15 +1,13 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON && REVISION_ON
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-
 namespace QuickTemplate.Logic.Controllers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text.Json;
+    using System.Threading.Tasks;
     partial class GenericController<TEntity>
     {
         private enum RevisionType
@@ -18,7 +16,7 @@ namespace QuickTemplate.Logic.Controllers
             Update,
             Delete,
         }
-        private record HistoryItem(int IdentityId, RevisionType RevisionType, DateTime ActionTime, Entities.IdentityEntity Entity, string? JsonData);
+        private record HistoryItem(IdType IdentityId, RevisionType RevisionType, DateTime ActionTime, Entities.EntityObject Entity, string? JsonData);
         private readonly List<HistoryItem> historyItems = new();
 
         partial void AfterExecuteInsert(TEntity entity)

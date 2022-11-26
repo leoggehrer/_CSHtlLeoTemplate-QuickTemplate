@@ -7,8 +7,8 @@ namespace QuickTemplate.Logic.Entities.Account
     [Index(nameof(IdentityId), nameof(RoleId), IsUnique = true)]
     public partial class IdentityXRole : VersionObject
     {
-        public int IdentityId { get; set; }
-        public int RoleId { get; set; }
+        public IdType IdentityId { get; set; }
+        public IdType RoleId { get; set; }
 
         // Navigation properties
         public Identity? Identity { get; set; }

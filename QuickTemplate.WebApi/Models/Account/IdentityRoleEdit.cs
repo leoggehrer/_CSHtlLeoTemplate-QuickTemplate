@@ -6,7 +6,7 @@ namespace QuickTemplate.WebApi.Models.Account
     /// <summary>
     /// This model represents an account role.
     /// </summary>
-    public partial class AccessRoleEdit
+    public partial class IdentityRoleEdit
     {
         /// <summary>
         /// Gets and sets a role designation.
@@ -22,9 +22,9 @@ namespace QuickTemplate.WebApi.Models.Account
         /// </summary>
         /// <param name="source">The object to copy.</param>
         /// <returns></returns>
-        public static AccessRoleEdit Create(object source)
+        public static IdentityRoleEdit Create(object source)
         {
-            var result = new AccessRoleEdit();
+            var result = new IdentityRoleEdit();
 
             result.CopyFrom(source);
             return result;

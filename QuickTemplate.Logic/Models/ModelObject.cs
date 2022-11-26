@@ -6,7 +6,7 @@ namespace QuickTemplate.Logic.Models
     using System.Collections;
     public abstract partial class ModelObject : IIdentifyable
     {
-        private int _id;
+        private IdType _id;
         protected Entities.EntityObject? _source;
 
         internal virtual Entities.EntityObject Source
@@ -17,7 +17,7 @@ namespace QuickTemplate.Logic.Models
         /// <summary>
         /// ID of the entity (primary key)
         /// </summary>
-        public virtual int Id
+        public virtual IdType Id
         {
             get => Source?.Id ?? _id;
             set

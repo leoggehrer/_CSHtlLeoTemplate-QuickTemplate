@@ -89,8 +89,8 @@ namespace QuickTemplate.AspMvc.Controllers.Account
             return View("Create", model);
         }
         // Extensions
-        private Models.Account.AccessRole[]? accessRoleList;
-        public Models.Account.AccessRole[] AccessRoleList
+        private Models.Account.IdentityRole[]? accessRoleList;
+        public Models.Account.IdentityRole[] AccessRoleList
         {
             get
             {
@@ -101,13 +101,13 @@ namespace QuickTemplate.AspMvc.Controllers.Account
 
                     ctrl.SessionToken = SessionWrapper.SessionToken;
 
-                    accessRoleList = Task.Run(async () => await ctrl.GetAllAsync("Designation asc")).Result.Select(e => Models.Account.AccessRole.Create(e)).ToArray();
+                    accessRoleList = Task.Run(async () => await ctrl.GetAllAsync("Designation asc")).Result.Select(e => Models.Account.IdentityRole.Create(e)).ToArray();
                 }
                 return accessRoleList;
             }
         }
 
-        partial void AfterToViewModel(Models.Account.Identity viewModel, ActionMode actionMode)
+        partial void AfterToViewModel(TViewModel viewModel, ActionMode actionMode)
         {
             if ((actionMode & ActionMode.EditAction) > 0)
             {
@@ -116,7 +116,7 @@ namespace QuickTemplate.AspMvc.Controllers.Account
             }
         }
 
-        public async Task<IActionResult> AddAccessRole(int id, int accessRoleId)
+        public async Task<IActionResult> AddAccessRole(IdType id, IdType accessRoleId)
         {
             try
             {
@@ -136,7 +136,7 @@ namespace QuickTemplate.AspMvc.Controllers.Account
             }
             return RedirectToAction("Edit", new { id });
         }
-        public async Task<IActionResult> RemoveAccessRole(int id, int accessRoleId)
+        public async Task<IActionResult> RemoveAccessRole(IdType id, IdType accessRoleId)
         {
             try
             {

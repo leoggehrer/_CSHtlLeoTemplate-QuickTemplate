@@ -6,7 +6,7 @@ namespace QuickTemplate.WebApi.Models.Account
     /// <summary>
     /// This model represents an account role.
     /// </summary>
-    public partial class AccessRole : VersionModel
+    public partial class IdentityRole : VersionModel
     {
 #if !GUID_ON
         /// <summary>
@@ -28,9 +28,9 @@ namespace QuickTemplate.WebApi.Models.Account
         /// </summary>
         /// <param name="source">The object to copy.</param>
         /// <returns></returns>
-        public static AccessRole Create(object source)
+        public static IdentityRole Create(object source)
         {
-            var result = new AccessRole();
+            var result = new IdentityRole();
 
             result.CopyFrom(source);
             return result;

@@ -44,6 +44,9 @@ namespace QuickTemplate.Logic.DataContext
         public DbSet<Entities.Account.IdentityXRole>? IdentityXRolesSet { get; set; }
         public DbSet<Entities.Account.User>? UserSet { get; set; }
         public DbSet<Entities.Account.LoginSession>? LoginSessionSet { get; set; }
+#if ACCESSRULES_ON
+        public DbSet<Entities.Account.AccessRule>? AccessRuleSet { get; set; }
+#endif
 #if LOGGING_ON
         public DbSet<Entities.Logging.ActionLog>? ActionLogSet { get; set; }
 #endif
@@ -181,6 +184,13 @@ namespace QuickTemplate.Logic.DataContext
                     handled = true;
                     result = LoginSessionSet as DbSet<E>;
                 }
+#if ACCESSRULES_ON
+                else if (typeof(E) == typeof(Entities.Account.AccessRule))
+                {
+                    handled = true;
+                    result = AccessRuleSet as DbSet<E>;
+                }
+#endif
 #if LOGGING_ON
                 else if (typeof(E) == typeof(Entities.Logging.ActionLog))
                 {

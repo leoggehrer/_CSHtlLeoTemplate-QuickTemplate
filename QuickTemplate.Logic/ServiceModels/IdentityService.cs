@@ -11,7 +11,7 @@ namespace QuickTemplate.Logic.ServiceModels
         /// <summary>
         /// ID of the entity (primary key)
         /// </summary>
-        public int Id { get; set; }
+        public IdType Id { get; set; }
         /// <summary>
         /// Determines whether two object instances are equal
         /// </summary>

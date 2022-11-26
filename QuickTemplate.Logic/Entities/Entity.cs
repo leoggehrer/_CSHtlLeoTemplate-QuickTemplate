@@ -32,16 +32,18 @@ namespace QuickTemplate.Logic.Entities
         /// <summary>
         /// Gets or sets the owner (Identity) reference.
         /// </summary>
+        [Column("CreatedById")]
         [ForeignKey(nameof(Identity))]
-        public int IdentityId_CreatedBy { get; internal set; }
+        public IdType? IdentityId_CreatedBy { get; internal set; }
 #endif
 
 #if ACCOUNT_ON && MODIFIEDBY_ON
         /// <summary>
         /// Gets or sets the reference of the user (Identity) who made the last change.
         /// </summary>
+        [Column("ModifiedById")]
         [ForeignKey(nameof(Identity))]
-        public int? IdentityId_ModifiedBy { get; internal set; }
+        public IdType? IdentityId_ModifiedBy { get; internal set; }
 #endif
     }
 }

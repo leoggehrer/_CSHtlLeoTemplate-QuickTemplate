@@ -1,7 +1,6 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON
-using QuickTemplate.Logic.Controllers;
 using QuickTemplate.Logic.Modules.Account;
 using QuickTemplate.Logic.Modules.Exceptions;
 using System.Reflection;
@@ -143,7 +142,7 @@ namespace QuickTemplate.Logic.Modules.Security
         }
 
 #if LOGGING_ON
-        private static void Logging(int identityId, string subject, string action, string info)
+        private static void Logging(IdType identityId, string subject, string action, string info)
         {
             Task.Run(async () =>
             {

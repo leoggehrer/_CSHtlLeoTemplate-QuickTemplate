@@ -3,7 +3,7 @@
 #if ACCOUNT_ON
 namespace QuickTemplate.Logic.Contracts.Account
 {
-    public partial interface IRolesAccess<T> : Contracts.IDataAccess<T>
+    public partial interface IRolesAccess<T> : IDataAccess<T>
     {
     }
 }

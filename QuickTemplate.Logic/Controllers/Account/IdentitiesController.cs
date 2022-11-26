@@ -41,7 +41,7 @@ namespace QuickTemplate.Logic.Controllers.Account
                                                    && e.Email.ToLower() == email.ToLower());
         }
 
-        public async Task AddRoleAsync(int identityId, int roleId)
+        public async Task AddRoleAsync(IdType identityId, IdType roleId)
         {
             await CheckAuthorizationAsync(GetType(), nameof(AddRoleAsync)).ConfigureAwait(false);
 
@@ -64,7 +64,7 @@ namespace QuickTemplate.Logic.Controllers.Account
                 }
             }
         }
-        public async Task RemoveRoleAsync(int identityId, int roleId)
+        public async Task RemoveRoleAsync(IdType identityId, IdType roleId)
         {
             await CheckAuthorizationAsync(GetType(), nameof(RemoveRoleAsync)).ConfigureAwait(false);
 

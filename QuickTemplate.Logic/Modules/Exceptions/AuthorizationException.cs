@@ -1,6 +1,6 @@
 ﻿//@CodeCopy
 //MdStart
-
+#if ACCOUNT_ON
 namespace QuickTemplate.Logic.Modules.Exceptions
 {
     /// <summary>
@@ -28,4 +28,5 @@ namespace QuickTemplate.Logic.Modules.Exceptions
         }
     }
 }
+#endif
 //MdEnd

@@ -9,7 +9,7 @@ namespace QuickTemplate.Logic.Entities
         /// ID of the entity (primary key)
         /// </summary>
         [Key]
-        public int Id { get; internal set; }
+        public IdType Id { get; internal set; }
 
         /// <summary>
         /// Determines whether two object instances are equal

@@ -6,13 +6,13 @@ namespace QuickTemplate.AspMvc.Models.Account
     using QuickTemplate.Logic.Modules.Common;
     public class Identity : VersionModel
     {
-        public AccessRole[] AccessRoleList { get; set; } = Array.Empty<AccessRole>();
+        public IdentityRole[] AccessRoleList { get; set; } = Array.Empty<IdentityRole>();
 
-        public AccessRole[] AddAccessRoleList
+        public IdentityRole[] AddAccessRoleList
         {
             get
             {
-                AccessRole[] result;
+                IdentityRole[] result;
 
                 if (AccessRoleList != null)
                 {
@@ -20,7 +20,7 @@ namespace QuickTemplate.AspMvc.Models.Account
                 }
                 else
                 {
-                    result = Array.Empty<AccessRole>();
+                    result = Array.Empty<IdentityRole>();
                 }
                 return result;
             }
@@ -35,7 +35,7 @@ namespace QuickTemplate.AspMvc.Models.Account
         public int AccessFailedCount { get; set; }
         public State State { get; set; } = State.Active;
 
-        public List<AccessRole> AccessRoles { get; set; } = new();
+        public List<IdentityRole> AccessRoles { get; set; } = new();
         public static Identity Create(Logic.Models.Account.Identity source)
         {
             var result = new Identity();

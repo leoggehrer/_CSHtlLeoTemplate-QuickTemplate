@@ -2,7 +2,6 @@
 //MdStart
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
-
 namespace QuickTemplate.Logic.Controllers
 {
     /// <summary>
@@ -10,9 +9,6 @@ namespace QuickTemplate.Logic.Controllers
     /// </summary>
     /// <typeparam name="TEntity">The entity type for which the operations are available.</typeparam>
 #if ACCOUNT_ON
-    using System.Reflection;
-    using QuickTemplate.Logic.Entities;
-    using QuickTemplate.Logic.Modules.Account;
     [Modules.Security.Authorize]
 #endif
     public abstract partial class GenericController<TEntity> : ControllerObject, Contracts.IDataAccess<TEntity>
@@ -183,60 +179,12 @@ namespace QuickTemplate.Logic.Controllers
         #endregion Before-Return
 
         #region Get
-#if GUID_ON
         /// <summary>
         /// Returns the element of type T with the identification of id.
         /// </summary>
         /// <param name="id">The identification.</param>
         /// <returns>The element of the type T with the corresponding identification.</returns>
-        public virtual async Task<TEntity?> GetByGuidAsync(Guid id)
-        {
-#if ACCOUNT_ON
-            await CheckAuthorizationAsync(GetType(), nameof(GetByIdAsync), id.ToString()).ConfigureAwait(false);
-#endif
-            var result = await ExecuteGetByGuidAsync(id).ConfigureAwait(false);
-
-            return result != null ? BeforeReturn(result) : null;
-        }
-        /// <summary>
-        /// Returns the element of type T with the identification of id.
-        /// </summary>
-        /// <param name="id">The identification.</param>
-        /// <param name="includeItems">The include items</param>
-        /// <returns>The element of the type T with the corresponding identification (with includes).</returns>
-        public virtual async Task<TEntity?> GetByGuidAsync(Guid id, params string[] includeItems)
-        {
-#if ACCOUNT_ON
-            await CheckAuthorizationAsync(GetType(), nameof(GetByIdAsync), id.ToString()).ConfigureAwait(false);
-#endif
-            var result = await ExecuteGetByGuidAsync(id, includeItems).ConfigureAwait(false);
-
-            return result != null ? BeforeReturn(result) : null;
-        }
-        /// <summary>
-        /// Returns the element of type T with the identification of id (without authorization).
-        /// </summary>
-        /// <param name="id">The identification.</param>
-        /// <param name="includeItems">The include items</param>
-        /// <returns>The element of the type T with the corresponding identification.</returns>
-        internal virtual Task<TEntity?> ExecuteGetByGuidAsync(Guid id, params string[] includeItems)
-        {
-            var query = EntitySet.AsQueryable();
-
-            foreach (var includeItem in Includes.Union(includeItems).Distinct())
-            {
-                query = query.Include(includeItem);
-            }
-            return query.Where("Guid.Equals(@0)", new object[] { id }).FirstOrDefaultAsync();
-        }
-#endif
-
-        /// <summary>
-        /// Returns the element of type T with the identification of id.
-        /// </summary>
-        /// <param name="id">The identification.</param>
-        /// <returns>The element of the type T with the corresponding identification.</returns>
-        public virtual async Task<TEntity?> GetByIdAsync(int id)
+        public virtual async Task<TEntity?> GetByIdAsync(IdType id)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetByIdAsync), id.ToString()).ConfigureAwait(false);
@@ -251,7 +199,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="id">The identification.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>The element of the type T with the corresponding identification (with includes).</returns>
-        public virtual async Task<TEntity?> GetByIdAsync(int id, params string[] includeItems)
+        public virtual async Task<TEntity?> GetByIdAsync(IdType id, params string[] includeItems)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetByIdAsync), id.ToString()).ConfigureAwait(false);
@@ -394,7 +342,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="id">The identification.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>The element of the type T with the corresponding identification (with includes).</returns>
-        internal virtual Task<TEntity?> ExecuteGetByIdAsync(int id, params string[] includeItems)
+        internal virtual Task<TEntity?> ExecuteGetByIdAsync(IdType id, params string[] includeItems)
         {
             var query = EntitySet.AsQueryable();
 
@@ -790,51 +738,6 @@ namespace QuickTemplate.Logic.Controllers
         {
 
         }
-        protected virtual void HandleInsertExtendedProperties(TEntity entity)
-        {
-            if (entity is Entities.Entity instance)
-            {
-#if GUID_ON
-                if (instance.Guid == Guid.Empty)
-                {
-                    instance.Guid = Guid.NewGuid();
-                }
-#endif
-
-#if CREATED_ON
-                instance.CreatedOn = DateTime.UtcNow;
-#endif
-
-#if MODIFIED_ON
-                instance.ModifiedOn = null;
-#endif
-
-#if ACCOUNT_ON && CREATEDBY_ON
-                var curSession = AccountManager.QueryLoginSession(SessionToken);
-
-                instance.IdentityId_CreatedBy = curSession?.IdentityId ?? 0;
-#endif
-
-#if ACCOUNT_ON && MODIFIEDBY_ON
-                instance.IdentityId_ModifiedBy = null;
-#endif
-            }
-        }
-        protected virtual void HandleUpdateExtendedProperties(TEntity entity)
-        {
-            if (entity is Entities.Entity instance)
-            {
-#if MODIFIED_ON
-                instance.ModifiedOn = DateTime.UtcNow;
-#endif
-
-#if ACCOUNT_ON && MODIFIEDBY_ON
-                var curSession = AccountManager.QueryLoginSession(SessionToken);
-
-                instance.IdentityId_ModifiedBy = curSession?.IdentityId ?? 0;
-#endif
-            }
-        }
         #endregion Action
 
         #region Insert
@@ -918,17 +821,21 @@ namespace QuickTemplate.Logic.Controllers
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(UpdateAsync)).ConfigureAwait(false);
-#endif
-            var result = await ExecuteUpdateAsync(entity).ConfigureAwait(false);
+            var result = ExecuteUpdate(entity);
 
             return BeforeReturn(result);
+#else
+            var result = ExecuteUpdate(entity);
+
+            return await Task.Run(() => BeforeReturn(result)).ConfigureAwait(false);
+#endif
         }
         /// <summary>
         /// The entity is being tracked by the context and exists in the repository, and some or all of its property values have been modified (without authorization).
         /// </summary>
         /// <param name="entity">The entity which is to be updated.</param>
         /// <returns>The the modified entity.</returns>
-        internal virtual Task<TEntity> ExecuteUpdateAsync(TEntity entity)
+        internal virtual TEntity ExecuteUpdate(TEntity entity)
         {
             ValidateEntity(ActionType.Update, entity);
             BeforeActionExecute(ActionType.Update, entity);
@@ -937,7 +844,7 @@ namespace QuickTemplate.Logic.Controllers
             EntitySet.Update(entity);
             AfterExecuteUpdate(entity);
             AfterActionExecute(ActionType.Update, entity);
-            return Task.Run(() => entity);
+            return entity;
         }
         /// <summary>
         /// The entities are being tracked by the context and exists in the repository, and some or all of its property values have been modified.
@@ -948,17 +855,21 @@ namespace QuickTemplate.Logic.Controllers
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(UpdateAsync), "Array").ConfigureAwait(false);
-#endif
-            var result = await ExecuteUpdateAsync(entities).ConfigureAwait(false);
+            var result = ExecuteUpdate(entities);
 
             return BeforeReturn(result);
+#else
+            var result = ExecuteUpdate(entities);
+
+            return await Task.Run(() => BeforeReturn(result)).ConfigureAwait(false);
+#endif
         }
         /// <summary>
         /// The entities are being tracked by the context and exists in the repository, and some or all of its property values have been modified.
         /// </summary>
         /// <param name="entities">The entities which are to be updated.</param>
         /// <returns>The updated entities.</returns>
-        internal virtual Task<IEnumerable<TEntity>> ExecuteUpdateAsync(IEnumerable<TEntity> entities)
+        internal virtual IEnumerable<TEntity> ExecuteUpdate(IEnumerable<TEntity> entities)
         {
             foreach (var entity in entities)
             {
@@ -973,7 +884,7 @@ namespace QuickTemplate.Logic.Controllers
                 AfterExecuteUpdate(entity);
                 AfterActionExecute(ActionType.Update, entity);
             }
-            return Task.Run(() => entities);
+            return entities;
         }
         partial void BeforeExecuteUpdate(TEntity entity);
         partial void AfterExecuteUpdate(TEntity entity);
@@ -984,30 +895,30 @@ namespace QuickTemplate.Logic.Controllers
         /// Removes the entity from the repository with the appropriate identity.
         /// </summary>
         /// <param name="id">The identification.</param>
-        public virtual async Task DeleteAsync(int id)
+        public virtual async Task DeleteAsync(IdType id)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(DeleteAsync), id.ToString()).ConfigureAwait(false);
 #endif
-            await ExecuteDeleteAsync(id).ConfigureAwait(false);
+            TEntity? entity = await ExecuteGetByIdAsync(id).ConfigureAwait(false);
+
+            if (entity != null)
+            {
+                ExecuteDelete(entity);
+            }
         }
         /// <summary>
         /// Removes the entity from the repository with the appropriate identity (without authorization).
         /// </summary>
         /// <param name="id">The identification.</param>
-        internal virtual async Task ExecuteDeleteAsync(int id)
+        internal virtual void ExecuteDelete(TEntity entity)
         {
-            TEntity? entity = await EntitySet.FindAsync(id).ConfigureAwait(false);
-
-            if (entity != null)
-            {
-                ValidateEntity(ActionType.Delete, entity);
-                BeforeActionExecute(ActionType.Delete, entity);
-                BeforeExecuteDelete(entity);
-                EntitySet.Remove(entity);
-                AfterExecuteDelete(entity);
-                AfterActionExecute(ActionType.Delete, entity);
-            }
+            ValidateEntity(ActionType.Delete, entity);
+            BeforeActionExecute(ActionType.Delete, entity);
+            BeforeExecuteDelete(entity);
+            EntitySet.Remove(entity);
+            AfterExecuteDelete(entity);
+            AfterActionExecute(ActionType.Delete, entity);
         }
         partial void BeforeExecuteDelete(TEntity entity);
         partial void AfterExecuteDelete(TEntity entity);

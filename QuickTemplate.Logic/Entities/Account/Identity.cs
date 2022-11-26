@@ -3,11 +3,12 @@
 #if ACCOUNT_ON
 namespace QuickTemplate.Logic.Entities.Account
 {
+    using QuickTemplate.Logic.Contracts.Account;
     using QuickTemplate.Logic.Modules.Common;
 
     [Table("Identities", Schema = "account")]
     [Index(nameof(Email), IsUnique = true)]
-    public abstract partial class Identity : VersionObject
+    public abstract partial class Identity : VersionObject, IIdentity
     {
         public Guid Guid { get; internal set; } = Guid.NewGuid();
         [MaxLength(128)]
@@ -18,9 +19,16 @@ namespace QuickTemplate.Logic.Entities.Account
         public bool EnableJwtAuth { get; set; }
         public int AccessFailedCount { get; set; }
         public State State { get; set; } = State.Active;
-
+        public IRole[] Roles => IdentityXRoles.Where(iXr => iXr.Role != null)
+                                              .Select(iXr => iXr.Role!)
+                                              .ToArray();
         // Navigation properties
         public List<IdentityXRole> IdentityXRoles { get; set; } = new();
+
+        public bool HasRole(Guid guid)
+        {
+            return IdentityXRoles.Any(iXr => iXr.Role != null && iXr.Role.Guid == guid);
+        }
     }
 }
 #endif

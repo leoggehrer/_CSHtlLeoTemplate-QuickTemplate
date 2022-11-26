@@ -1,11 +1,9 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON
-using System.Globalization;
-
 namespace QuickTemplate.AspMvc.Models.Account
 {
-    public partial class AccessRole : VersionModel
+    public partial class IdentityRole : VersionModel
     {
 #if !GUID_ON
         /// <summary>
@@ -16,9 +14,9 @@ namespace QuickTemplate.AspMvc.Models.Account
         public string Designation { get; set; } = string.Empty;
         public string? Description { get; set; } = string.Empty;
 
-        public static AccessRole Create(object source)
+        public static IdentityRole Create(object source)
         {
-            var result = new AccessRole();
+            var result = new IdentityRole();
 
             result.CopyFrom(source);
             return result;

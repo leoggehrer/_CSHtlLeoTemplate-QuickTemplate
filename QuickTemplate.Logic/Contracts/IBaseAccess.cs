@@ -9,12 +9,6 @@ namespace QuickTemplate.Logic.Contracts
     /// <typeparam name="T">The generic type.</typeparam>
     public partial interface IBaseAccess<T> : IDisposable
     {
-#if ACCOUNT_ON
-        /// <summary>
-        /// Sets the authorization token.
-        /// </summary>
-        string SessionToken { set; }
-#endif
         /// <summary>
         /// Gets the maximum page size.
         /// </summary>
@@ -38,20 +32,12 @@ namespace QuickTemplate.Logic.Contracts
         /// <returns>Number of entities in the collection.</returns>
         Task<int> CountAsync(string predicate);
 
-#if GUID_ON
         /// <summary>
         /// Returns the element of type T with the identification of id.
         /// </summary>
         /// <param name="id">The identification.</param>
         /// <returns>The element of the type T with the corresponding identification.</returns>
-        Task<T?> GetByGuidAsync(Guid id);
-#endif
-        /// <summary>
-        /// Returns the element of type T with the identification of id.
-        /// </summary>
-        /// <param name="id">The identification.</param>
-        /// <returns>The element of the type T with the corresponding identification.</returns>
-        Task<T?> GetByIdAsync(int id);
+        Task<T?> GetByIdAsync(IdType id);
         /// <summary>
         /// Returns all objects of the elements in the collection.
         /// </summary>
@@ -128,7 +114,7 @@ namespace QuickTemplate.Logic.Contracts
         /// Removes the element from the repository with the appropriate idelement.
         /// </summary>
         /// <param name="id">The identification.</param>
-        Task DeleteAsync(int id);
+        Task DeleteAsync(IdType id);
 
         /// <summary>
         /// Saves any changes in the underlying persistence.

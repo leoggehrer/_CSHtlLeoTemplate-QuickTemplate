@@ -6,7 +6,6 @@ namespace TemplateCodeGenerator.Logic.Generation
     using TemplateCodeGenerator.Logic.Common;
     using TemplateCodeGenerator.Logic.Contracts;
     using TemplateCodeGenerator.Logic.Extensions;
-    using TemplateCodeGenerator.Logic.Models;
 
     internal abstract partial class GeneratorObject
     {

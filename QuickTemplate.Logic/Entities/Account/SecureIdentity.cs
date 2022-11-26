@@ -18,9 +18,6 @@ namespace QuickTemplate.Logic.Entities.Account
         [NotMapped]
         public string Password { get; set; } = string.Empty;
         #endregion Transient properties
-
-        // Navigation properties
-        public List<LoginSession> LoginSessions { get; set; } = new();
     }
 }
 #endif

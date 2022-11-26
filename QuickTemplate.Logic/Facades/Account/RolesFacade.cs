@@ -3,10 +3,8 @@
 #if ACCOUNT_ON
 namespace QuickTemplate.Logic.Facades.Account
 {
-    using TModel = Models.Account.Role;
     using TEntity = Entities.Account.Role;
-    using System;
-
+    using TModel = Models.Account.Role;
     public sealed partial class RolesFacade : FacadeObject, Contracts.Account.IRolesAccess<TModel>
     {
         private Contracts.Account.IRolesAccess<TEntity> Controller => (ControllerObject as Contracts.Account.IRolesAccess<TEntity>)!;
@@ -140,7 +138,7 @@ namespace QuickTemplate.Logic.Facades.Account
         /// </summary>
         /// <param name="id">The identification.</param>
         /// <returns>The element of the type T with the corresponding identification.</returns>
-        public async Task<TModel?> GetByIdAsync(int id)
+        public async Task<TModel?> GetByIdAsync(IdType id)
         {
             var handled = false;
             var result = default(TModel);
@@ -156,7 +154,7 @@ namespace QuickTemplate.Logic.Facades.Account
             AfterGetById(result);
             return result;
         }
-        partial void BeforeGetById(ref TModel? model, int id, ref bool handled);
+        partial void BeforeGetById(ref TModel? model, IdType id, ref bool handled);
         partial void AfterGetById(TModel? model);
         /// <summary>
         /// Returns the element of type T with the identification of id.
@@ -164,7 +162,7 @@ namespace QuickTemplate.Logic.Facades.Account
         /// <param name="id">The identification.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>The element of the type T with the corresponding identification (with includes).</returns>
-        public async Task<TModel?> GetByIdAsync(int id, params string[] includeItems)
+        public async Task<TModel?> GetByIdAsync(IdType id, params string[] includeItems)
         {
             var handled = false;
             var result = default(TModel);
@@ -180,7 +178,7 @@ namespace QuickTemplate.Logic.Facades.Account
             AfterGetById(result, includeItems);
             return result;
         }
-        partial void BeforeGetById(ref TModel? model, int id, string[] includeItems, ref bool handled);
+        partial void BeforeGetById(ref TModel? model, IdType id, string[] includeItems, ref bool handled);
         partial void AfterGetById(TModel? model, string[] includeItems);
 
         /// <summary>
@@ -602,7 +600,7 @@ namespace QuickTemplate.Logic.Facades.Account
         /// Removes the element from the repository with the appropriate idelement.
         /// </summary>
         /// <param name="id">The identification.</param>
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(IdType id)
         {
             var handled = false;
 
@@ -613,8 +611,8 @@ namespace QuickTemplate.Logic.Facades.Account
             }
             AfterDelete(id);
         }
-        partial void BeforeDelete(int id, ref bool handled);
-        partial void AfterDelete(int id);
+        partial void BeforeDelete(IdType id, ref bool handled);
+        partial void AfterDelete(IdType id);
 
         /// <summary>
         /// Saves any changes in the underlying persistence.

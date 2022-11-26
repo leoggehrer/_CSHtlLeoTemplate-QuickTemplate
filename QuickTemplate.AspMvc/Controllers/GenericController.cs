@@ -91,7 +91,7 @@ namespace QuickTemplate.AspMvc.Controllers
             return RedirectToAction(nameof(Index));
         }
         // GET: Item/Details/5
-        public virtual async Task<IActionResult> Details(int? id)
+        public virtual async Task<IActionResult> Details(IdType? id)
         {
             if (id == null)
             {
@@ -152,7 +152,7 @@ namespace QuickTemplate.AspMvc.Controllers
         }
 
         // GET: Item/Edit/5
-        public virtual async Task<IActionResult> Edit(int? id)
+        public virtual async Task<IActionResult> Edit(IdType? id)
         {
             if (id == null)
             {
@@ -173,7 +173,7 @@ namespace QuickTemplate.AspMvc.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public virtual async Task<IActionResult> Edit(int id, TViewModel viewModel)
+        public virtual async Task<IActionResult> Edit(IdType id, TViewModel viewModel)
         {
             var accessModel = await DataAccess.GetByIdAsync(id);
 
@@ -211,7 +211,7 @@ namespace QuickTemplate.AspMvc.Controllers
         }
 
         // GET: Item/Delete/5
-        public virtual async Task<IActionResult> Delete(int? id)
+        public virtual async Task<IActionResult> Delete(IdType? id)
         {
             if (id == null)
             {
@@ -230,7 +230,7 @@ namespace QuickTemplate.AspMvc.Controllers
         // POST: Item/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public virtual async Task<IActionResult> DeleteConfirmed(int id)
+        public virtual async Task<IActionResult> DeleteConfirmed(IdType id)
         {
             var accessModel = await DataAccess.GetByIdAsync(id);
 

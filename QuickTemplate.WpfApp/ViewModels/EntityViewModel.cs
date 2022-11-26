@@ -17,7 +17,7 @@ namespace QuickTemplate.WpfApp.ViewModels
         #endregion fields
 
         #region properties
-        public int Id
+        public IdType Id
         {
             get { return Entity.Id; }
         }
@@ -52,7 +52,7 @@ namespace QuickTemplate.WpfApp.ViewModels
         {
             OnPropertyChanged(nameof(Id));
         }
-        public virtual void Load(int id)
+        public virtual void Load(IdType id)
         {
             using var ctrl = CreateController();
             var entity = ctrl.GetByIdAsync(id).Result;
@@ -73,7 +73,7 @@ namespace QuickTemplate.WpfApp.ViewModels
 
                 try
                 {
-                    if (Entity.Id > 0)
+                    if (Entity.Id != default(IdType))
                     {
                         var dbEntity = await ctrl.GetByIdAsync(Entity.Id);
 
@@ -106,7 +106,7 @@ namespace QuickTemplate.WpfApp.ViewModels
                 Window?.Close();
             }
         }
-        public virtual void Delete(int id)
+        public virtual void Delete(IdType id)
         {
             var error = false;
             var result = MessageBox.Show($"Are you sure you want to delete the entry?", "Save", MessageBoxButton.YesNo, MessageBoxImage.Question);

@@ -3,7 +3,8 @@
 #if ACCOUNT_ON
 namespace QuickTemplate.Logic.Models.Account
 {
-    using System;
+    using TEntity = Entities.Account.User;
+    using TModel = Models.Account.User;
     public partial class User : VersionObject
     {
         static User()
@@ -20,56 +21,65 @@ namespace QuickTemplate.Logic.Models.Account
         }
         partial void Constructing();
         partial void Constructed();
-        new internal QuickTemplate.Logic.Entities.Account.User Source
+        new internal TEntity Source
         {
-            get => (QuickTemplate.Logic.Entities.Account.User)(_source ??= new QuickTemplate.Logic.Entities.Account.User());
+            get => (TEntity)(_source ??= new TEntity());
             set => _source = value;
         }
-        public System.Int32 IdentityId
+        public IdType IdentityId
         {
             get => Source.IdentityId;
             set => Source.IdentityId = value;
         }
-        public System.String FirstName
+        public String FirstName
         {
             get => Source.FirstName;
             set => Source.FirstName = value;
         }
-        public System.String LastName
+        public String LastName
         {
             get => Source.LastName;
             set => Source.LastName = value;
         }
-        internal void CopyProperties(QuickTemplate.Logic.Entities.Account.User other)
+
+        internal void CopyProperties(TEntity other)
         {
             bool handled = false;
             BeforeCopyProperties(other, ref handled);
             if (handled == false)
             {
+                Id = other.Id;
+#if ROWVERSION_ON
+                RowVersion = other.RowVersion;
+#endif
                 IdentityId = other.IdentityId;
                 FirstName = other.FirstName;
                 LastName = other.LastName;
-                Id = other.Id;
             }
             AfterCopyProperties(other);
         }
-        partial void BeforeCopyProperties(QuickTemplate.Logic.Entities.Account.User other, ref bool handled);
-        partial void AfterCopyProperties(QuickTemplate.Logic.Entities.Account.User other);
-        public void CopyProperties(QuickTemplate.Logic.Models.Account.User other)
+        partial void BeforeCopyProperties(TEntity other, ref bool handled);
+        partial void AfterCopyProperties(TEntity other);
+
+        public void CopyProperties(TModel other)
         {
             bool handled = false;
             BeforeCopyProperties(other, ref handled);
             if (handled == false)
             {
+                Id = other.Id;
+#if ROWVERSION_ON
+                RowVersion = other.RowVersion;
+#endif
                 IdentityId = other.IdentityId;
                 FirstName = other.FirstName;
                 LastName = other.LastName;
-                Id = other.Id;
             }
             AfterCopyProperties(other);
         }
-        partial void BeforeCopyProperties(QuickTemplate.Logic.Models.Account.User other, ref bool handled);
-        partial void AfterCopyProperties(QuickTemplate.Logic.Models.Account.User other);
+        partial void BeforeCopyProperties(TModel other, ref bool handled);
+        partial void AfterCopyProperties(TModel other);
+
         public override bool Equals(object? obj)
         {
             bool result = false;
@@ -84,46 +94,47 @@ namespace QuickTemplate.Logic.Models.Account
         {
             return HashCode.Combine(IdentityId, FirstName, LastName, Id);
         }
-        public static QuickTemplate.Logic.Models.Account.User Create()
+
+        public static TModel Create()
         {
             BeforeCreate();
-            var result = new QuickTemplate.Logic.Models.Account.User();
+            var result = new TModel();
             AfterCreate(result);
             return result;
         }
-        public static QuickTemplate.Logic.Models.Account.User Create(object other)
+        public static TModel Create(object other)
         {
             BeforeCreate(other);
             CommonBase.Extensions.ObjectExtensions.CheckArgument(other, nameof(other));
-            var result = new QuickTemplate.Logic.Models.Account.User();
+            var result = new TModel();
             CommonBase.Extensions.ObjectExtensions.CopyFrom(result, other);
             AfterCreate(result, other);
             return result;
         }
-        public static QuickTemplate.Logic.Models.Account.User Create(QuickTemplate.Logic.Models.Account.User other)
+        public static TModel Create(TModel other)
         {
             BeforeCreate(other);
-            var result = new QuickTemplate.Logic.Models.Account.User();
+            var result = new TModel();
             result.CopyProperties(other);
             AfterCreate(result, other);
             return result;
         }
-        internal static QuickTemplate.Logic.Models.Account.User Create(QuickTemplate.Logic.Entities.Account.User other)
+        internal static TModel Create(TEntity other)
         {
             BeforeCreate(other);
-            var result = new QuickTemplate.Logic.Models.Account.User();
+            var result = new TModel();
             result.CopyProperties(other);
             AfterCreate(result, other);
             return result;
         }
         static partial void BeforeCreate();
-        static partial void AfterCreate(QuickTemplate.Logic.Models.Account.User instance);
+        static partial void AfterCreate(TModel instance);
         static partial void BeforeCreate(object other);
-        static partial void AfterCreate(QuickTemplate.Logic.Models.Account.User instance, object other);
-        static partial void BeforeCreate(QuickTemplate.Logic.Models.Account.User other);
-        static partial void AfterCreate(QuickTemplate.Logic.Models.Account.User instance, QuickTemplate.Logic.Models.Account.User other);
-        static partial void BeforeCreate(QuickTemplate.Logic.Entities.Account.User other);
-        static partial void AfterCreate(QuickTemplate.Logic.Models.Account.User instance, QuickTemplate.Logic.Entities.Account.User other);
+        static partial void AfterCreate(TModel instance, object other);
+        static partial void BeforeCreate(TModel other);
+        static partial void AfterCreate(TModel instance, TModel other);
+        static partial void BeforeCreate(TEntity other);
+        static partial void AfterCreate(TModel instance, TEntity other);
     }
 }
 #endif

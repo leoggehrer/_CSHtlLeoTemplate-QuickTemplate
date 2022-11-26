@@ -1,6 +1,7 @@
 ﻿//@CodeCopy
 //MdStart
-namespace QuickTemplate.Logic.Modules.Common
+#if ACCOUNT_ON && ACCESSRULES_ON
+namespace QuickTemplate.Logic.Modules.Account
 {
     public enum AccessOperation
     {
@@ -14,4 +15,5 @@ namespace QuickTemplate.Logic.Modules.Common
         CRUD = Create + Read + Update + Delete,
     }
 }
+#endif
 //MdEnd

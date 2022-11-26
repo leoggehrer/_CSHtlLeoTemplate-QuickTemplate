@@ -5,7 +5,7 @@ namespace QuickTemplate.Logic.Contracts
 {
     public partial interface IIdentifyable
     {
-        int Id { get; }
+        IdType Id { get; }
     }
 }
 //MdEnd

@@ -411,6 +411,10 @@ namespace TemplateCodeGenerator.Logic.Generation
             {
                 result.Add($"{tsPropertyName}: string;");
             }
+            else if (propertyInfo.PropertyType == typeof(Guid))
+            {
+                result.Add($"{tsPropertyName}: string;");
+            }
             else if (propertyInfo.PropertyType == typeof(bool))
             {
                 result.Add($"{tsPropertyName}: boolean;");
@@ -439,6 +443,10 @@ namespace TemplateCodeGenerator.Logic.Generation
             else if (propertyInfo.PropertyType.IsInterface)
             {
                 result.Add($"{tsPropertyName}: {propertyInfo.PropertyType.Name[1..]};");
+            }
+            else
+            {
+                result.Add($"{tsPropertyName}: any;");
             }
             return result;
         }

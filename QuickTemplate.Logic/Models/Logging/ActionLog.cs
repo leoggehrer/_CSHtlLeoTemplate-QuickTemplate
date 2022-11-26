@@ -25,7 +25,7 @@ namespace QuickTemplate.Logic.Models.Logging
             get => (QuickTemplate.Logic.Entities.Logging.ActionLog)(_source ??= new QuickTemplate.Logic.Entities.Logging.ActionLog());
             set => _source = value;
         }
-        public System.Int32 IdentityId
+        public IdType IdentityId
         {
             get => Source.IdentityId;
             set => Source.IdentityId = value;

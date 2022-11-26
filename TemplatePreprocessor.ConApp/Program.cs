@@ -17,9 +17,10 @@ namespace TemplatePreprocessor.ConApp
 
             UserPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             SourcePath = GetCurrentSolutionPath();
-            Defines = new string[]
+            defines = new string[]
             {
                 "ACCOUNT_OFF",
+                "ACCESSRULES_ON",
                 "LOGGING_OFF",
                 "REVISION_OFF",
                 "DEVELOP_OFF",
@@ -29,18 +30,21 @@ namespace TemplatePreprocessor.ConApp
                 "MODIFIED_OFF",
                 "CREATEDBY_OFF",
                 "MODIFIEDBY_OFF",
+                "IDINT_ON",
+                "IDLONG_OFF",
+                "IDGUID_OFF",
             };
             ClassConstructed();
         }
         static partial void ClassConstructing();
         static partial void ClassConstructed();
         #endregion Class-Constructors
-        
+
         #region Properties
         private static string? HomePath { get; set; }
         private static string UserPath { get; set; }
         private static string SourcePath { get; set; }
-        private static string[] Defines { get; set; }
+        private static string[] defines { get; set; }
         #endregion Properties
 
         private static void Main(/*string[] args*/)
@@ -57,13 +61,13 @@ namespace TemplatePreprocessor.ConApp
             var saveForeColor = Console.ForegroundColor;
 
             PrintBusyProgress();
-            while (input.Equals("x") == false)
+            while (input!.Equals("x") == false)
             {
-                var menuIndex = 0;
+                var changedDefines = false;
                 var sourceSolutionName = GetSolutionNameByPath(SourcePath);
 
                 // Read defines from the solution
-                Defines = GetPreprocessorDefinesInProjectFiles(SourcePath, Defines);
+                defines = GetPreprocessorDefinesInProjectFiles(SourcePath, defines);
 
                 runBusyProgress = false;
                 Console.Clear();
@@ -71,27 +75,24 @@ namespace TemplatePreprocessor.ConApp
                 Console.WriteLine("Template Preprocessor");
                 Console.WriteLine("=====================");
                 Console.WriteLine();
-                Console.WriteLine($"Define-Values: {string.Join(" ", Defines)}");
+                PrintDefines(defines);
                 Console.WriteLine();
                 Console.WriteLine($"Set define-values '{sourceSolutionName}' from: {SourcePath}");
                 Console.WriteLine();
-                Console.WriteLine($"[{++menuIndex, -2}] Change source path");
-
-                for (int i = 0; i < Defines.Length; i++)
-                {
-                    Console.WriteLine($"[{++menuIndex, -2}] Set definition {(Defines[i].EndsWith("_ON") ? Defines[i].Replace("_ON", "_OFF") : Defines[i].Replace("_OFF", "_ON"))}");
-                }
-
-                Console.WriteLine($"[{++menuIndex, -2}] Start assignment process...");
-                Console.WriteLine();
-                Console.WriteLine("[x|X] Exit");
+                PrintMenu(defines);
                 Console.WriteLine();
                 Console.Write("Choose: ");
 
                 input = Console.ReadLine()?.ToLower() ?? String.Empty;
-                Console.ForegroundColor = saveForeColor;
-                if (Int32.TryParse(input, out var select))
+                var numbers = input?.Trim()
+                    .Split(',').Where(s => Int32.TryParse(s, out int n))
+                    .Select(s => Int32.Parse(s))
+                    .ToArray();
+
+                for (int n = 0; n < numbers!.Length; n++)
                 {
+                    var select = numbers[n];
+
                     if (select == 1)
                     {
                         var solutionPath = GetCurrentSolutionPath();
@@ -113,59 +114,164 @@ namespace TemplatePreprocessor.ConApp
                             if ((number - 1) >= 0 && (number - 1) < qtProjects.Length)
                             {
                                 SourcePath = qtProjects[number - 1];
+                                defines = GetPreprocessorDefinesInProjectFiles(SourcePath, defines);
                             }
                         }
-                        else if (string.IsNullOrEmpty(selectOrPath) == false)
+                        else if (string.IsNullOrEmpty(selectOrPath) == false && Directory.Exists(selectOrPath))
                         {
                             SourcePath = selectOrPath;
+                            defines = GetPreprocessorDefinesInProjectFiles(SourcePath, defines);
                         }
                     }
-                    else if ((select - 2) >= 0 && (select - 2) < Defines.Length)
+                    else if ((select - 2) >= 0 && (select - 2) < defines.Length)
+                    {
+                        var defIdx = select - 2;
+
+                        changedDefines = true;
+                        SwitchDefine(defines, defIdx);
+                    }
+                    else if ((select - 2) == defines.Length)
                     {
                         PrintBusyProgress();
-                        if (Defines[select - 2].EndsWith("_ON"))
-                        {
-                            Defines[select - 2] = Defines[select - 2].Replace("_ON", "_OFF");
-                        }
-                        else
-                        {
-                            Defines[select - 2] = Defines[select - 2].Replace("_OFF", "_ON");
-                        }
-                        SetPreprocessorDefinesInProjectFiles(SourcePath, Defines);
-                        EditPreprocessorDefinesInRazorFiles(SourcePath, Defines);
+                        SetPreprocessorDefinesInProjectFiles(SourcePath, defines);
+                        SetPreprocessorDefinesInRazorFiles(SourcePath, defines);
                     }
-                    else if ((select - 2) == Defines.Length)
-                    {
-                        PrintBusyProgress();
-                        SetPreprocessorDefinesInProjectFiles(SourcePath, Defines);
-                        EditPreprocessorDefinesInRazorFiles(SourcePath, Defines);
-                    }
-                    runBusyProgress = false;
                 }
+
+                if (changedDefines)
+                {
+                    PrintBusyProgress();
+                    SetPreprocessorDefinesInProjectFiles(SourcePath, defines);
+                    SetPreprocessorDefinesInRazorFiles(SourcePath, defines);
+                }
+
+                changedDefines = false;
+                runBusyProgress = false;
                 Console.ResetColor();
+            }
+        }
+        private static void SwitchDefine(string[] defines, int idx)
+        {
+            if (idx >= 0 && idx < defines.Length)
+            {
+                if (defines[idx].EndsWith("_ON"))
+                {
+                    if (defines[idx].StartsWith("IDINT_") == false
+                        && defines[idx].StartsWith("IDLONG_") == false
+                        && defines[idx].StartsWith("IDGUID_") == false)
+                    {
+                        defines[idx] = defines[idx].Replace("_ON", "_OFF");
+                    }
+                }
+                else
+                {
+                    if (defines[idx].StartsWith("IDINT_") == true)
+                    {
+                        SwitchDefine(defines, "IDINT_", "ON");
+                        SwitchDefine(defines, "IDLONG_", "OFF");
+                        SwitchDefine(defines, "IDGUID_", "OFF");
+                    }
+                    else if (defines[idx].StartsWith("IDLONG_") == true)
+                    {
+                        SwitchDefine(defines, "IDINT_", "OFF");
+                        SwitchDefine(defines, "IDLONG_", "ON");
+                        SwitchDefine(defines, "IDGUID_", "OFF");
+                    }
+                    else if (defines[idx].StartsWith("IDGUID_") == true)
+                    {
+                        SwitchDefine(defines, "IDINT_", "OFF");
+                        SwitchDefine(defines, "IDLONG_", "OFF");
+                        SwitchDefine(defines, "IDGUID_", "ON");
+                    }
+                    else
+                    {
+                        defines[idx] = defines[idx].Replace("_OFF", "_ON");
+                    }
+                }
+            }
+        }
+        public static void SwitchDefine(string[] defines, string definePrefix, string definePostfix) 
+        {
+            bool hasSet = false;
+
+            for (int i = 0; i < defines.Length && hasSet == false; i++)
+            {
+                if (defines[i].StartsWith(definePrefix))
+                {
+                    hasSet = true;
+                    defines[i] = $"{definePrefix}{definePostfix}";
+                }
             }
         }
         private static void PrintBusyProgress()
         {
-            var sign = "\\";
-
-            Console.WriteLine();
-            runBusyProgress = true;
-            Task.Factory.StartNew(async () =>
+            if (runBusyProgress == false)
             {
-                while (runBusyProgress)
-                {
-                    if (canBusyPrint)
-                    {
-                        if (Console.CursorLeft > 0)
-                            Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                var sign = "\\";
 
-                        Console.Write($".{sign}");
-                        sign = sign == "\\" ? "/" : "\\";
+                Console.WriteLine();
+                runBusyProgress = true;
+                Task.Factory.StartNew(async () =>
+                {
+                    while (runBusyProgress)
+                    {
+                        if (canBusyPrint)
+                        {
+                            if (Console.CursorLeft > 0)
+                                Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+
+                            Console.Write($".{sign}");
+                            sign = sign == "\\" ? "/" : "\\";
+                        }
+                        await Task.Delay(250).ConfigureAwait(false);
                     }
-                    await Task.Delay(250).ConfigureAwait(false);
+                });
+            }
+        }
+        private static void PrintDefines(string[] defines)
+        {
+            var saveColor = Console.ForegroundColor;
+
+            Console.Write("Define-Values:");
+            foreach (var define in defines)
+            {
+                if (define.EndsWith("_ON"))
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
                 }
-            });
+                else
+                {
+                    Console.ForegroundColor = saveColor;
+                }
+                Console.Write($" {define}");
+            }
+            Console.ForegroundColor = saveColor;
+            Console.WriteLine();
+        }
+        private static void PrintMenu(string[] defines)
+        {
+            var menuIndex = 0;
+            var saveColor = Console.ForegroundColor;
+
+            Console.WriteLine($"[{++menuIndex,-2}] Change source path");
+
+            for (int i = 0; i < defines.Length; i++)
+            {
+                if (defines[i].EndsWith("_ON"))
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine($"[{++menuIndex,-2}] Set definition {defines[i],-15} ==> {defines[i].Replace("_ON", "_OFF")}");
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"[{++menuIndex,-2}] Set definition {defines[i],-15} ==> {defines[i].Replace("_OFF", "_ON")}");
+                }
+            }
+
+            Console.ForegroundColor = saveColor;
+            Console.WriteLine($"[{++menuIndex,-2}] Start assignment process...");
+            Console.WriteLine("[x|X] Exit");
         }
         private static void PrintSolutionDirectives(string path, params string[] excludeDirectives)
         {
@@ -239,7 +345,8 @@ namespace TemplatePreprocessor.ConApp
         private static string[] GetPreprocessorDefinesInProjectFiles(string path, string[] startDefines)
         {
             var result = new List<string>();
-            var files = Directory.GetFiles(path, "*.csproj", SearchOption.AllDirectories);
+            var files = Directory.GetFiles(path, "*.csproj", SearchOption.AllDirectories)
+                                 .Where(f => f.Contains(".AngularApp") == false);
 
             foreach (var file in files)
             {
@@ -277,7 +384,7 @@ namespace TemplatePreprocessor.ConApp
             }
             return result.ToArray();
         }
-        private static int SetPreprocessorDefinesInProjectFiles(string path, params string[] defineItems)
+        private static void SetPreprocessorDefinesInProjectFiles(string path, params string[] defineItems)
         {
             var files = Directory.GetFiles(path, "*.csproj", SearchOption.AllDirectories);
             var directives = string.Join(";", defineItems);
@@ -320,9 +427,8 @@ namespace TemplatePreprocessor.ConApp
                     File.WriteAllLines(file, result.ToArray(), Encoding.Default);
                 }
             }
-            return files.Length;
         }
-        private static void EditPreprocessorDefinesInRazorFiles(string path, params string[] defineItems)
+        private static void SetPreprocessorDefinesInRazorFiles(string path, params string[] defineItems)
         {
             foreach (var directive in defineItems)
             {

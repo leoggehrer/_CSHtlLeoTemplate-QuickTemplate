@@ -120,7 +120,7 @@ namespace QuickTemplate.WebApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public virtual async Task<ActionResult<TOutModel?>> GetByIdAsync(int id)
+        public virtual async Task<ActionResult<TOutModel?>> GetByIdAsync(IdType id)
         {
             var accessModel = await DataAccess.GetByIdAsync(id);
 
@@ -296,7 +296,7 @@ namespace QuickTemplate.WebApi.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public virtual async Task<ActionResult<TOutModel>> PutAsync(int id, [FromBody] TEditModel editModel)
+        public virtual async Task<ActionResult<TOutModel>> PutAsync(IdType id, [FromBody] TEditModel editModel)
         {
             var accessModel = await DataAccess.GetByIdAsync(id);
 
@@ -318,7 +318,7 @@ namespace QuickTemplate.WebApi.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public virtual async Task<ActionResult> DeleteAsync(int id)
+        public virtual async Task<ActionResult> DeleteAsync(IdType id)
         {
             var accessModel = await DataAccess.GetByIdAsync(id);
 

@@ -3,10 +3,10 @@
 #if ACCOUNT_ON
 namespace QuickTemplate.Logic.Contracts.Account
 {
-    public partial interface IIdentitiesAccess<T> : Contracts.IDataAccess<T>
+    public partial interface IIdentitiesAccess<T> : IDataAccess<T>
     {
-        public Task AddRoleAsync(int id, int roleId);
-        public Task RemoveRoleAsync(int id, int roleId);
+        public Task AddRoleAsync(IdType id, IdType roleId);
+        public Task RemoveRoleAsync(IdType id, IdType roleId);
     }
 }
 #endif

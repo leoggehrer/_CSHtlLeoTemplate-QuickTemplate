@@ -56,32 +56,6 @@ namespace CommonBase.Extensions
             }
             return expandResult;
         }
-        public static IEnumerable<T> Add<T>(this IEnumerable<T> source, T item)
-        {
-            var result = new List<T>(source)
-            {
-                item
-            };
-            return result;
-        }
-        public static IEnumerable<T> AddRange<T>(this IEnumerable<T> source, IEnumerable<T> items)
-        {
-            var result = new List<T>(source);
-
-            result.AddRange(items);
-            return result;
-        }
-        public static IEnumerable<T> SkipLast<T>(this IEnumerable<T> source)
-        {
-            using var e = source.GetEnumerator();
-            if (e.MoveNext())
-            {
-                for (var value = e.Current; e.MoveNext(); value = e.Current)
-                {
-                    yield return value;
-                }
-            }
-        }
         ///<summary>Finds the index of the first item matching an expression in an enumerable.</summary>
         ///<param name="items">The enumerable to search.</param>
         ///<param name="predicate">The expression to test the items against.</param>

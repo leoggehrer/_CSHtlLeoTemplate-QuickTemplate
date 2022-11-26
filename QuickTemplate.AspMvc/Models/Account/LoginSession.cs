@@ -41,7 +41,7 @@ namespace QuickTemplate.AspMvc.Models.Account
         /// <summary>
         /// The login roles.
         /// </summary>
-        public AccessRole[] Roles { get; set; } = Array.Empty<AccessRole>();
+        public IdentityRole[] Roles { get; set; } = Array.Empty<IdentityRole>();
 
         public static LoginSession Create(Logic.Models.Account.LoginSession other)
         {
@@ -54,7 +54,7 @@ namespace QuickTemplate.AspMvc.Models.Account
                 Name = other.Name,
                 Email = other.Email,
                 OptionalInfo = other.OptionalInfo,
-                Roles = other.Roles.Select(r => Models.Account.AccessRole.Create(r)).ToArray(),
+                Roles = other.Roles.Select(r => Models.Account.IdentityRole.Create(r)).ToArray(),
             };
         }
     }

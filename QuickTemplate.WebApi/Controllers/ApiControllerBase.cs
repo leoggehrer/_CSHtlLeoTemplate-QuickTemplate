@@ -36,7 +36,7 @@ namespace QuickTemplate.WebApi.Controllers
         {
             var authHeader = HttpContext.Request.Headers["Authorization"];
 
-            return Task.Run(async() => await GetSessionTokenAsync(authHeader)).Result;
+            return Task.Run(async() => await GetSessionTokenAsync(authHeader!)).Result;
         }
         /// <summary>
         /// Retrieves the session token from the header.
@@ -46,7 +46,7 @@ namespace QuickTemplate.WebApi.Controllers
         {
             var authHeader = HttpContext.Request.Headers["Authorization"];
 
-            return GetSessionTokenAsync(authHeader);
+            return GetSessionTokenAsync(authHeader!);
         }
         /// <summary>
         /// Retrieves the session token from the header.

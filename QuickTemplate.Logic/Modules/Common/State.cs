@@ -1,6 +1,5 @@
 ﻿//@CodeCopy
 //MdStart
-
 namespace QuickTemplate.Logic.Modules.Common
 {
     public enum State : int

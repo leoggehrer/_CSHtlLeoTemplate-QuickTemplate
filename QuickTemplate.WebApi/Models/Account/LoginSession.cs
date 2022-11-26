@@ -35,7 +35,7 @@ namespace QuickTemplate.WebApi.Models.Account
         /// <summary>
         /// Gets the property data.
         /// </summary>
-        public AccessRole[] Roles { get; init; } = Array.Empty<AccessRole>();
+        public IdentityRole[] Roles { get; init; } = Array.Empty<IdentityRole>();
 
         /// <summary>
         /// Creates an instance of type LoginSession.
@@ -52,7 +52,7 @@ namespace QuickTemplate.WebApi.Models.Account
                 Name = source.Name,
                 Email = source.Email,
                 OptionalInfo = source.OptionalInfo,
-                Roles = source.Roles.Select(e => AccessRole.Create(e)).ToArray(),
+                Roles = source.Roles.Select(e => IdentityRole.Create(e)).ToArray(),
             };
         }
     }

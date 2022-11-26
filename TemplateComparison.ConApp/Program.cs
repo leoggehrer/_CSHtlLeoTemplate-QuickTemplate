@@ -125,25 +125,28 @@ namespace TemplateComparison.ConApp
         }
         private static void PrintBusyProgress()
         {
-            var sign = "\\";
-
-            Console.WriteLine();
-            runBusyProgress = true;
-            Task.Factory.StartNew(async () =>
+            if (runBusyProgress == false)
             {
-                while (runBusyProgress)
-                {
-                    if (canBusyPrint)
-                    {
-                        if (Console.CursorLeft > 0)
-                           Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                var sign = "\\";
 
-                        Console.Write($".{sign}");
-                        sign = sign == "\\" ? "/" : "\\";
+                Console.WriteLine();
+                runBusyProgress = true;
+                Task.Factory.StartNew(async () =>
+                {
+                    while (runBusyProgress)
+                    {
+                        if (canBusyPrint)
+                        {
+                            if (Console.CursorLeft > 0)
+                                Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+
+                            Console.Write($".{sign}");
+                            sign = sign == "\\" ? "/" : "\\";
+                        }
+                        await Task.Delay(250).ConfigureAwait(false);
                     }
-                    await Task.Delay(250).ConfigureAwait(false);
-                }
-            });
+                });
+            }
         }
         private static void PrintHeader(string sourcePath, string[] targetPaths)
         {

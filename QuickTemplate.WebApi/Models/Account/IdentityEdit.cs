@@ -8,12 +8,12 @@ namespace QuickTemplate.WebApi.Models.Account
     /// <summary>
     /// This model represents an account identity.
     /// </summary>
-    public class AccessIdentityEdit
+    public class IdentityEdit
     {
         /// <summary>
-        /// Gets or sets the property data.
+        /// Gets or sets the Guid.
         /// </summary>
-        public string Guid { get; set; } = string.Empty;
+        public Guid Guid { get; internal set; } = Guid.NewGuid();
         /// <summary>
         /// Gets or sets the property data.
         /// </summary>
@@ -40,9 +40,9 @@ namespace QuickTemplate.WebApi.Models.Account
         /// </summary>
         /// <param name="source">The object to copy.</param>
         /// <returns></returns>
-        public static AccessIdentity Create(object source)
+        public static Identity Create(object source)
         {
-            var result = new AccessIdentity();
+            var result = new Identity();
 
             result.CopyFrom(source);
             return result;

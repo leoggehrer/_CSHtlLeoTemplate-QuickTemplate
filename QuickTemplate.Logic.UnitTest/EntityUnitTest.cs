@@ -105,7 +105,7 @@ namespace QuickTemplate.Logic.UnitTest
         /// <param name="id">Id form entity updated in the Database.</param>
         /// <param name="changedEntity">Entity containing the changes.</param>
         /// <returns>The actual entity</returns>
-        public virtual async Task<T> Update_Entity_AndCheck(int id, T changedEntity)
+        public virtual async Task<T> Update_Entity_AndCheck(IdType id, T changedEntity)
         {
             using var ctrl = CreateController();
             using var ctrlAfter = CreateController();

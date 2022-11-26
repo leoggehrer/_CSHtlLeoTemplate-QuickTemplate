@@ -18,17 +18,10 @@ namespace TemplateCodeGenerator.Logic
         public static string AngularCustomImportEndLabel => "//@CustomImportEnd";
         public static string AngularCustomCodeBeginLabel => "//@CustomCodeBegin";
         public static string AngularCustomCodeEndLabel => "//@CustomCodeEnd";
-        #endregion Code-Generation
 
-        public static IDictionary<string, string> SourceFileHeaders { get; } = new Dictionary<string, string>()
-        {
-            {".css", $"/*{GeneratedCodeLabel}*/" },
-            {".cs", $"//{GeneratedCodeLabel}" },
-            {".ts", $"//{GeneratedCodeLabel}" },
-            {".cshtml", $"@*{GeneratedCodeLabel}*@" },
-            {".razor", $"@*{GeneratedCodeLabel}*@" },
-            {".razor.cs", $"//{GeneratedCodeLabel}" },
-        };
+        public static string EntityAlias => "TEntity";
+        public static string ModelAlias => "TModel";
+        #endregion Code-Generation
 
         #region Project Extensions
         public static string LogicExtension => ".Logic";
@@ -47,8 +40,7 @@ namespace TemplateCodeGenerator.Logic
         public static string[] IdentityProperties => new string[] { "Id" };
         public static string[] VersionProperties => new string[] { "Id", "RowVersion" };
         public static string[] ExtendedProperties = new string[] { "Guid", "CreatedOn", "ModifiedOn", "IdentityId_CreatedBy", "IdentityId_ModifiedBy" };
-        public static string[] NoGenerationProperties => IdentityProperties.Union(VersionProperties)
-                                                                           .ToArray();
+        public static string[] NoGenerationProperties => IdentityProperties.Union(VersionProperties).ToArray();
         #endregion Entity and service properties
 
         #region Model properties
