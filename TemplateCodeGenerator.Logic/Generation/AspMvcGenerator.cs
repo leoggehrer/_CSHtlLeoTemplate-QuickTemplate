@@ -134,13 +134,17 @@ namespace TemplateCodeGenerator.Logic.Generation
 
                     if (propertyInfo.PropertyType == typeof(string))
                     {
-                        sbToString.Append($"{propertyInfo.Name}: " + "{(" + $"{propertyInfo.Name} ?? \"---\"" + ")} ");
-                        //sbToString.Append("{(string.IsNullOrEmpty(" + propertyInfo.Name + ") ? string.Empty : $\"" + propertyInfo.Name + ": {" + propertyInfo.Name + "}\")}\"");
+                        sbToString.AppendLine($"if (string.IsNullOrEmpty({propertyInfo.Name}) == false)");
+                        sbToString.AppendLine("{");
+                        sbToString.AppendLine("sb.Append($\"" + $"{propertyInfo.Name}: " + "{" + $"{propertyInfo.Name}" + "} \");");
+                        sbToString.AppendLine("}");
                     }
                     else
                     {
-                        //sbToString.Append("{(" + propertyInfo.Name + " == null ? string.Empty : $\"" + propertyInfo.Name + ": {" + propertyInfo.Name + "}\")}\"");
-                        sbToString.Append($"{propertyInfo.Name}: " + "{(" + $"{propertyInfo.Name} != null ? {propertyInfo.Name} : \"---\"" + ")} ");
+                        sbToString.AppendLine($"if ({propertyInfo.Name} != null)");
+                        sbToString.AppendLine("{");
+                        sbToString.AppendLine("sb.Append($\"" + $"{propertyInfo.Name}: " + "{" + $"{propertyInfo.Name}" + "} \");");
+                        sbToString.AppendLine("}");
                     }
                     sbHasEntityValue.Append($"{propertyInfo.Name} != null");
                     result.AddRange(CreateFilterAutoProperty(propertyInfo));
@@ -201,7 +205,9 @@ namespace TemplateCodeGenerator.Logic.Generation
                 result.AddRange(CreateComment(type));
                 result.Add("public override string ToString()");
                 result.Add("{");
-                result.Add($"return $\"{sbToString}\";");
+                result.Add("System.Text.StringBuilder sb = new();");
+                result.Add(sbToString.ToString());
+                result.Add("return sb.ToString();");
                 result.Add("}");
             }
 
@@ -616,6 +622,35 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add("</div>");
             return result;
         }
+        private IGeneratedItem CreatePartialDisplayModelView(Type type, Common.UnitType unitType, Common.ItemType itemType)
+        {
+            var viewProperties = GetViewProperties(type);
+            var modelType = ItemProperties.CreateModelType(type);
+            var result = new Models.GeneratedItem(unitType, itemType)
+            {
+                FullName = ItemProperties.CreateModelType(type),
+                FileExtension = StaticLiterals.CSharpHtmlFileExtension,
+                SubFilePath = ItemProperties.CreateViewSubPathFromType(type, "_DisplayModel", StaticLiterals.CSharpHtmlFileExtension),
+            };
+            result.Add($"@model {modelType}");
+            result.Add(string.Empty);
+
+            result.Add("<dl class=\"row\">");
+
+            foreach (var item in viewProperties)
+            {
+                result.Add(" <dt class=\"col-sm-2\">");
+                result.Add($"  @Html.DisplayNameFor(model => model.{item.Name})");
+                result.Add(" </dt>");
+                result.Add(" <dd class=\"col-sm-10\">");
+                result.Add($"  @Html.DisplayFor(model => model.{item.Name})");
+                result.Add(" </dd>");
+            }
+
+            result.Add("</dl>");
+            return result;
+        }
+
         private IGeneratedItem CreatePartialFilterView(Type type, Common.UnitType unitType, Common.ItemType itemType)
         {
             var viewProperties = GetViewProperties(type);
@@ -676,35 +711,6 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add("</div>");
             return result;
         }
-        private IGeneratedItem CreatePartialDisplayModelView(Type type, Common.UnitType unitType, Common.ItemType itemType)
-        {
-            var viewProperties = GetViewProperties(type);
-            var modelType = ItemProperties.CreateModelType(type);
-            var result = new Models.GeneratedItem(unitType, itemType)
-            {
-                FullName = ItemProperties.CreateModelType(type),
-                FileExtension = StaticLiterals.CSharpHtmlFileExtension,
-                SubFilePath = ItemProperties.CreateViewSubPathFromType(type, "_DisplayModel", StaticLiterals.CSharpHtmlFileExtension),
-            };
-            result.Add($"@model {modelType}");
-            result.Add(string.Empty);
-
-            result.Add("<dl class=\"row\">");
-
-            foreach (var item in viewProperties)
-            {
-                result.Add(" <dt class=\"col-sm-2\">");
-                result.Add($"  @Html.DisplayNameFor(model => model.{item.Name})");
-                result.Add(" </dt>");
-                result.Add(" <dd class=\"col-sm-10\">");
-                result.Add($"  @Html.DisplayFor(model => model.{item.Name})");
-                result.Add(" </dd>");
-            }
-
-            result.Add("</dl>");
-            return result;
-        }
-
         private IEnumerable<string> CreateFilterAutoProperty(PropertyInfo propertyInfo)
         {
             var result = new List<string>();

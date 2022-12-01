@@ -8,6 +8,7 @@ namespace QuickTemplate.Logic.Modules.Exceptions
         InitAppAccess,
         InvalidAccount,
         InvalidIdentityName,
+        InvalidPasswordSyntax,
 
         InvalidToken,
         InvalidSessionToken,

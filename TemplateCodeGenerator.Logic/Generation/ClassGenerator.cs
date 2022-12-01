@@ -316,11 +316,7 @@ namespace TemplateCodeGenerator.Logic.Generation
         /// <returns>Die Eigenschaft als Text.</returns>
         public virtual IEnumerable<string> CreateDelegateProperty(PropertyInfo propertyInfo, string delegateObjectName, PropertyInfo delegatePropertyInfo)
         {
-            IEnumerable<string> result;
-
-            result = CreateDelegateAutoProperty(propertyInfo, delegateObjectName, delegatePropertyInfo);
-            //result = CreateDelegatePartialProperty(propertyInfo, delegateObjectName, delegatepropertyInfo);
-            return result;
+            return CreateDelegateAutoProperty(propertyInfo, delegateObjectName, delegatePropertyInfo);
         }
         /// <summary>
         /// Diese Methode erstellt den Programmcode einer Delegate-Eigenschaft (Auto-Property).

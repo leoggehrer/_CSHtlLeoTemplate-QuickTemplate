@@ -138,7 +138,6 @@ namespace TemplateCodeGenerator.Logic.Generation
                 if (declarationTypeName.Equals(item.DeclaringType!.Name) == false)
                 {
                     declarationTypeName = item.DeclaringType.Name;
-                    //                    result.Add($"/** {declarationTypeName} **/");
                 }
                 result.AddRange(CreateTypeScriptProperty(item));
             }
@@ -433,7 +432,7 @@ namespace TemplateCodeGenerator.Logic.Generation
                 }
                 else if (subType == typeof(Guid))
                 {
-                    result.Add($"{tsPropertyName}: string[];");
+                    result.Add($"{tsPropertyName}: string;");
                 }
                 else
                 {
@@ -446,7 +445,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             }
             else
             {
-                result.Add($"{tsPropertyName}: any;");
+                //result.Add($"{tsPropertyName}: any;");
             }
             return result;
         }

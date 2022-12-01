@@ -10,7 +10,7 @@ namespace QuickTemplate.Logic.Entities.Account
     [Index(nameof(Email), IsUnique = true)]
     public abstract partial class Identity : VersionObject, IIdentity
     {
-        public Guid Guid { get; internal set; } = Guid.NewGuid();
+        public Guid Guid { get; internal set; }
         [MaxLength(128)]
         public string Name { get; set; } = string.Empty;
         [MaxLength(128)]
@@ -23,7 +23,7 @@ namespace QuickTemplate.Logic.Entities.Account
                                               .Select(iXr => iXr.Role!)
                                               .ToArray();
         // Navigation properties
-        public List<IdentityXRole> IdentityXRoles { get; set; } = new();
+        public List<IdentityXRole> IdentityXRoles { get; internal set; } = new();
 
         public bool HasRole(Guid guid)
         {

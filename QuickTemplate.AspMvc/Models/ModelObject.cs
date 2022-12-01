@@ -10,9 +10,11 @@ namespace QuickTemplate.AspMvc.Models
         /// <summary>
         /// ID of the entity (primary key)
         /// </summary>
-        [Key]
-        public int Id { get; set; }
-
+        public IdType Id { get; set; }
+        /// <summary>
+        /// Indicates whether the id has a default value.
+        /// </summary>
+        public bool IsIdDefault => Id == default(IdType);
         /// <summary>
         /// Determines whether two object instances are equal
         /// </summary>

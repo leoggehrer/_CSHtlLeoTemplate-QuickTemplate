@@ -1,11 +1,13 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON
+using QuickTemplate.Logic.Contracts.Account;
+
 namespace QuickTemplate.Logic.Entities.Account
 {
     [Table("IdentityXRoles", Schema = "account")]
     [Index(nameof(IdentityId), nameof(RoleId), IsUnique = true)]
-    public partial class IdentityXRole : VersionObject
+    public partial class IdentityXRole : VersionObject, IIdentityXRole
     {
         public IdType IdentityId { get; set; }
         public IdType RoleId { get; set; }

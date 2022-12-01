@@ -1,0 +1,63 @@
+﻿@*@CodeCopy*@
+@*#if ACCESSRULES_ON*@@*
+@model IEnumerable<QuickTemplate.AspMvc.Models.Account.AccessRule>
+@{
+    var orderBy = (string)ViewBag.OrderBy ?? string.Empty;
+}
+<thead>
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Type)
+        </th>
+        <th>
+            @if (orderBy.StartsWith("EntityType") && orderBy.EndsWith("ASC"))
+            {
+                <a asp-action="OrderBy" asp-route-orderBy="EntityType DESC" class="btn btn-outline"><strong>EntityType</strong> <i class="fa fa-sort-desc"></i></a>
+            }
+            else if (orderBy.StartsWith("EntityType") && orderBy.EndsWith("DESC"))
+            {
+                <a asp-action="OrderBy" asp-route-orderBy="" class="btn btn-outline"><strong>EntityType</strong> <i class="fa fa-sort-asc"></i></a>
+            }
+            else
+            {
+                <a asp-action="OrderBy" asp-route-orderBy="EntityType ASC" class="btn btn-outline"><strong>EntityType</strong></a>
+            }
+        </th>
+        <th>
+            @if (orderBy.StartsWith("RelationshipEntityType") && orderBy.EndsWith("ASC"))
+            {
+                <a asp-action="OrderBy" asp-route-orderBy="RelationshipEntityType DESC" class="btn btn-outline"><strong>RelationshipEntityType</strong> <i class="fa fa-sort-desc"></i></a>
+            }
+            else if (orderBy.StartsWith("RelationshipEntityType") && orderBy.EndsWith("DESC"))
+            {
+                <a asp-action="OrderBy" asp-route-orderBy="" class="btn btn-outline"><strong>RelationshipEntityType</strong> <i class="fa fa-sort-asc"></i></a>
+            }
+            else
+            {
+                <a asp-action="OrderBy" asp-route-orderBy="RelationshipEntityType ASC" class="btn btn-outline"><strong>RelationshipEntityType</strong></a>
+            }
+        </th>
+        <th>
+            @if (orderBy.StartsWith("PropertyName") && orderBy.EndsWith("ASC"))
+            {
+                <a asp-action="OrderBy" asp-route-orderBy="PropertyName DESC" class="btn btn-outline"><strong>PropertyName</strong> <i class="fa fa-sort-desc"></i></a>
+            }
+            else if (orderBy.StartsWith("PropertyName") && orderBy.EndsWith("DESC"))
+            {
+                <a asp-action="OrderBy" asp-route-orderBy="" class="btn btn-outline"><strong>PropertyName</strong> <i class="fa fa-sort-asc"></i></a>
+            }
+            else
+            {
+                <a asp-action="OrderBy" asp-route-orderBy="PropertyName ASC" class="btn btn-outline"><strong>PropertyName</strong></a>
+            }
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AccessType)
+        </th>
+        <th>
+            Operation
+        </th>
+        <th></th>
+    </tr>
+</thead>
+*@@*#endif*@

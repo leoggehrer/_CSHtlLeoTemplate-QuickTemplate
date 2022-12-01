@@ -4,19 +4,18 @@
 namespace QuickTemplate.AspMvc.Models.Account
 {
     using QuickTemplate.Logic.Modules.Common;
-    public class Identity : VersionModel
+    public partial class Identity : VersionModel
     {
-        public IdentityRole[] AccessRoleList { get; set; } = Array.Empty<IdentityRole>();
-
-        public IdentityRole[] AddAccessRoleList
+        public IdentityRole[] IdentityRoleList { get; set; } = Array.Empty<IdentityRole>();
+        public IdentityRole[] AddIdentityRoleList
         {
             get
             {
                 IdentityRole[] result;
 
-                if (AccessRoleList != null)
+                if (IdentityRoleList != null)
                 {
-                    result = AccessRoleList.Where(e => AccessRoles.Any(m => m.Id == e.Id) == false).ToArray();
+                    result = IdentityRoleList.Where(e => IdentityRoles.Any(m => m.Id == e.Id) == false).ToArray();
                 }
                 else
                 {
@@ -35,12 +34,13 @@ namespace QuickTemplate.AspMvc.Models.Account
         public int AccessFailedCount { get; set; }
         public State State { get; set; } = State.Active;
 
-        public List<IdentityRole> AccessRoles { get; set; } = new();
+        public IdentityRole[] IdentityRoles { get; private set; } = Array.Empty<IdentityRole>();
         public static Identity Create(Logic.Models.Account.Identity source)
         {
             var result = new Identity();
 
             result.CopyFrom(source);
+            result.IdentityRoles = source.Roles.Select(e => IdentityRole.Create(e)).ToArray();
             return result;
         }
     }

@@ -35,7 +35,16 @@ namespace QuickTemplate.AspMvc.Models.Account
         }
         public override string ToString()
         {
-            return $"Email: {(Email ?? "---")} Name: {(Name ?? "---")}";
+            System.Text.StringBuilder sb = new();
+            if (string.IsNullOrEmpty(Email) == false)
+            {
+                sb.Append($"Email: {Email} ");
+            }
+            if (string.IsNullOrEmpty(Name) == false)
+            {
+                sb.Append($"Name: {Name} ");
+            }
+            return sb.ToString();
         }
     }
 }

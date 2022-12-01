@@ -15,11 +15,11 @@ namespace QuickTemplate.Logic.Facades.Account
         public int MaxPageSize => Controller.MaxPageSize;
 
         public AccessRulesFacade()
-            : base(new Logic.Controllers.Account.IdentitiesController())
+            : base(new Logic.Controllers.Account.AccessRulesController())
         {
         }
         public AccessRulesFacade(FacadeObject facadeObject)
-            : base(new Logic.Controllers.Account.IdentitiesController(facadeObject.ControllerObject))
+            : base(new Logic.Controllers.Account.AccessRulesController(facadeObject.ControllerObject))
         {
 
         }

@@ -19,17 +19,17 @@ namespace QuickTemplate.AspMvc.Models.Account
         }
         partial void Constructing();
         partial void Constructed();
-        public System.Int32? IdentityId
+        public IdType? IdentityId
         {
             get;
             set;
         }
-        public System.String? Firstname
+        public string? Firstname
         {
             get;
             set;
         }
-        public System.String? Lastname
+        public string? Lastname
         {
             get;
             set;
@@ -68,7 +68,20 @@ namespace QuickTemplate.AspMvc.Models.Account
         }
         public override string ToString()
         {
-            return $"IdentityId: {(IdentityId != null ? IdentityId : "---")} Firstname: {(Firstname ?? "---")} Lastname: {(Lastname ?? "---")} ";
+            System.Text.StringBuilder sb = new();
+            if (IdentityId != null)
+            {
+                sb.Append($"IdentityId: {IdentityId}");
+            }
+            if (string.IsNullOrEmpty(Lastname) == false)
+            {
+                sb.Append($"Lastname: {Lastname} ");
+            }
+            if (string.IsNullOrEmpty(Firstname) == false)
+            {
+                sb.Append($"Firstname: {Firstname} ");
+            }
+            return sb.ToString();
         }
     }
 }

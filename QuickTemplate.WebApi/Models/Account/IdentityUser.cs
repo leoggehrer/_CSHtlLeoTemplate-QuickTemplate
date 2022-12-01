@@ -11,7 +11,7 @@ namespace QuickTemplate.WebApi.Models.Account
         /// <summary>
         /// Gets or sets the identity id.
         /// </summary>
-        public int IdentityId { get; set; }
+        public IdType IdentityId { get; set; }
         /// <summary>
         /// Gets and sets the user first name.
         /// </summary>

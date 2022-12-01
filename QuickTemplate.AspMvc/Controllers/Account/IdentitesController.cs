@@ -1,7 +1,6 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON
-
 namespace QuickTemplate.AspMvc.Controllers.Account
 {
     using TAccessModel = QuickTemplate.Logic.Models.Account.Identity;
@@ -9,7 +8,6 @@ namespace QuickTemplate.AspMvc.Controllers.Account
     using TFilterModel = QuickTemplate.AspMvc.Models.Account.IdentityFilter;
     using TAccessContract = QuickTemplate.Logic.Contracts.Account.IIdentitiesAccess<QuickTemplate.Logic.Models.Account.Identity>;
     using Microsoft.AspNetCore.Mvc;
-
     public partial class IdentitiesController : Controllers.FilterGenericController<TAccessModel, TViewModel, TFilterModel, TAccessContract>
     {
         ///
@@ -111,7 +109,7 @@ namespace QuickTemplate.AspMvc.Controllers.Account
         {
             if ((actionMode & ActionMode.EditAction) > 0)
             {
-                viewModel.AccessRoleList = AccessRoleList;
+                viewModel.IdentityRoleList = AccessRoleList;
 
             }
         }
@@ -120,10 +118,11 @@ namespace QuickTemplate.AspMvc.Controllers.Account
         {
             try
             {
-                var instanceAccess = DataAccess as Logic.Contracts.Account.IIdentitiesAccess<Logic.Models.Account.Identity>;
-
-                await instanceAccess!.AddRoleAsync(id, accessRoleId);
-                await DataAccess.SaveChangesAsync();
+                if (DataAccess is TAccessContract instanceAccess)
+                {
+                    await instanceAccess.AddRoleAsync(id, accessRoleId);
+                    await instanceAccess.SaveChangesAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -140,10 +139,11 @@ namespace QuickTemplate.AspMvc.Controllers.Account
         {
             try
             {
-                var instanceAccess = DataAccess as Logic.Contracts.Account.IIdentitiesAccess<Logic.Models.Account.Identity>;
-
-                await instanceAccess!.RemoveRoleAsync(id, accessRoleId);
-                await DataAccess.SaveChangesAsync();
+                if (DataAccess is TAccessContract instanceAccess)
+                {
+                    await instanceAccess.RemoveRoleAsync(id, accessRoleId);
+                    await instanceAccess.SaveChangesAsync();
+                }
             }
             catch (Exception ex)
             {

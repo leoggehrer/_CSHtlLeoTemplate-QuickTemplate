@@ -11,7 +11,7 @@ namespace QuickTemplate.WebApi.Models.Account
         /// <summary>
         /// Gets the property data.
         /// </summary>
-        public int IdentityId { get; init; }
+        public IdType IdentityId { get; init; }
         /// <summary>
         /// Gets the property data.
         /// </summary>

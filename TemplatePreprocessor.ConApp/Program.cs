@@ -190,7 +190,7 @@ namespace TemplatePreprocessor.ConApp
                 }
             }
         }
-        public static void SwitchDefine(string[] defines, string definePrefix, string definePostfix) 
+        private static void SwitchDefine(string[] defines, string definePrefix, string definePostfix)
         {
             bool hasSet = false;
 
@@ -230,23 +230,29 @@ namespace TemplatePreprocessor.ConApp
         }
         private static void PrintDefines(string[] defines)
         {
-            var saveColor = Console.ForegroundColor;
-
-            Console.Write("Define-Values:");
+            Console.WriteLine("Define-Values:");
+            Console.WriteLine("--------------");
             foreach (var define in defines)
             {
-                if (define.EndsWith("_ON"))
-                {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                }
-                else
-                {
-                    Console.ForegroundColor = saveColor;
-                }
-                Console.Write($" {define}");
+                PrintDefine(define);
+                Console.Write(" ");
             }
-            Console.ForegroundColor = saveColor;
             Console.WriteLine();
+        }
+        private static void PrintDefine(string define)
+        {
+            var saveColor = Console.ForegroundColor;
+
+            if (define.EndsWith("_ON"))
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
+            else
+            {
+                Console.ForegroundColor = saveColor;
+            }
+            Console.Write($"{define}");
+            Console.ForegroundColor = saveColor;
         }
         private static void PrintMenu(string[] defines)
         {
@@ -259,12 +265,12 @@ namespace TemplatePreprocessor.ConApp
             {
                 if (defines[i].EndsWith("_ON"))
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"[{++menuIndex,-2}] Set definition {defines[i],-15} ==> {defines[i].Replace("_ON", "_OFF")}");
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
                     Console.WriteLine($"[{++menuIndex,-2}] Set definition {defines[i],-15} ==> {defines[i].Replace("_OFF", "_ON")}");
                 }
             }

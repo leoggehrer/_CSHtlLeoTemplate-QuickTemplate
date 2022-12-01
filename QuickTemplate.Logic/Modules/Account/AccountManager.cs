@@ -28,9 +28,12 @@ namespace QuickTemplate.Logic.Modules.Account
         private static DateTime LastLoginUpdate { get; set; } = DateTime.Now;
         private static ThreadSafeList<LoginSession> LoginSessions { get; } = new ThreadSafeList<LoginSession>();
 
-        #region Public methodes
+        #region Create accounts
         public static async Task InitAppAccessAsync(string name, string email, string password, bool enableJwtAuth)
         {
+            if (CheckPasswordSyntax(password) == false)
+                throw new AuthorizationException(ErrorType.InvalidPasswordSyntax, PasswordRules.SyntaxRoles);
+
             using var identitiesCtrl = new Controllers.Account.IdentitiesController()
             {
                 SessionToken = Authorization.SystemAuthorizationToken,
@@ -82,11 +85,13 @@ namespace QuickTemplate.Logic.Modules.Account
         }
         public static async Task AddAppAccessAsync(string sessionToken, string name, string email, string password, int timeOutInMinutes, bool enableJwtAuth, params string[] roles)
         {
+            if (CheckPasswordSyntax(password) == false)
+                throw new AuthorizationException(ErrorType.InvalidPasswordSyntax, PasswordRules.SyntaxRoles);
+
             using var identitiesCtrl = new Controllers.Account.IdentitiesController()
             {
                 SessionToken = sessionToken,
             };
-
             try
             {
                 var (Hash, Salt) = CreatePasswordHash(password);
@@ -150,6 +155,9 @@ namespace QuickTemplate.Logic.Modules.Account
                 throw;
             }
         }
+        #endregion Create accounts
+
+        #region Logon and Logout
         public static async Task<LoginSession> LogonAsync(string jsonWebToken)
         {
             var result = default(LoginSession);
@@ -203,11 +211,6 @@ namespace QuickTemplate.Logic.Modules.Account
 
             return result ?? throw new AuthorizationException(ErrorType.InvalidAccount);
         }
-        public static async Task<bool> IsSessionAliveAsync(string sessionToken)
-        {
-            return await QueryAliveSessionAsync(sessionToken).ConfigureAwait(false) != null;
-        }
-
         [Authorize]
         public static async Task LogoutAsync(string sessionToken)
         {
@@ -242,6 +245,13 @@ namespace QuickTemplate.Logic.Modules.Account
                 System.Diagnostics.Debug.WriteLine($"Error in {typeof(AccountManager)?.Name}: {ex.Message}");
             }
         }
+        #endregion Logon and Logout
+
+        #region Query logon data
+        public static async Task<bool> IsSessionAliveAsync(string sessionToken)
+        {
+            return await QueryAliveSessionAsync(sessionToken).ConfigureAwait(false) != null;
+        }
         [Authorize]
         public static async Task<IEnumerable<string>> QueryRolesAsync(string sessionToken)
         {
@@ -267,10 +277,16 @@ namespace QuickTemplate.Logic.Modules.Account
 
             return await QueryAliveSessionAsync(sessionToken).ConfigureAwait(false);
         }
+        #endregion Query logon data
+
+        #region Change and reset password
         [Authorize]
         public static async Task ChangePasswordAsync(string sessionToken, string oldPassword, string newPassword)
         {
             await Authorization.CheckAuthorizationAsync(sessionToken, typeof(AccountManager), nameof(ChangePasswordAsync)).ConfigureAwait(false);
+
+            if (CheckPasswordSyntax(newPassword) == false)
+                throw new AuthorizationException(ErrorType.InvalidPasswordSyntax, PasswordRules.SyntaxRoles);
 
             var login = await QueryAliveSessionAsync(sessionToken).ConfigureAwait(false)
                         ?? throw new AuthorizationException(ErrorType.InvalidToken);
@@ -307,6 +323,9 @@ namespace QuickTemplate.Logic.Modules.Account
         public static async Task ChangePasswordForAsync(string sessionToken, string email, string newPassword)
         {
             await Authorization.CheckAuthorizationAsync(sessionToken, typeof(AccountManager), nameof(ChangePasswordForAsync)).ConfigureAwait(false);
+
+            if (CheckPasswordSyntax(newPassword) == false)
+                throw new AuthorizationException(ErrorType.InvalidPasswordSyntax, PasswordRules.SyntaxRoles);
 
             var login = await QueryAliveSessionAsync(sessionToken).ConfigureAwait(false)
                         ?? throw new AuthorizationException(ErrorType.InvalidToken);
@@ -363,7 +382,7 @@ namespace QuickTemplate.Logic.Modules.Account
             await identitiesCtrl.UpdateAsync(identity).ConfigureAwait(false);
             await identitiesCtrl.SaveChangesAsync().ConfigureAwait(false);
         }
-        #endregion Public logon
+        #endregion Change and reset password
 
         #region Internal logon
         internal static LoginSession? QueryLoginSession(string sessionToken)
@@ -500,9 +519,33 @@ namespace QuickTemplate.Logic.Modules.Account
             }
             else if (VerifyPasswordHash(password, querySession.PasswordHash, querySession.PasswordSalt))
             {
+                querySession.LastAccess = DateTime.UtcNow;
                 result = querySession.Clone();
             }
             return result;
+        }
+        internal static async Task RefreshAliveSessionsAsync(IdType identityId)
+        {
+            using var identitiesCtrl = new Controllers.Account.IdentitiesController()
+            {
+                SessionToken = Authorization.SystemAuthorizationToken,
+            };
+            foreach (var session in LoginSessions.Where(s => s.IdentityId == identityId))
+            {
+                var identity = await identitiesCtrl.GetValidIdentityByIdAsync(identityId).ConfigureAwait(false);
+
+                if (identity != null)
+                {
+                    session.Identity = identity;
+                    session.Roles.Clear();
+                    session.Roles.AddRange(identity.IdentityXRoles.Select(e => e.Role!));
+                    session.JsonWebToken = JsonWebToken.GenerateToken(new Claim[]
+                    {
+                        new Claim(ClaimTypes.Email, identity.Email),
+                        new Claim(ClaimTypes.System, nameof(QuickTemplate)),
+                    }.Union(session.Roles.Select(e => new Claim(ClaimTypes.Role, e.Designation))));
+                }
+            }
         }
         #endregion Internal logon
 
@@ -608,52 +651,61 @@ namespace QuickTemplate.Logic.Modules.Account
             return result;
         }
         /// <summary>
-        /// Das Kennwort wenn es den Einstellungen im CommonBase/Modules/PasswordRules entspricht.
+        /// Checks if the password matches the password rules.
         /// </summary>
-        /// <param name="password">Zu pruefendes Passwort</param>
-        /// <returns>true wenn das Passwort mit PasswordRules entspricht, false sonst</returns>
+        /// <param name="password">The password to check</param>
+        /// <returns>True if the password matches Password Rules, false otherwise</returns>
         public static bool CheckPasswordSyntax(string password)
         {
-            int digitCount = 0;
-            int letterCount = 0;
-            int lowerLetterCount = 0;
-            int upperLetterCount = 0;
-            int specialLetterCount = 0;
+            var handled = false;
+            var result = false;
 
-            foreach (char ch in password)
+            BeforeCheckPasswordSyntax(password, ref result, ref handled);
+            if (handled == false)
             {
-                if (char.IsDigit(ch))
+                var digitCount = 0;
+                var letterCount = 0;
+                var lowerLetterCount = 0;
+                var upperLetterCount = 0;
+                var specialLetterCount = 0;
+
+                foreach (char ch in password)
                 {
-                    digitCount++;
-                }
-                else
-                {
-                    if (char.IsLetter(ch))
+                    if (char.IsDigit(ch))
                     {
-                        letterCount++;
-                        if (char.IsLower(ch))
-                        {
-                            lowerLetterCount++;
-                        }
-                        else
-                        {
-                            upperLetterCount++;
-                        }
+                        digitCount++;
                     }
                     else
                     {
-                        specialLetterCount++;
+                        if (char.IsLetter(ch))
+                        {
+                            letterCount++;
+                            if (char.IsLower(ch))
+                            {
+                                lowerLetterCount++;
+                            }
+                            else
+                            {
+                                upperLetterCount++;
+                            }
+                        }
+                        else
+                        {
+                            specialLetterCount++;
+                        }
                     }
                 }
+                result = password.Length >= PasswordRules.MinimumLength
+                        && password.Length <= PasswordRules.MaximumLength
+                        && letterCount >= PasswordRules.MinLetterCount
+                        && upperLetterCount >= PasswordRules.MinUpperLetterCount
+                        && lowerLetterCount >= PasswordRules.MinLowerLetterCount
+                        && specialLetterCount >= PasswordRules.MinSpecialLetterCount
+                        && digitCount >= PasswordRules.MinDigitCount;
             }
-            return password.Length >= PasswordRules.MinimumLength
-                   && password.Length <= PasswordRules.MaximumLength
-                   && letterCount >= PasswordRules.MinLetterCount
-                   && upperLetterCount >= PasswordRules.MinUpperLetterCount
-                   && lowerLetterCount >= PasswordRules.MinLowerLetterCount
-                   && specialLetterCount >= PasswordRules.MinSpecialLetterCount
-                   && digitCount >= PasswordRules.MinDigitCount;
+            return result;
         }
+        static partial void BeforeCheckPasswordSyntax(string password, ref bool result, ref bool handled);
 
         /// <summary>
         /// Eine gueltige Mailadresse besteht aus einem mindestens zwei Zeichen vor dem @, 

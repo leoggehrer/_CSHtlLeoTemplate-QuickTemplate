@@ -1,20 +1,33 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON
+using QuickTemplate.Logic.Entities.Account;
+using QuickTemplate.Logic.Modules.Account;
+
 namespace QuickTemplate.Logic.Controllers.Account
 {
     [Modules.Security.Authorize("SysAdmin", "AppAdmin")]
-    internal sealed partial class IdentitiesController : GenericController<Entities.Account.SecureIdentity>, Contracts.Account.IIdentitiesAccess<Entities.Account.SecureIdentity>
+    internal sealed partial class IdentitiesController : GenericController<SecureIdentity>, Contracts.Account.IIdentitiesAccess<SecureIdentity>
     {
+        private List<IdType> identityIds = new();
         public IdentitiesController()
         {
         }
-
-        public IdentitiesController(ControllerObject other) : base(other)
+        public IdentitiesController(ControllerObject other)
+            : base(other)
         {
         }
 
-        protected override void BeforeActionExecute(ActionType actionType, Entities.Account.SecureIdentity entity)
+        private void ChangedIdentity(IdType id)
+        {
+            if (identityIds.Contains(id) == false)
+            {
+                identityIds.Add(id);
+            }
+        }
+
+        #region Overrides
+        protected override void BeforeActionExecute(ActionType actionType, SecureIdentity entity)
         {
             if (actionType == ActionType.Insert)
             {
@@ -32,7 +45,39 @@ namespace QuickTemplate.Logic.Controllers.Account
             }
             base.BeforeActionExecute(actionType, entity);
         }
-        internal Task<Entities.Account.SecureIdentity?> GetValidIdentityByEmailAsync(string email)
+        protected override IEnumerable<SecureIdentity> BeforeReturn(IEnumerable<SecureIdentity> entities)
+        {
+            foreach (var entity in entities)
+            {
+                BeforeReturn(entity);
+            }
+            return base.BeforeReturn(entities);
+        }
+        protected override SecureIdentity BeforeReturn(SecureIdentity entity)
+        {
+            if (entity.IdentityXRoles.Any() == false)
+            {
+                Task.Run(async () =>
+                {
+                    using var ctrl = new IdentityXRolesController(this);
+
+                    entity.IdentityXRoles.AddRange(await ctrl.QueryByIdentityAsync(entity.Id));
+                }).Wait();
+            }
+            return base.BeforeReturn(entity);
+        }
+        #endregion Overrides
+
+        #region Get identity
+        internal Task<SecureIdentity?> GetValidIdentityByIdAsync(IdType identityId)
+        {
+            return EntitySet.Include(e => e.IdentityXRoles)
+                            .ThenInclude(e => e.Role)
+                            .FirstOrDefaultAsync(e => e.State == Modules.Common.State.Active
+                                                   && e.AccessFailedCount < 4
+                                                   && e.Id == identityId);
+        }
+        internal Task<SecureIdentity?> GetValidIdentityByEmailAsync(string email)
         {
             return EntitySet.Include(e => e.IdentityXRoles)
                             .ThenInclude(e => e.Role)
@@ -40,7 +85,9 @@ namespace QuickTemplate.Logic.Controllers.Account
                                                    && e.AccessFailedCount < 4
                                                    && e.Email.ToLower() == email.ToLower());
         }
+        #endregion Get identity
 
+        #region Add or remove role
         public async Task AddRoleAsync(IdType identityId, IdType roleId)
         {
             await CheckAuthorizationAsync(GetType(), nameof(AddRoleAsync)).ConfigureAwait(false);
@@ -63,6 +110,7 @@ namespace QuickTemplate.Logic.Controllers.Account
                     await identityXRolesCtrl.InsertAsync(identityXRole).ConfigureAwait(false);
                 }
             }
+            ChangedIdentity(identityId);
         }
         public async Task RemoveRoleAsync(IdType identityId, IdType roleId)
         {
@@ -76,6 +124,22 @@ namespace QuickTemplate.Logic.Controllers.Account
             {
                 await identityXRolesCtrl.DeleteAsync(identityXRoles[0].Id).ConfigureAwait(false);
             }
+            ChangedIdentity(identityId);
+        }
+        #endregion Add or remove role
+
+        protected override void AfterActionExecute(ActionType actionType)
+        {
+            if (actionType == ActionType.Save)
+            {
+                foreach (var id in identityIds)
+                {
+                    Task.Run(async () => await AccountManager.RefreshAliveSessionsAsync(id).ConfigureAwait(false)).Wait();
+                }
+            }
+            identityIds.Clear();
+
+            base.AfterActionExecute(actionType);
         }
     }
 }

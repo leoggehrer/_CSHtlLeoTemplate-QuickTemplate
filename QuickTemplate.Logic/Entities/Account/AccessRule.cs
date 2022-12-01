@@ -21,10 +21,10 @@ namespace QuickTemplate.Logic.Entities.Account
         public AccessType AccessType { get; set; }
         [MaxLength(36)]
         public string? AccessValue { get; set; }
-        public bool Creatable { get; set; }
-        public bool Readable { get; set; }
-        public bool Updatable { get; set; }
-        public bool Deletable { get; set; }
+        public bool Creatable { get; set; } = true;
+        public bool Readable { get; set; } = true;
+        public bool Updatable { get; set; } = true;
+        public bool Deletable { get; set; } = true;
         public bool Viewable { get; set; } = true;
     }
 }

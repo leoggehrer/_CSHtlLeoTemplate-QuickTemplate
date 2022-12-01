@@ -18,7 +18,7 @@ namespace QuickTemplate.Logic.Controllers.Account
         {
             if (actionType == ActionType.Insert)
             {
-                entity.SessionToken = Guid.NewGuid().ToString();
+                entity.SessionToken = $"{Guid.NewGuid()}-{Guid.NewGuid()}";
                 entity.LoginTime = entity.LastAccess = DateTime.UtcNow;
             }
             base.BeforeActionExecute(actionType, entity);

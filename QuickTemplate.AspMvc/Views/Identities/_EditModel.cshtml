@@ -16,7 +16,7 @@
     <div class="col-md-4">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input asp-for="Id" type="hidden" />
-        @if (Model.Id > 0)
+        @if (Model.IsIdDefault == false)
         {
             <div class="form-group">
                 <label asp-for="Guid" class="control-label"></label>
@@ -56,33 +56,33 @@
 
 <h3>Access roles</h3>
 
-@if (Model.Id > 0)
+@if (Model.IsIdDefault == false)
 {
     <hr />
-    @foreach (var item in Model.AccessRoles.OrderBy(e => e.Designation))
+    @foreach (var item in Model.IdentityRoles.OrderBy(e => e.Designation))
     {
         var parms = new Dictionary<string, string>
         {
             { "id", Model.Id.ToString() },
             { "accessRoleId", item.Id.ToString() }
         };
-        <div class="btn-group" style="margin-bottom: 10px; margin-right: 10px;">
+        <div class="btn-group" style="margin-bottom: 1.0em; margin-right: 1.0em; min-width: 15em;">
             <a href="#" class="btn btn-outline-primary"><i class="fa-regular fa-hand-point-right"></i></a>
             <a href="#" class="btn btn-outline-primary">@item.Designation</a>
             <a asp-action="RemoveAccessRole" asp-all-route-data="parms" class="btn btn-primary"><i class="fa fa-times"></i></a>
         </div>
     }
-    if (Model.AddAccessRoleList.Any())
+    if (Model.AddIdentityRoleList.Any())
     {
         <div class="row">
             <div class="col-md-4">
-                <div class="btn-group">
+                <div class="btn-group" style="min-width: 13em;">
                     <button type="button" class="btn btn-primary" style="min-width: 100%;">Add access role</button>
                     <button type="button" class="btn btn-outline-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="visually-hidden">Toggle Dropdown</span>
                     </button>
                     <ul class="dropdown-menu">
-                        @foreach (var item in Model.AddAccessRoleList)
+                        @foreach (var item in Model.AddIdentityRoleList)
                         {
                             <li>@Html.ActionLink(item.Designation, "AddAccessRole", null, new {id=Model.Id, accessRoleId=item.Id}, new { @class="dropdown-item"})</li>
                         }

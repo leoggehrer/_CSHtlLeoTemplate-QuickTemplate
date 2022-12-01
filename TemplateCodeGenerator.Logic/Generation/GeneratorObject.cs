@@ -340,6 +340,32 @@ namespace TemplateCodeGenerator.Logic.Generation
 
         #region Property-Helpers
         /// <summary>
+        /// Determines whether the property is a reference property.
+        /// </summary>
+        /// <param name="propertyInfo">The property</param>
+        /// <returns>True if it is a reference property, false otherwise.</returns>
+        public virtual bool IsReferenceProperty(PropertyInfo propertyInfo)
+        {
+            var result = false;
+            var idText = "Id";
+
+            if (propertyInfo.Name.Length > 2 && propertyInfo.Name.EndsWith(idText))
+            {
+                result = true;
+            }
+            else if (propertyInfo.Name.Contains($"{idText}_"))
+            {
+                var idx = propertyInfo.Name.IndexOf($"{idText}_");
+
+                if (idx > 0 && idx + idText.Length + 1 < propertyInfo.Name.Length)
+                {
+                    result = true;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Diese Methode konvertiert den Eigenschaftstyp in eine Zeichenfolge.
         /// </summary>
         /// <param name="propertyInfo">Das Eigenschaftsinfo-Objekt.</param>
@@ -347,7 +373,7 @@ namespace TemplateCodeGenerator.Logic.Generation
         public virtual string GetPropertyType(PropertyInfo propertyInfo)
         {
             var nullable = propertyInfo.IsNullable();
-            var result = $"{propertyInfo.PropertyType.GetCodeDefinition()}";
+            var result = IsReferenceProperty(propertyInfo) ? StaticLiterals.IdType : propertyInfo.PropertyType.GetCodeDefinition();
 
             if (nullable && result.EndsWith('?') == false)
             {

@@ -44,6 +44,7 @@ namespace TemplateCodeGenerator.Logic
         #endregion Entity and service properties
 
         #region Model properties
+        public static string IdType => nameof(IdType);
         public static string ModelObjectName => "ModelObject";
         public static string VersionModelName => "VersionModel";
         public static string[] ModelBaseClasses => new string[] { VersionModelName, ModelObjectName };

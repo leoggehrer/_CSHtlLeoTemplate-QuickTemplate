@@ -7,7 +7,7 @@ namespace QuickTemplate.Logic.Models.Account
     using TModel = Models.Account.LoginSession;
     public partial class LoginSession : VersionObject
     {
-        public int IdentityId { get; set; }
+        public IdType IdentityId { get; set; }
         public string SessionToken { get; set; } = string.Empty;
         public DateTime LoginTime { get; set; }
         public DateTime? LogoutTime { get; set; }

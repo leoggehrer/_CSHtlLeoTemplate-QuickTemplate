@@ -17,6 +17,10 @@ namespace QuickTemplate.AspMvc
             builder.Services.AddTransient<QuickTemplate.Logic.Contracts.Account.IIdentitiesAccess<QuickTemplate.Logic.Models.Account.Identity>, QuickTemplate.Logic.Facades.Account.IdentitiesFacade>();
             builder.Services.AddTransient<QuickTemplate.Logic.Contracts.Account.IRolesAccess<QuickTemplate.Logic.Models.Account.Role>, QuickTemplate.Logic.Facades.Account.RolesFacade>();
             builder.Services.AddTransient<QuickTemplate.Logic.Contracts.Account.IUsersAccess<QuickTemplate.Logic.Models.Account.User>, QuickTemplate.Logic.Facades.Account.UsersFacade>();
+
+#if ACCESSRULES_ON
+            builder.Services.AddTransient<QuickTemplate.Logic.Contracts.Account.IAccessRulesAccess<QuickTemplate.Logic.Models.Account.AccessRule>, QuickTemplate.Logic.Facades.Account.AccessRulesFacade>();
+#endif
 #endif
             AddServices(builder);
         }

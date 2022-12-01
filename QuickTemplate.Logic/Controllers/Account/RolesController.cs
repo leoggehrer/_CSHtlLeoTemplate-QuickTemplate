@@ -17,7 +17,11 @@ namespace QuickTemplate.Logic.Controllers.Account
 
         protected override void BeforeActionExecute(ActionType actionType, Entities.Account.Role entity)
         {
-            if (actionType == ActionType.Update)
+            if (actionType == ActionType.Insert)
+            {
+                entity.Guid = Guid.NewGuid();
+            }
+            else if (actionType == ActionType.Update)
             {
                 using var ctrl = new RolesController();
                 var dbEntity = ctrl.EntitySet.Find(entity.Id);

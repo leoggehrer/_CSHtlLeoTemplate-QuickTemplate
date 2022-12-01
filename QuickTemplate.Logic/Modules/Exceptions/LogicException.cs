@@ -26,7 +26,7 @@ namespace QuickTemplate.Logic.Modules.Exceptions
         /// <param name="errorType">Identification of the error message.</param>
         /// <param name="message">The message that describes the error.</param>
         public LogicException(ErrorType errorType, string message)
-            : base(message)
+            : base($"{ErrorMessage.GetAt(errorType)}: {message}")
         {
             ErrorId = (int)errorType;
         }

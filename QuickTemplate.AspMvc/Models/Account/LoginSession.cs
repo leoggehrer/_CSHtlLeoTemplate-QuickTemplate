@@ -11,7 +11,7 @@ namespace QuickTemplate.AspMvc.Models.Account
         /// <summary>
         /// The reference to the identity.
         /// </summary>
-        public int IdentityId { get; set; }
+        public IdType IdentityId { get; set; }
         /// <summary>
         /// The session token.
         /// </summary>
