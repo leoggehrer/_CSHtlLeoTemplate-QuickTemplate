@@ -3,7 +3,11 @@
 #if ACCOUNT_ON
 namespace QuickTemplate.Logic.Entities.Account
 {
+#if SQLITE_ON
+    [Table("LoginSessions")]
+#else
     [Table("LoginSessions", Schema = "account")]
+#endif
     internal partial class LoginSession : VersionObject
     {
         private DateTime? _logoutTime;
@@ -40,7 +44,7 @@ namespace QuickTemplate.Logic.Entities.Account
         [MaxLength(4096)]
         public string? OptionalInfo { get; internal set; }
 
-        #region Transient properties
+#region Transient properties
         [NotMapped]
         internal byte[] PasswordHash { get; set; } = Array.Empty<byte>();
         [NotMapped]
@@ -67,13 +71,13 @@ namespace QuickTemplate.Logic.Entities.Account
                 return LogoutTime.HasValue || ts.TotalSeconds > TimeOutInMinutes * 60;
             }
         }
-        [NotMapped]
-        public bool HasChanged { get; set; }
+        //[NotMapped]
+        //public bool HasChanged { get; set; }
         [NotMapped]
         public List<Role> Roles { get; } = new();
-        #endregion Transient properties
+#endregion Transient properties
 
-        // Navigation properties
+#region Navigation properties
         public SecureIdentity? Identity
         {
             get => identity;
@@ -85,6 +89,8 @@ namespace QuickTemplate.Logic.Entities.Account
                 PasswordSalt = identity != null ? identity.PasswordSalt : Array.Empty<byte>();
             }
         }
+#endregion Navigation properties
+
         public LoginSession Clone()
         {
             var result = new LoginSession();

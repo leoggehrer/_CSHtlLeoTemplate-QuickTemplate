@@ -1,7 +1,5 @@
 ﻿//@CodeCopy
 //MdStart
-using System.Reflection;
-
 namespace QuickTemplate.Logic.DataContext
 {
     /// <summary>
@@ -9,7 +7,12 @@ namespace QuickTemplate.Logic.DataContext
     /// </summary>
     internal partial class ProjectDbContext : DbContext
     {
+#if SQLSERVER_ON
         private static readonly string ConnectionString = "Data Source=(localdb)\\MSSQLLocalDB;Database=QuickTemplateDb;Integrated Security=True";
+#endif
+#if SQLITE_ON
+        private static readonly string ConnectionString = "Data Source=C:\\Temp\\QuickTemplate.db";
+#endif
         /// <summary>
         /// Initializes a new instance of the <see cref="ProjectDbContext"/> class
         /// </summary>
@@ -19,7 +22,14 @@ namespace QuickTemplate.Logic.DataContext
             try
             {
                 var configuration = CommonBase.Modules.Configuration.Configurator.LoadAppSettings();
-                var connectionString = configuration["ConnectionStrings:DefaultConnection"];
+                var connectionString = string.Empty;
+
+#if SQLSERVER_ON
+                connectionString = configuration["ConnectionStrings:SqlServerDefaultConnection"];
+#endif
+#if SQLITE_ON
+                connectionString = configuration["ConnectionStrings:SqlitelDefaultConnection"];
+#endif
 
                 if (string.IsNullOrEmpty(connectionString) == false)
                 {
@@ -45,7 +55,7 @@ namespace QuickTemplate.Logic.DataContext
         public DbSet<Entities.Account.User>? UserSet { get; set; }
         public DbSet<Entities.Account.LoginSession>? LoginSessionSet { get; set; }
 #if ACCESSRULES_ON
-        public DbSet<Entities.Account.AccessRule>? AccessRuleSet { get; set; }
+        public DbSet<Entities.Access.AccessRule>? AccessRuleSet { get; set; }
 #endif
 #if LOGGING_ON
         public DbSet<Entities.Logging.ActionLog>? ActionLogSet { get; set; }
@@ -74,7 +84,12 @@ namespace QuickTemplate.Logic.DataContext
             BeforeOnConfiguring(optionsBuilder, ref handled);
             if (handled == false)
             {
+#if SQLSERVER_ON
                 optionsBuilder.UseSqlServer(ConnectionString);
+#endif
+#if SQLITE_ON
+                optionsBuilder.UseSqlite(ConnectionString);
+#endif
             }
             AfterOnConfiguring(optionsBuilder);
             base.OnConfiguring(optionsBuilder);
@@ -185,7 +200,7 @@ namespace QuickTemplate.Logic.DataContext
                     result = LoginSessionSet as DbSet<E>;
                 }
 #if ACCESSRULES_ON
-                else if (typeof(E) == typeof(Entities.Account.AccessRule))
+                else if (typeof(E) == typeof(Entities.Access.AccessRule))
                 {
                     handled = true;
                     result = AccessRuleSet as DbSet<E>;
@@ -223,7 +238,6 @@ namespace QuickTemplate.Logic.DataContext
         /// <param name="dbSet">The DbSet depending on the type E</param>
         /// <param name="handled">Indicates whether the method found the DbSet</param>
         partial void GetGeneratorDbSet<E>(ref DbSet<E>? dbSet, ref bool handled) where E : Entities.EntityObject;
-
     }
 }
 //MdEnd

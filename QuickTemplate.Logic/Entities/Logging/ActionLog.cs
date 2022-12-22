@@ -3,7 +3,11 @@
 #if ACCOUNT_ON && LOGGING_ON
 namespace QuickTemplate.Logic.Entities.Logging
 {
+#if SQLITE_ON
+    [Table("ActionLogs")]
+#else
     [Table("ActionLogs", Schema = "logging")]
+#endif
     internal partial class ActionLog : EntityObject
     {
         public IdType IdentityId { get; internal set; }

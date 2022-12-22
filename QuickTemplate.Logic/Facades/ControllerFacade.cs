@@ -10,41 +10,14 @@ namespace QuickTemplate.Logic.Facades
     /// Generic facade for mapping entity types to model types.
     /// </summary>
     /// <typeparam name="TModel">The model type as public type</typeparam>
-    /// <typeparam name="TEntity">The entity type for the internal controller</typeparam>
-    /// <inheritdoc cref="IDataAccess"/>
-    internal abstract partial class GenericFacade<TModel, TEntity> : FacadeObject, IDataAccess<TModel>
+    public abstract partial class ControllerFacade<TModel> : FacadeObject, IDataAccess<TModel>
         where TModel : Models.ModelObject, new()
-        where TEntity : Entities.EntityObject, new()
     {
-        protected GenericController<TEntity> Controller { get; init; }
-        protected GenericFacade(GenericController<TEntity> controller)
-            : base(controller)
+        protected IDataAccess<TModel> Controller { get; init; }
+        protected ControllerFacade(IDataAccess<TModel> controller)
+            : base((controller as ControllerObject)!)
         {
             Controller = controller;
-        }
-        /// <summary>
-        /// Converts the entity type to the facade type.
-        /// </summary>
-        /// <param name="entity">Entity type</param>
-        /// <returns>The facade type</returns>
-        internal virtual TModel ToModel(TEntity entity)
-        {
-            var result = new TModel
-            {
-                Source = entity
-            };
-            return result;
-        }
-        /// <summary>
-        /// Converts the model type to the entity type.
-        /// </summary>
-        /// <param name="model">Model type</param>
-        /// <returns>The entity type</returns>
-        internal virtual TEntity ToEntity(TModel model)
-        {
-            var result = model.Source as TEntity;
-
-            return result!;
         }
 
 #if ACCOUNT_ON
@@ -69,9 +42,7 @@ namespace QuickTemplate.Logic.Facades
         /// <returns>The new element.</returns>
         public TModel Create()
         {
-            var entity = Controller.Create();
-
-            return ToModel(entity);
+            return Controller.Create();
         }
         #endregion Create
 
@@ -116,35 +87,19 @@ namespace QuickTemplate.Logic.Facades
         /// </summary>
         /// <param name="id">The identification.</param>
         /// <returns>The element of the type T with the corresponding identification.</returns>
-        public async Task<TModel?> GetByGuidAsync(Guid id)
+        public virtual Task<TModel?> GetByGuidAsync(Guid id)
         {
-            var handled = false;
-            var result = default(TModel);
-
-            BeforeGetByGuid(ref result, id, ref handled);
-            if (handled == false || result == null)
-            {
-                var entity = await Controller.GetByGuidAsync(id).ConfigureAwait(false);
-
-                if (entity != null)
-                    result = ToModel(entity);
-            }
-            AfterGetByGuid(result);
-            return result;
+            return Controller.GetByGuidAsync(id);
         }
-        partial void BeforeGetByGuid(ref TModel? model, Guid id, ref bool handled);
-        partial void AfterGetByGuid(TModel? model);
 #endif
         /// <summary>
         /// Returns the element of type T with the identification of id.
         /// </summary>
         /// <param name="id">The identification.</param>
         /// <returns>The element of the type T with the corresponding identification.</returns>
-        public virtual async Task<TModel?> GetByIdAsync(IdType id)
+        public virtual Task<TModel?> GetByIdAsync(IdType id)
         {
-            var entity = await Controller.GetByIdAsync(id).ConfigureAwait(false);
-
-            return entity != null ? ToModel(entity) : null;
+            return Controller.GetByIdAsync(id);
         }
         /// <summary>
         /// Returns the element of type T with the identification of id.
@@ -152,55 +107,45 @@ namespace QuickTemplate.Logic.Facades
         /// <param name="id">The identification.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>The element of the type T with the corresponding identification (with includes).</returns>
-        public virtual async Task<TModel?> GetByIdAsync(IdType id, params string[] includeItems)
+        public virtual Task<TModel?> GetByIdAsync(IdType id, params string[] includeItems)
         {
-            var entity = await Controller.GetByIdAsync(id, includeItems).ConfigureAwait(false);
-
-            return entity != null ? ToModel(entity) : null;
+            return Controller.GetByIdAsync(id, includeItems);
         }
 
         /// <summary>
         /// Returns all objects of the elements in the collection.
         /// </summary>
         /// <returns>All objects of the element collection.</returns>
-        public virtual async Task<TModel[]> GetAllAsync()
+        public virtual Task<TModel[]> GetAllAsync()
         {
-            var entities = await Controller.GetAllAsync().ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.GetAllAsync();
         }
         /// <summary>
         /// Returns all objects of the elements in the collection.
         /// </summary>
         /// <param name="includeItems">The include items</param>
         /// <returns>All objects of the element collection.</returns>
-        public virtual async Task<TModel[]> GetAllAsync(params string[] includeItems)
+        public virtual Task<TModel[]> GetAllAsync(params string[] includeItems)
         {
-            var entities = await Controller.GetAllAsync(includeItems).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.GetAllAsync(includeItems);
         }
         /// <summary>
         /// Returns all elements in the collection.
         /// </summary>
         /// <param name="orderBy">Sorts the elements of a sequence according to a sort clause.</param>
         /// <returns>All interfaces of the element collection.</returns>
-        public virtual async Task<TModel[]> GetAllAsync(string orderBy)
+        public virtual Task<TModel[]> GetAllAsync(string orderBy)
         {
-            var entities = await Controller.GetAllAsync(orderBy).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.GetAllAsync(orderBy);
         }
         /// <summary>
         /// Returns all interfaces of the elements in the collection.
         /// </summary>
         /// <param name="includeItems">The include items</param>
         /// <returns>All interfaces of the element collection.</returns>
-        public virtual async Task<TModel[]> GetAllAsync(string orderBy, params string[] includeItems)
+        public virtual Task<TModel[]> GetAllAsync(string orderBy, params string[] includeItems)
         {
-            var entities = await Controller.GetAllAsync(orderBy, includeItems).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.GetAllAsync(orderBy, includeItems);
         }
 
         /// <summary>
@@ -209,11 +154,9 @@ namespace QuickTemplate.Logic.Facades
         /// <param name="pageIndex">0 based page index.</param>
         /// <param name="pageSize">The pagesize.</param>
         /// <returns>Subset in accordance with the parameters.</returns>
-        public virtual async Task<TModel[]> GetPageListAsync(int pageIndex, int pageSize)
+        public virtual Task<TModel[]> GetPageListAsync(int pageIndex, int pageSize)
         {
-            var entities = await Controller.GetPageListAsync(pageIndex, pageSize).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.GetPageListAsync(pageIndex, pageSize);
         }
         /// <summary>
         /// Gets a subset of items from the repository.
@@ -222,11 +165,9 @@ namespace QuickTemplate.Logic.Facades
         /// <param name="pageSize">The pagesize.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>Subset in accordance with the parameters.</returns>
-        public virtual async Task<TModel[]> GetPageListAsync(int pageIndex, int pageSize, params string[] includeItems)
+        public virtual Task<TModel[]> GetPageListAsync(int pageIndex, int pageSize, params string[] includeItems)
         {
-            var entities = await Controller.GetPageListAsync(pageIndex, pageSize, includeItems).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.GetPageListAsync(pageIndex, pageSize, includeItems);
         }
         /// <summary>
         /// Gets a subset of items from the repository.
@@ -235,11 +176,9 @@ namespace QuickTemplate.Logic.Facades
         /// <param name="pageIndex">0 based page index.</param>
         /// <param name="pageSize">The pagesize.</param>
         /// <returns>Subset in accordance with the parameters.</returns>
-        public virtual async Task<TModel[]> GetPageListAsync(string orderBy, int pageIndex, int pageSize)
+        public virtual Task<TModel[]> GetPageListAsync(string orderBy, int pageIndex, int pageSize)
         {
-            var entities = await Controller.GetPageListAsync(orderBy, pageIndex, pageSize).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.GetPageListAsync(orderBy, pageIndex, pageSize);
         }
         /// <summary>
         /// Gets a subset of items from the repository.
@@ -249,11 +188,9 @@ namespace QuickTemplate.Logic.Facades
         /// <param name="pageSize">The pagesize.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>Subset in accordance with the parameters.</returns>
-        public virtual async Task<TModel[]> GetPageListAsync(string orderBy, int pageIndex, int pageSize, params string[] includeItems)
+        public virtual Task<TModel[]> GetPageListAsync(string orderBy, int pageIndex, int pageSize, params string[] includeItems)
         {
-            var entities = await Controller.GetPageListAsync(orderBy, pageIndex, pageSize, includeItems).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.GetPageListAsync(orderBy, pageIndex, pageSize, includeItems);
         }
 
         /// <summary>
@@ -261,11 +198,9 @@ namespace QuickTemplate.Logic.Facades
         /// </summary>
         /// <param name="predicate">A string to test each element for a condition.</param>
         /// <returns>The filter result.</returns>
-        public virtual async Task<TModel[]> QueryAsync(string predicate)
+        public virtual Task<TModel[]> QueryAsync(string predicate)
         {
-            var entities = await Controller.QueryAsync(predicate).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.QueryAsync(predicate);
         }
         /// <summary>
         /// Gets a subset of items from the repository.
@@ -273,11 +208,9 @@ namespace QuickTemplate.Logic.Facades
         /// <param name="predicate">A string to test each element for a condition.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>Subset in accordance with the parameters.</returns>
-        public virtual async Task<TModel[]> QueryAsync(string predicate, params string[] includeItems)
+        public virtual Task<TModel[]> QueryAsync(string predicate, params string[] includeItems)
         {
-            var entities = await Controller.QueryAsync(predicate, includeItems).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.QueryAsync(predicate, includeItems);
         }
         /// <summary>
         /// Filters a sequence of elements based on a predicate.
@@ -285,23 +218,9 @@ namespace QuickTemplate.Logic.Facades
         /// <param name="predicate">A string to test each element for a condition.</param>
         /// <param name="orderBy">Sorts the elements of a sequence in order according to a key.</param>
         /// <returns>The filter result.</returns>
-        public virtual async Task<TModel[]> QueryAsync(string predicate, string orderBy)
+        public virtual Task<TModel[]> QueryAsync(string predicate, string orderBy)
         {
-            var entities = await Controller.QueryAsync(predicate, orderBy).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
-        }
-        /// <summary>
-        /// Filters a sequence of elements based on a predicate.
-        /// </summary>
-        /// <param name="predicate">A string to test each element for a condition.</param>
-        /// <param name="includeItems">The include items</param>
-        /// <returns>The filter result.</returns>
-        public virtual async Task<TModel[]> QueryAsync(string predicate, string orderBy, params string[] includeItems)
-        {
-            var entities = await Controller.QueryAsync(predicate, orderBy, includeItems).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.QueryAsync(predicate, orderBy);
         }
 
         /// <summary>
@@ -311,11 +230,9 @@ namespace QuickTemplate.Logic.Facades
         /// <param name="pageIndex">0 based page index.</param>
         /// <param name="pageSize">The pagesize.</param>
         /// <returns>Subset in accordance with the parameters.</returns>
-        public virtual async Task<TModel[]> QueryAsync(string predicate, int pageIndex, int pageSize)
+        public virtual Task<TModel[]> QueryAsync(string predicate, int pageIndex, int pageSize)
         {
-            var entities = await Controller.QueryAsync(predicate, pageIndex, pageSize).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.QueryAsync(predicate, pageIndex, pageSize);
         }
         /// <summary>
         /// Filters a subset of elements based on a predicate.
@@ -325,11 +242,9 @@ namespace QuickTemplate.Logic.Facades
         /// <param name="pageSize">The pagesize.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>Subset in accordance with the parameters.</returns>
-        public virtual async Task<TModel[]> QueryAsync(string predicate, int pageIndex, int pageSize, params string[] includeItems)
+        public virtual Task<TModel[]> QueryAsync(string predicate, int pageIndex, int pageSize, params string[] includeItems)
         {
-            var entities = await Controller.QueryAsync(predicate, pageIndex, pageSize, includeItems).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.QueryAsync(predicate, pageIndex, pageSize, includeItems);
         }
         /// <summary>
         /// Filters a subset of elements based on a predicate.
@@ -339,11 +254,9 @@ namespace QuickTemplate.Logic.Facades
         /// <param name="pageIndex">0 based page index.</param>
         /// <param name="pageSize">The pagesize.</param>
         /// <returns>Subset in accordance with the parameters.</returns>
-        public virtual async Task<TModel[]> QueryAsync(string predicate, string orderBy, int pageIndex, int pageSize)
+        public virtual Task<TModel[]> QueryAsync(string predicate, string orderBy, int pageIndex, int pageSize)
         {
-            var entities = await Controller.QueryAsync(predicate, orderBy, pageIndex, pageSize).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.QueryAsync(predicate, orderBy, pageIndex, pageSize);
         }
         /// <summary>
         /// Filters a subset of elements based on a predicate.
@@ -354,11 +267,9 @@ namespace QuickTemplate.Logic.Facades
         /// <param name="pageSize">The pagesize.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>Subset in accordance with the parameters.</returns>
-        public virtual async Task<TModel[]> QueryAsync(string predicate, string orderBy, int pageIndex, int pageSize, params string[] includeItems)
+        public virtual Task<TModel[]> QueryAsync(string predicate, string orderBy, int pageIndex, int pageSize, params string[] includeItems)
         {
-            var entities = await Controller.QueryAsync(predicate, orderBy, pageIndex, pageSize, includeItems).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e)).ToArray();
+            return Controller.QueryAsync(predicate, orderBy, pageIndex, pageSize, includeItems);
         }
         #endregion Queries
 
@@ -368,22 +279,18 @@ namespace QuickTemplate.Logic.Facades
         /// </summary>
         /// <param name="element">The element which is to be inserted.</param>
         /// <returns>The inserted element.</returns>
-        public virtual async Task<TModel> InsertAsync(TModel model)
+        public virtual Task<TModel> InsertAsync(TModel model)
         {
-            var entity = await Controller.InsertAsync(ToEntity(model)).ConfigureAwait(false);
-
-            return ToModel(entity);
+            return Controller.InsertAsync(model);
         }
         /// <summary>
         /// The elements are being tracked by the context but does not yet exist in the repository. 
         /// </summary>
         /// <param name="elements">The elements which are to be inserted.</param>
         /// <returns>The inserted elements.</returns>
-        public virtual async Task<IEnumerable<TModel>> InsertAsync(IEnumerable<TModel> models)
+        public virtual Task<IEnumerable<TModel>> InsertAsync(IEnumerable<TModel> models)
         {
-            var entities = await Controller.InsertAsync(models.Select(f => ToEntity(f))).ConfigureAwait(false);
-
-            return entities.Select(e => ToModel(e));
+            return Controller.InsertAsync(models);
         }
         #endregion Insert
 
@@ -395,14 +302,12 @@ namespace QuickTemplate.Logic.Facades
         /// <returns>The the modified element.</returns>
         public virtual async Task<TModel> UpdateAsync(TModel model)
         {
-            var entity = await Controller.GetByIdAsync(model.Id).ConfigureAwait(false);
+            var updModel = await Controller.GetByIdAsync(model.Id).ConfigureAwait(false);
 
-            _ = entity ?? throw new Exception("Entity not found.");
+            _ = updModel ?? throw new Exception("Entity not found.");
 
-            entity.CopyFrom(model);
-            entity = await Controller.UpdateAsync(entity).ConfigureAwait(false);
-
-            return ToModel(entity);
+            updModel.CopyFrom(model);
+            return await Controller.UpdateAsync(updModel).ConfigureAwait(false);
         }
         /// <summary>
         /// The elements are being tracked by the context and exists in the repository, and some or all of its property values have been modified.
@@ -415,9 +320,7 @@ namespace QuickTemplate.Logic.Facades
 
             foreach (var model in models)
             {
-                var updateModel = await UpdateAsync(model).ConfigureAwait(false);
-
-                result.Add(updateModel);
+                result.Add(await UpdateAsync(model).ConfigureAwait(false));
             }
             return result;
         }

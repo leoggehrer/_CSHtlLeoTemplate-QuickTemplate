@@ -1,24 +1,29 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON && ACCESSRULES_ON
-namespace QuickTemplate.Logic.Entities.Account
+namespace QuickTemplate.Logic.Entities.Access
 {
-    using QuickTemplate.Logic.Modules.Account;
-
-    [Table("AccessRules", Schema = "account")]
+    using QuickTemplate.Logic.Modules.Access;
+#if SQLITE_ON
+    [Table("AccessRules")]
+#else
+    [Table("AccessRules", Schema = "access")]
+#endif
     [Index(nameof(EntityType), IsUnique = false)]
-    internal partial class AccessRule : VersionObject
+    internal partial class AccessRule : VersionEntity
     {
         public RuleType Type { get; set; }
         [MaxLength(128)]
         public string EntityType { get; set; } = string.Empty;
         [MaxLength(128)]
-        public string? RelationshipEntityType { get; set; } = string.Empty;
+        public string? RelationshipEntityType { get; set; }
         [MaxLength(128)]
         public string? PropertyName { get; set; }
         [MaxLength(36)]
         public string? EntityValue { get; set; }
         public AccessType AccessType { get; set; }
+        [MaxLength(128)]
+        public string? AccessRoleType { get; set; }
         [MaxLength(36)]
         public string? AccessValue { get; set; }
         public bool Creatable { get; set; } = true;

@@ -7,15 +7,15 @@ namespace QuickTemplate.Logic.Controllers
     partial class ControllerObject
     {
         #region Fields
-        private Account.AccessRulesController? accessRulesController = null;
+        private Access.AccessRulesController? accessRulesController = null;
         #endregion Fields
 
         #region Properties
-        internal Account.AccessRulesController AccessRulesController
+        internal Access.AccessRulesController AccessRulesController
         {
             get
             {
-                return accessRulesController ??= new Account.AccessRulesController(this);
+                return accessRulesController ??= new Access.AccessRulesController(this);
             }
         }
         #endregion Properties

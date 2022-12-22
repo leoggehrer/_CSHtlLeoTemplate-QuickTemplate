@@ -1,7 +1,8 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON && ACCESSRULES_ON
-namespace QuickTemplate.Logic.Modules.Account
+
+namespace QuickTemplate.Logic.Modules.Access
 {
     public enum AccessOperation
     {

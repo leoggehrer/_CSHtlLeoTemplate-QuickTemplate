@@ -1,12 +1,13 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON && ACCESSRULES_ON
-namespace QuickTemplate.Logic.Models.Account
+namespace QuickTemplate.Logic.Models.Access
 {
-    using QuickTemplate.Logic.Modules.Account;
-    using TEntity = Entities.Account.AccessRule;
-    using TModel = Models.Account.AccessRule;
-    public partial class AccessRule : VersionObject
+    using Microsoft.VisualBasic;
+    using TEntity = Entities.Access.AccessRule;
+    using TModel = Models.Access.AccessRule;
+
+    public partial class AccessRule : Models.VersionObject
     {
         static AccessRule()
         {
@@ -27,7 +28,7 @@ namespace QuickTemplate.Logic.Models.Account
             get => (TEntity)(_source ??= new TEntity());
             set => _source = value;
         }
-        public RuleType Type
+        public QuickTemplate.Logic.Modules.Access.RuleType Type
         {
             get => Source.Type;
             set => Source.Type = value;
@@ -52,7 +53,7 @@ namespace QuickTemplate.Logic.Models.Account
             get => Source.EntityValue;
             set => Source.EntityValue = value;
         }
-        public AccessType AccessType
+        public QuickTemplate.Logic.Modules.Access.AccessType AccessType
         {
             get => Source.AccessType;
             set => Source.AccessType = value;
@@ -62,43 +63,66 @@ namespace QuickTemplate.Logic.Models.Account
             get => Source.AccessValue;
             set => Source.AccessValue = value;
         }
-
-        public bool Creatable
+        public System.Boolean Creatable
         {
             get => Source.Creatable;
             set => Source.Creatable = value;
         }
-        public bool Readable
+        public System.Boolean Readable
         {
             get => Source.Readable;
             set => Source.Readable = value;
         }
-        public bool Updatable
+        public System.Boolean Updatable
         {
             get => Source.Updatable;
             set => Source.Updatable = value;
         }
-        public bool Deletable
+        public System.Boolean Deletable
         {
             get => Source.Deletable;
             set => Source.Deletable = value;
         }
-        public bool Viewable
+        public System.Boolean Viewable
         {
             get => Source.Viewable;
             set => Source.Viewable = value;
         }
+#if CREATED_ON
+        public System.DateTime CreatedOn
+        {
+            get => Source.CreatedOn;
+            internal set => Source.CreatedOn = value;
+        }
+#endif
+#if MODIFIEDBY_ON
+        public IdType? IdentityId_CreatedBy
+        {
+            get => Source.IdentityId_CreatedBy;
+            internal set => Source.IdentityId_CreatedBy = value;
+        }
+#endif
 
+#if MODIFIED_ON
+        public System.DateTime? ModifiedOn
+        {
+            get => Source.ModifiedOn;
+            internal set => Source.ModifiedOn = value;
+        }
+#endif
+#if MODIFIEDBY_ON
+        public IdType? IdentityId_ModifiedBy
+        {
+            get => Source.IdentityId_ModifiedBy;
+            internal set => Source.IdentityId_ModifiedBy = value;
+        }
+#endif
         internal void CopyProperties(TEntity other)
         {
             bool handled = false;
             BeforeCopyProperties(other, ref handled);
             if (handled == false)
             {
-                Id = other.Id;
-#if ROWVERSION_ON
-                RowVersion = other.RowVersion;
-#endif
                 Type = other.Type;
                 EntityType = other.EntityType;
                 RelationshipEntityType = other.RelationshipEntityType;
@@ -111,22 +135,33 @@ namespace QuickTemplate.Logic.Models.Account
                 Updatable = other.Updatable;
                 Deletable = other.Deletable;
                 Viewable = other.Viewable;
+                Id = other.Id;
+#if ROWVERSION_ON
+                RowVersion = other.RowVersion;
+#endif
+#if CREATED_ON
+                CreatedOn = other.CreatedOn;
+#endif
+#if CREATEDBY_ON
+                IdentityId_CreatedBy = other.IdentityId_CreatedBy;
+#endif
+#if MODIFIED_ON
+                ModifiedOn = other.ModifiedOn;
+#endif
+#if MODIFIEDBY_ON
+                IdentityId_ModifiedBy = other.IdentityId_ModifiedBy;
+#endif
             }
             AfterCopyProperties(other);
         }
         partial void BeforeCopyProperties(TEntity other, ref bool handled);
         partial void AfterCopyProperties(TEntity other);
-
         internal void CopyProperties(TModel other)
         {
             bool handled = false;
             BeforeCopyProperties(other, ref handled);
             if (handled == false)
             {
-                Id = other.Id;
-#if ROWVERSION_ON
-                RowVersion = other.RowVersion;
-#endif
                 Type = other.Type;
                 EntityType = other.EntityType;
                 RelationshipEntityType = other.RelationshipEntityType;
@@ -139,38 +174,55 @@ namespace QuickTemplate.Logic.Models.Account
                 Updatable = other.Updatable;
                 Deletable = other.Deletable;
                 Viewable = other.Viewable;
+                Id = other.Id;
+#if ROWVERSION_ON
+                RowVersion = other.RowVersion;
+#endif
+#if CREATED_ON
+                CreatedOn = other.CreatedOn;
+#endif
+#if CREATEDBY_ON
+                IdentityId_CreatedBy = other.IdentityId_CreatedBy;
+#endif
+#if MODIFIED_ON
+                ModifiedOn = other.ModifiedOn;
+#endif
+#if MODIFIEDBY_ON
+                IdentityId_ModifiedBy = other.IdentityId_ModifiedBy;
+#endif
             }
             AfterCopyProperties(other);
         }
         partial void BeforeCopyProperties(TModel other, ref bool handled);
         partial void AfterCopyProperties(TModel other);
-
         public override bool Equals(object? obj)
         {
             bool result = false;
-            if (obj is AccessRule other)
+            if (obj is Models.Access.AccessRule other)
             {
-                result = IsEqualsWith(GetType().Name, other.GetType().Name) && Id == other.Id;
+#if ROWVERSION_ON
+                result = IsEqualsWith(RowVersion, other.RowVersion) && Id == other.Id;
+#else
+                result = Id == other.Id;
+#endif
             }
             return result;
         }
         public override int GetHashCode()
         {
-            return HashCode.Combine(Type, EntityType, RelationshipEntityType, PropertyName, EntityValue, AccessType, AccessValue, Id);
+            return HashCode.Combine(Type, EntityType, RelationshipEntityType, PropertyName, EntityValue, AccessType, HashCode.Combine(AccessValue, Creatable, Readable, Updatable, Deletable, Viewable, Id));
         }
-
         public static TModel Create()
         {
             BeforeCreate();
-            var result = new AccessRule();
+            var result = new TModel();
             AfterCreate(result);
             return result;
         }
         public static TModel Create(object other)
         {
             BeforeCreate(other);
-            CommonBase.Extensions.ObjectExtensions.CheckArgument(other, nameof(other));
-            var result = new AccessRule();
+            var result = new TModel();
             CommonBase.Extensions.ObjectExtensions.CopyFrom(result, other);
             AfterCreate(result, other);
             return result;
@@ -178,7 +230,7 @@ namespace QuickTemplate.Logic.Models.Account
         public static TModel Create(TModel other)
         {
             BeforeCreate(other);
-            var result = new AccessRule();
+            var result = new TModel();
             result.CopyProperties(other);
             AfterCreate(result, other);
             return result;
@@ -186,7 +238,7 @@ namespace QuickTemplate.Logic.Models.Account
         internal static TModel Create(TEntity other)
         {
             BeforeCreate(other);
-            var result = new AccessRule();
+            var result = new TModel();
             result.Source = other;
             AfterCreate(result, other);
             return result;

@@ -5,46 +5,48 @@ namespace QuickTemplate.Logic.Modules.Exceptions
     public enum ErrorType : int
     {
 #if ACCOUNT_ON
-        InitAppAccess,
-        InvalidAccount,
-        InvalidIdentityName,
-        InvalidPasswordSyntax,
+        InitAppAccess = 10,
+        InvalidAccount = 20,
+        InvalidIdentityName = 30,
+        InvalidPasswordSyntax = 40,
 
-        InvalidToken,
-        InvalidSessionToken,
-        InvalidJsonWebToken,
+        InvalidToken = 50,
+        InvalidSessionToken = 60,
+        InvalidJsonWebToken = 70,
 
-        InvalidEmail,
-        InvalidPassword,
-        NotLogedIn,
-        NotAuthorized,
-        AuthorizationTimeOut,
+        InvalidEmail = 80,
+        InvalidPassword = 90,
+        NotLogedIn = 100,
+        NotAuthorized = 110,
+        AuthorizationTimeOut = 120,
 
 #if ACCESSRULES_ON
-        InvalidAccessRuleEntityValue,
-        InvalidAccessRuleAccessValue,
-        InvalidAccessRuleAlreadyExits,
+        InvalidAccessRuleEntityValue = 130,
+        InvalidAccessRuleAccessValue = 140,
+        InvalidAccessRuleAlreadyExits = 150,
 
-        AccessRuleViolationCanNotCreated,
-        AccessRuleViolationCanNotRead,
-        AccessRuleViolationCanNotChanged,
-        AccessRuleViolationCanNotDeleted,
+        AccessRuleViolationCanNotCreated = 160,
+        AccessRuleViolationCanNotRead = 170,
+        AccessRuleViolationCanNotChanged = 180,
+        AccessRuleViolationCanNotDeleted = 190,
 #endif
 #endif
-        InvalidId,
-        InvalidPageSize,
+        InvalidId = 200,
+        InvalidPageSize = 210,
 
-        InvalidEntityInsert,
-        InvalidEntityUpdate,
-        InvalidEntityContent,
+        InvalidEntityInsert = 220,
+        InvalidEntityUpdate = 230,
+        InvalidEntityContent = 240,
 
-        InvalidControllerType,
-        InvalidControllerObject,
+        InvalidControllerType = 250,
+        InvalidControllerObject = 260,
 
-        InvalidFacadeType,
-        InvalidFacadeObject,
+        InvalidFacadeType = 270,
+        InvalidFacadeObject = 280,
 
-        InvalidOperation,
+        InvalidOperation = 290,
+        EmailWasNotSent = 300,
+        InvalidConfirmation = 310,
     }
 }
 //MdEnd

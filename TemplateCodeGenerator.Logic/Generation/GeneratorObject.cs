@@ -6,7 +6,6 @@ namespace TemplateCodeGenerator.Logic.Generation
     using TemplateCodeGenerator.Logic.Common;
     using TemplateCodeGenerator.Logic.Contracts;
     using TemplateCodeGenerator.Logic.Extensions;
-
     internal abstract partial class GeneratorObject
     {
         static GeneratorObject()
@@ -16,7 +15,9 @@ namespace TemplateCodeGenerator.Logic.Generation
         }
         static partial void ClassConstructing();
         static partial void ClassConstructed();
+        public Configuration Configuration { get; init; }
         public ISolutionProperties SolutionProperties { get; init; }
+
         public GeneratorObject(ISolutionProperties solutionProperties)
         {
             Constructing();
@@ -27,7 +28,10 @@ namespace TemplateCodeGenerator.Logic.Generation
         partial void Constructing();
         partial void Constructed();
 
-        private Configuration Configuration { get; init; }
+        public string QueryGenerationSettingValue(string unitType, string itemType, string itemName, string valueName, string defaultValue)
+        {
+            return Configuration.QuerySettingValue(unitType, itemType, itemName, valueName, defaultValue);
+        }
         public string QueryGenerationSettingValue(UnitType unitType, ItemType itemType, string itemName, string valueName, string defaultValue)
         {
             return Configuration.QuerySettingValue(unitType, itemType, itemName, valueName, defaultValue);

@@ -107,10 +107,9 @@ namespace TemplateCodeGenerator.Logic.Generation
         }
         private IGeneratedItem CreateControllerFromType(Type type, Common.UnitType unitType, Common.ItemType itemType)
         {
-
             var visibility = "public";
             var logicProject = $"{ItemProperties.SolutionName}{StaticLiterals.LogicExtension}";
-            var accessType = type.IsPublic ? ItemProperties.CreateSubType(type) : $"{logicProject}.{ItemProperties.CreateModelSubType(type)}";
+            var accessType = $"{logicProject}.{ItemProperties.CreateModelSubType(type)}";
             var genericType = $"Controllers.GenericController";
             var modelType = ItemProperties.CreateModelType(type);
             var editModelType = ItemProperties.CreateEditModelType(type);
@@ -173,7 +172,8 @@ namespace TemplateCodeGenerator.Logic.Generation
 
                 if (generate && type.IsPublic)
                 {
-                    var accessType = ItemProperties.CreateSubType(type);
+                    var logicProject = $"{ItemProperties.SolutionName}{StaticLiterals.LogicExtension}";
+                    var accessType = $"{logicProject}.{ItemProperties.CreateModelSubType(type)}";
                     var contractType = ItemProperties.CreateAccessContractType(type);
                     var controllerType = ItemProperties.CreateLogicControllerType(type);
 

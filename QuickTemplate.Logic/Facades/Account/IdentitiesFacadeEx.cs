@@ -3,19 +3,10 @@
 #if ACCOUNT_ON
 namespace QuickTemplate.Logic.Facades.Account
 {
-    using QuickTemplate.Logic.Entities.Account;
+    using TOutModel = Models.Account.Identity;
     partial class IdentitiesFacade
     {
-        partial void BeforeToEntity(Models.Account.Identity model, ref SecureIdentity? entity, ref bool handled)
-        {
-            entity = Task.Run(async () => await Controller.GetByIdAsync(model.Id)).Result;
-
-            if (entity == null)
-                throw new Modules.Exceptions.LogicException(Modules.Exceptions.ErrorType.InvalidId);
-
-            entity.CopyFrom(model);
-            handled = true;
-        }
+        new private Contracts.Account.IIdentitiesAccess<TOutModel> Controller => (ControllerObject as Contracts.Account.IIdentitiesAccess<TOutModel>)!;
         public Task AddRoleAsync(IdType id, IdType roleId)
         {
             return Controller.AddRoleAsync(id, roleId);

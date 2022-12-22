@@ -46,7 +46,7 @@ namespace TemplateCodeGenerator.Logic.Generation
 
         private string GetGenerateDefault(Type type)
         {
-            return EntityProject.IsAccountOrLoggingOrRevisionEntity(type) ? "False" : "True";
+            return EntityProject.IsNotAGenerationEntity(type) ? "False" : "True";
         }
         private string GetVisiblityDefault(Type type)
         {
@@ -69,13 +69,15 @@ namespace TemplateCodeGenerator.Logic.Generation
 
             if (GenerateDbContext)
             {
-                foreach (var type in entityProject.EntityTypes.Where(t => EntityProject.IsAccountOrLoggingOrRevisionEntity(t) == false))
+                foreach (var type in entityProject.EntityTypes.Where(t => EntityProject.IsNotAGenerationEntity(t) == false))
                 {
 
                     if (QuerySetting<bool>(Common.ItemType.DbContext, type, StaticLiterals.Generate, "True"))
                     {
+                        var entityType = ItemProperties.CreateSubType(type);
+
                         result.AddRange(CreateComment(type));
-                        result.Add($"public DbSet<{type.FullName}>? {type.Name}Set" + "{ get; set; }");
+                        result.Add($"public DbSet<{entityType}>? {type.Name}Set" + "{ get; set; }");
                     }
                 }
                 result.Add(string.Empty);
@@ -84,15 +86,20 @@ namespace TemplateCodeGenerator.Logic.Generation
                 result.Add($"partial void GetGeneratorDbSet<E>(ref DbSet<E>? dbSet, ref bool handled) where E : Entities.{StaticLiterals.EntityObjectName}");
                 result.Add("{");
 
-                foreach (var type in entityProject.EntityTypes.Where(t => EntityProject.IsAccountOrLoggingOrRevisionEntity(t) == false))
+                bool first = false;
+
+                foreach (var type in entityProject.EntityTypes.Where(t => EntityProject.IsNotAGenerationEntity(t) == false))
                 {
                     if (QuerySetting<bool>(Common.ItemType.DbContext, type, StaticLiterals.Generate, "True"))
                     {
-                        result.Add($"if (typeof(E) == typeof({type.FullName}))");
+                        var entityType = ItemProperties.CreateSubType(type);
+
+                        result.Add($"{(first ? "else " : string.Empty)}if (typeof(E) == typeof({entityType}))");
                         result.Add("{");
                         result.Add($"dbSet = {type.Name}Set as DbSet<E>;");
                         result.Add("handled = true;");
                         result.Add("}");
+                        first = true;
                     }
                 }
                 result.Add("}");
@@ -226,8 +233,9 @@ namespace TemplateCodeGenerator.Logic.Generation
         {
             var visibility = QuerySetting<string>(itemType, type, StaticLiterals.Visibility, GetVisiblityDefault(type));
             var attributes = QuerySetting<string>(itemType, type, StaticLiterals.Attributes, string.Empty);
-            var controllerGenericType = QuerySetting<string>(itemType, "All", StaticLiterals.ControllerGenericType, "Controllers.GenericController");
+            var controllerGenericType = QuerySetting<string>(itemType, "All", StaticLiterals.ControllerGenericType, "EntitiesController");
             var entityType = ItemProperties.CreateSubType(type);
+            var outModelType = ItemProperties.CreateModelSubType(type);
             var controllerName = ItemProperties.CreateControllerClassName(type);
             var contractSubType = ItemProperties.CreateAccessContractSubType(type);
             var result = new Models.GeneratedItem(unitType, itemType)
@@ -238,10 +246,12 @@ namespace TemplateCodeGenerator.Logic.Generation
             };
 
             controllerGenericType = QuerySetting<string>(itemType, type, StaticLiterals.ControllerGenericType, controllerGenericType);
+            result.Add($"using TEntity = {entityType};");
+            result.Add($"using TOutModel = {outModelType};");
             result.AddRange(CreateComment(type));
             CreateControllerAttributes(type, result.Source);
             result.Add($"{(attributes.HasContent() ? $"[{attributes}]" : string.Empty)}");
-            result.Add($"{visibility} sealed partial class {controllerName} : {controllerGenericType}<{entityType}>, {contractSubType}<{entityType}>");
+            result.Add($"{visibility} sealed partial class {controllerName} : {controllerGenericType}<TEntity, TOutModel>, {contractSubType}<TOutModel>");
             result.Add("{");
             result.AddRange(CreatePartialStaticConstrutor(controllerName));
             result.AddRange(CreatePartialConstrutor("public", controllerName));
@@ -318,8 +328,8 @@ namespace TemplateCodeGenerator.Logic.Generation
         }
         private IGeneratedItem CreateFacadeFromType(Type type, Common.UnitType unitType, Common.ItemType itemType)
         {
-            var modelType = $"{ItemProperties.CreateModelSubType(type)}";
-            var entityType = ItemProperties.CreateSubType(type);
+            var facadeGenericType = QuerySetting<string>(itemType, "All", StaticLiterals.FacadeGenericType, "ControllerFacade");
+            var outModelType = $"{ItemProperties.CreateModelSubType(type)}";
             var controllerType = ItemProperties.CreateControllerType(type);
             var facadeName = ItemProperties.CreateFactoryFacadeMethodName(type);
             var contractSubType = ItemProperties.CreateFacadeContractSubType(type);
@@ -329,22 +339,18 @@ namespace TemplateCodeGenerator.Logic.Generation
                 FileExtension = StaticLiterals.CSharpFileExtension,
                 SubFilePath = ItemProperties.CreateFacadesSubPathFromType(type, string.Empty, StaticLiterals.CSharpFileExtension),
             };
-            var filePath = "CodeTemplates//FacadeTemplate.txt";
 
-            if (File.Exists(filePath))
-            {
-                var templateCode = File.ReadAllText(filePath, System.Text.Encoding.Default);
+            facadeGenericType = QuerySetting<string>(itemType, type, StaticLiterals.FacadeGenericType, facadeGenericType);
+            result.Add($"using TOutModel = {outModelType};");
+            result.AddRange(CreateComment(type));
+            result.Add($"public sealed partial class {facadeName} : {facadeGenericType}<TOutModel>, {contractSubType}<TOutModel>");
+            result.Add("{");
+            result.AddRange(CreatePartialStaticConstrutor(facadeName));
+            result.AddRange(CreatePartialConstrutor("public", facadeName, null, $"base(new {controllerType}())"));
+            result.AddRange(CreatePartialConstrutor("public", facadeName, "FacadeObject facadeObject", $"base(new {controllerType}(facadeObject.ControllerObject))", withPartials: false));
 
-                templateCode = templateCode.Replace("_NameSpaceName_", ItemProperties.CreateFacadeNamespace(type));
-                templateCode = templateCode.Replace("_FacadeName_", facadeName);
-                templateCode = templateCode.Replace("_ModelType_", modelType);
-                templateCode = templateCode.Replace("_EntityType_", entityType);
-                templateCode = templateCode.Replace("_ModelType_", modelType);
-                templateCode = templateCode.Replace("_ContractType_", contractSubType);
-                templateCode = templateCode.Replace("_ControllerType_", controllerType);
-
-                result.AddRange(templateCode.ToLines());
-            }
+            result.Add("}");
+            result.EnvelopeWithANamespace(ItemProperties.CreateFacadeNamespace(type));
             result.FormatCSharpCode();
             return result;
         }

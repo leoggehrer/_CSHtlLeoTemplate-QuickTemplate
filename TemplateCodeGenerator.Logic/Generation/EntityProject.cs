@@ -88,34 +88,31 @@ namespace TemplateCodeGenerator.Logic.Generation
                                                                        && t.Name.Equals(StaticLiterals.VersionServiceName) == false);
         public static bool IsAccountEntity(Type type)
         {
-            return type.Namespace!.Contains($".{StaticLiterals.Account}");
+            var result = type.FullName!.EndsWith($".{StaticLiterals.Account}.Identity")
+                      || type.FullName!.EndsWith($".{StaticLiterals.Account}.IdentityXRole")
+                      || type.FullName!.EndsWith($".{StaticLiterals.Account}.LoginSession")
+                      || type.FullName!.EndsWith($".{StaticLiterals.Account}.Role")
+                      || type.FullName!.EndsWith($".{StaticLiterals.Account}.SecureIdentity")
+                      || type.FullName!.EndsWith($".{StaticLiterals.Account}.User");
+
+            return result;
+        }
+        public static bool IsAccessEntity(Type type)
+        {
+            return type.FullName!.EndsWith($".{StaticLiterals.Access}.AccessRule");
         }
         public static bool IsLoggingEntity(Type type)
         {
-            return type.Namespace!.Contains($".{StaticLiterals.Logging}");
+            return type.FullName!.EndsWith($".{StaticLiterals.Logging}.ActionLog");
         }
         public static bool IsRevisionEntity(Type type)
         {
-            return type.Namespace!.Contains($".{StaticLiterals.Revision}");
+            return type.FullName!.EndsWith($".{StaticLiterals.Revision}.History");
         }
-        public static bool IsSecureEntity(Type type)
+        public static bool IsNotAGenerationEntity(Type type)
         {
-            return type.FullName!.Contains($".{StaticLiterals.SecureIdentity}")
-                   || type.FullName!.Contains($".{StaticLiterals.LoginSession}");
+            return IsAccountEntity(type) || IsAccessEntity(type) || IsLoggingEntity(type) || IsRevisionEntity(type);
         }
-        public static bool IsAccountOrLoggingOrRevisionEntity(Type type)
-        {
-            return IsAccountEntity(type) || IsLoggingEntity(type) || IsRevisionEntity(type);
-        }
-        public static bool IsLoggingOrRevisionEntity(Type type)
-        {
-            return IsLoggingEntity(type) || IsRevisionEntity(type);
-        }
-        public static bool _IsSecureOrLoggingOrRevisionEntity(Type type)
-        {
-            return IsSecureEntity(type) || IsLoggingEntity(type) || IsRevisionEntity(type);
-        }
-
     }
 }
 //MdEnd

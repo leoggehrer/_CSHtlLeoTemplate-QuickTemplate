@@ -1,13 +1,15 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON
-using QuickTemplate.Logic.Entities.Account;
-using QuickTemplate.Logic.Modules.Account;
-
 namespace QuickTemplate.Logic.Controllers.Account
 {
+    using QuickTemplate.Logic.Entities.Account;
+    using QuickTemplate.Logic.Modules.Account;
+    using TEntity = Entities.Account.SecureIdentity;
+    using TOutModel = Models.Account.Identity;
+
     [Modules.Security.Authorize("SysAdmin", "AppAdmin")]
-    internal sealed partial class IdentitiesController : GenericController<SecureIdentity>, Contracts.Account.IIdentitiesAccess<SecureIdentity>
+    internal sealed partial class IdentitiesController : EntitiesController<TEntity, TOutModel>, Contracts.Account.IIdentitiesAccess<TOutModel>
     {
         private List<IdType> identityIds = new();
         public IdentitiesController()
@@ -27,7 +29,7 @@ namespace QuickTemplate.Logic.Controllers.Account
         }
 
         #region Overrides
-        protected override void BeforeActionExecute(ActionType actionType, SecureIdentity entity)
+        protected override void BeforeActionExecute(ActionType actionType, TEntity entity)
         {
             if (actionType == ActionType.Insert)
             {
@@ -45,7 +47,7 @@ namespace QuickTemplate.Logic.Controllers.Account
             }
             base.BeforeActionExecute(actionType, entity);
         }
-        protected override IEnumerable<SecureIdentity> BeforeReturn(IEnumerable<SecureIdentity> entities)
+        internal override IEnumerable<TOutModel> BeforeReturn(IEnumerable<TEntity> entities)
         {
             foreach (var entity in entities)
             {
@@ -53,7 +55,7 @@ namespace QuickTemplate.Logic.Controllers.Account
             }
             return base.BeforeReturn(entities);
         }
-        protected override SecureIdentity BeforeReturn(SecureIdentity entity)
+        internal override TOutModel BeforeReturn(TEntity entity)
         {
             if (entity.IdentityXRoles.Any() == false)
             {
@@ -107,7 +109,7 @@ namespace QuickTemplate.Logic.Controllers.Account
                         Role = role,
                         Identity = identity,
                     };
-                    await identityXRolesCtrl.InsertAsync(identityXRole).ConfigureAwait(false);
+                    await identityXRolesCtrl.ExecuteInsertAsync(identityXRole).ConfigureAwait(false);
                 }
             }
             ChangedIdentity(identityId);

@@ -1,6 +1,5 @@
 ﻿//@CodeCopy
 //MdStart
-
 namespace QuickTemplate.Logic.Contracts
 {
     /// <summary>

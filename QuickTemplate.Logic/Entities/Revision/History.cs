@@ -3,7 +3,11 @@
 #if ACCOUNT_ON && REVISION_ON
 namespace QuickTemplate.Logic.Entities.Revision
 {
+#if SQLITE_ON
+    [Table("Histories")]
+#else
     [Table("Histories", Schema = "revision")]
+#endif
     internal partial class History : EntityObject
     {
         public IdType IdentityId { get; set; }

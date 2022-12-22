@@ -19,12 +19,12 @@ namespace TemplateCodeGenerator.Logic.Generation
 
         public AspMvcGenerator(ISolutionProperties solutionProperties) : base(solutionProperties)
         {
-            GenerateModels = QuerySetting<bool>(Common.ItemType.Model, "All", StaticLiterals.Generate, "True");
-            GenerateFilterModels = QuerySetting<bool>(Common.ItemType.FilterModel, "All", StaticLiterals.Generate, "True");
-            GenerateControllers = QuerySetting<bool>(Common.ItemType.Controller, "All", StaticLiterals.Generate, "True");
-            GenerateAddServices = QuerySetting<bool>(Common.ItemType.AddServices, "All", StaticLiterals.Generate, "True");
-            GenerateServices = QuerySetting<bool>(Common.ItemType.Service, "All", StaticLiterals.Generate, "True");
-            GenerateViews = QuerySetting<bool>(Common.ItemType.View, "All", StaticLiterals.Generate, "True");
+            GenerateModels = QuerySetting<bool>(Common.ItemType.Model, StaticLiterals.AllItems, StaticLiterals.Generate, "True");
+            GenerateFilterModels = QuerySetting<bool>(Common.ItemType.FilterModel, StaticLiterals.AllItems, StaticLiterals.Generate, "True");
+            GenerateControllers = QuerySetting<bool>(Common.ItemType.Controller, StaticLiterals.AllItems, StaticLiterals.Generate, "True");
+            GenerateAddServices = QuerySetting<bool>(Common.ItemType.AddServices, StaticLiterals.AllItems, StaticLiterals.Generate, "True");
+            GenerateServices = QuerySetting<bool>(Common.ItemType.Service, StaticLiterals.AllItems, StaticLiterals.Generate, "True");
+            GenerateViews = QuerySetting<bool>(Common.ItemType.View, StaticLiterals.AllItems, StaticLiterals.Generate, "True");
         }
         private static bool IsPrimitiveNullable(PropertyInfo propertyInfo)
         {
@@ -121,9 +121,9 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.AddRange(CreatePartialStaticConstrutor(modelName));
             result.AddRange(CreatePartialConstrutor("public", modelName));
 
-            foreach (var propertyInfo in viewProperties)
+            foreach (var modelItem in viewProperties)
             {
-                var generate = QueryModelSetting<bool>(unitType, Common.ItemType.Property, $"{CreateEntitiesSubTypeFromType(type)}Filter.{propertyInfo.Name}", StaticLiterals.Generate, "True");
+                var generate = QueryModelSetting<bool>(unitType, Common.ItemType.FilterProperty, $"{CreateEntitiesSubTypeFromType(type)}Filter.{modelItem.Name}", StaticLiterals.Generate, "True");
 
                 if (generate)
                 {
@@ -132,22 +132,22 @@ namespace TemplateCodeGenerator.Logic.Generation
                         sbHasEntityValue.Append(" || ");
                     }
 
-                    if (propertyInfo.PropertyType == typeof(string))
+                    if (modelItem.PropertyType == typeof(string))
                     {
-                        sbToString.AppendLine($"if (string.IsNullOrEmpty({propertyInfo.Name}) == false)");
+                        sbToString.AppendLine($"if (string.IsNullOrEmpty({modelItem.Name}) == false)");
                         sbToString.AppendLine("{");
-                        sbToString.AppendLine("sb.Append($\"" + $"{propertyInfo.Name}: " + "{" + $"{propertyInfo.Name}" + "} \");");
+                        sbToString.AppendLine("sb.Append($\"" + $"{modelItem.Name}: " + "{" + $"{modelItem.Name}" + "} \");");
                         sbToString.AppendLine("}");
                     }
                     else
                     {
-                        sbToString.AppendLine($"if ({propertyInfo.Name} != null)");
+                        sbToString.AppendLine($"if ({modelItem.Name} != null)");
                         sbToString.AppendLine("{");
-                        sbToString.AppendLine("sb.Append($\"" + $"{propertyInfo.Name}: " + "{" + $"{propertyInfo.Name}" + "} \");");
+                        sbToString.AppendLine("sb.Append($\"" + $"{modelItem.Name}: " + "{" + $"{modelItem.Name}" + "} \");");
                         sbToString.AppendLine("}");
                     }
-                    sbHasEntityValue.Append($"{propertyInfo.Name} != null");
-                    result.AddRange(CreateFilterAutoProperty(propertyInfo));
+                    sbHasEntityValue.Append($"{modelItem.Name} != null");
+                    result.AddRange(CreateFilterAutoProperty(modelItem));
                 }
             }
 
@@ -429,7 +429,7 @@ namespace TemplateCodeGenerator.Logic.Generation
 
             result.Add("static partial void AddServices(WebApplicationBuilder builder)");
             result.Add("{");
-            foreach (var type in entityProject.EntityTypes.Where(t => EntityProject.IsAccountOrLoggingOrRevisionEntity(t) == false))
+            foreach (var type in entityProject.EntityTypes.Where(t => EntityProject.IsNotAGenerationEntity(t) == false))
             {
                 var generate = CanCreate(type) && QuerySetting<bool>(Common.UnitType.Logic, Common.ItemType.Controller, type, StaticLiterals.Generate, true.ToString())
                                                && QuerySetting<bool>(Common.ItemType.AddServices, type, StaticLiterals.Generate, GenerateAddServices.ToString());
@@ -523,22 +523,25 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add("<thead>");
             result.Add(" <tr>");
 
-            foreach (var item in viewProperties)
+            foreach (var viewItem in viewProperties)
             {
-                result.Add("  <th>");
-                result.Add($"   @if (orderBy.StartsWith(\"{item.Name}\") && orderBy.EndsWith(\"ASC\"))");
-                result.Add("    {");
-                result.Add($"     <a asp-action=\"OrderBy\" asp-route-orderBy=\"{item.Name} DESC\" class=\"btn btn-outline\"><strong>{item.Name}</strong> <i class=\"fa fa-sort-desc\"></i></a>");
-                result.Add("    }");
-                result.Add($"   else if (orderBy.StartsWith(\"{item.Name}\") && orderBy.EndsWith(\"DESC\"))");
-                result.Add("    {");
-                result.Add($"     <a asp-action=\"OrderBy\" asp-route-orderBy=\"\" class=\"btn btn-outline\"><strong>{item.Name}</strong> <i class=\"fa fa-sort-asc\"></i></a>");
-                result.Add("    }");
-                result.Add($"   else");
-                result.Add("    {");
-                result.Add($"     <a asp-action=\"OrderBy\" asp-route-orderBy=\"{item.Name} ASC\" class=\"btn btn-outline\"><strong>{item.Name}</strong></a>");
-                result.Add("    }");
-                result.Add("  </th>");
+                if (QuerySetting<bool>(Common.ItemType.ViewTableProperty, viewItem.DeclaringName(), StaticLiterals.Generate, "True"))
+                {
+                    result.Add("  <th>");
+                    result.Add($"   @if (orderBy.StartsWith(\"{viewItem.Name}\") && orderBy.EndsWith(\"ASC\"))");
+                    result.Add("    {");
+                    result.Add($"     <a asp-action=\"OrderBy\" asp-route-orderBy=\"{viewItem.Name} DESC\" class=\"btn btn-outline\"><strong>{viewItem.Name}</strong> <i class=\"fa fa-sort-desc\"></i></a>");
+                    result.Add("    }");
+                    result.Add($"   else if (orderBy.StartsWith(\"{viewItem.Name}\") && orderBy.EndsWith(\"DESC\"))");
+                    result.Add("    {");
+                    result.Add($"     <a asp-action=\"OrderBy\" asp-route-orderBy=\"\" class=\"btn btn-outline\"><strong>{viewItem.Name}</strong> <i class=\"fa fa-sort-asc\"></i></a>");
+                    result.Add("    }");
+                    result.Add($"   else");
+                    result.Add("    {");
+                    result.Add($"     <a asp-action=\"OrderBy\" asp-route-orderBy=\"{viewItem.Name} ASC\" class=\"btn btn-outline\"><strong>{viewItem.Name}</strong></a>");
+                    result.Add("    }");
+                    result.Add("  </th>");
+                }
             }
 
             result.Add("  <th></th>");
@@ -560,11 +563,14 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add(string.Empty);
             result.Add("<tr>");
 
-            foreach (var item in viewProperties)
+            foreach (var viewItem in viewProperties)
             {
-                result.Add(" <td>");
-                result.Add($"  @Html.DisplayFor(model => model.{item.Name})");
-                result.Add(" </td>");
+                if (QuerySetting<bool>(Common.ItemType.ViewTableProperty, viewItem.DeclaringName(), StaticLiterals.Generate, "True"))
+                {
+                    result.Add(" <td>");
+                    result.Add($"  @Html.DisplayFor(model => model.{viewItem.Name})");
+                    result.Add(" </td>");
+                }
             }
 
             result.Add(" <td>");
@@ -673,28 +679,28 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add("  <form asp-action=\"Filter\">");
             result.Add("   <div asp-validation-summary=\"ModelOnly\" class=\"text-danger\"></div>");
 
-            foreach (var item in viewProperties)
+            foreach (var viewItem in viewProperties)
             {
-                var canCreate = QueryModelSetting<bool>(unitType, Common.ItemType.Property, $"{CreateEntitiesSubTypeFromType(type)}Filter.{item.Name}", StaticLiterals.Generate, "True");
+                var canCreate = QueryModelSetting<bool>(unitType, Common.ItemType.ViewFilterProperty, viewItem.DeclaringName(), StaticLiterals.Generate, "True");
 
                 if (canCreate)
                 {
                     result.Add("   <div class=\"form-group\">");
-                    result.Add($"    <label asp-for=\"{item.Name}\" class=\"control-label\"></label>");
-                    if (item.PropertyType.IsEnum)
+                    result.Add($"    <label asp-for=\"{viewItem.Name}\" class=\"control-label\"></label>");
+                    if (viewItem.PropertyType.IsEnum)
                     {
                         result.Add("   @{");
-                        result.Add($"    var values{item.Name} = new SelectListItem[]" + "{ new SelectListItem() }" + $".Union(Enum.GetValues(typeof({item.PropertyType})).Cast<{item.PropertyType}>().Select(e => new SelectListItem(e.ToString(), e.ToString())));");
+                        result.Add($"    var values{viewItem.Name} = new SelectListItem[]" + "{ new SelectListItem() }" + $".Union(Enum.GetValues(typeof({viewItem.PropertyType})).Cast<{viewItem.PropertyType}>().Select(e => new SelectListItem(e.ToString(), e.ToString())));");
                         result.Add("   }");
-                        result.Add($"   @Html.DropDownListFor(m => m.{item.Name}, values{item.Name}, null" + ", new { @class = \"form-select\" })");
+                        result.Add($"   @Html.DropDownListFor(m => m.{viewItem.Name}, values{viewItem.Name}, null" + ", new { @class = \"form-select\" })");
                     }
-                    else if (item.PropertyType == typeof(bool) || item.PropertyType == typeof(bool?))
+                    else if (viewItem.PropertyType == typeof(bool) || viewItem.PropertyType == typeof(bool?))
                     {
-                        result.Add($"    @Html.DropDownListFor(model => model.{item.Name}, boolSelect" + ", new { @class = \"form-select\" })");
+                        result.Add($"    @Html.DropDownListFor(model => model.{viewItem.Name}, boolSelect" + ", new { @class = \"form-select\" })");
                     }
                     else
                     {
-                        result.Add($"    <input asp-for=\"{item.Name}\" class=\"form-control\" />");
+                        result.Add($"    <input asp-for=\"{viewItem.Name}\" class=\"form-control\" />");
                     }
                     result.Add("   </div>");
                 }

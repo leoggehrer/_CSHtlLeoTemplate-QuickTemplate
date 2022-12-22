@@ -146,7 +146,7 @@ namespace TemplateCodeGenerator.Logic.Generation
 
         protected virtual bool CanCreate(Type type)
         {
-            bool create = EntityProject.IsAccountOrLoggingOrRevisionEntity(type) == false;
+            bool create = EntityProject.IsNotAGenerationEntity(type) == false;
 
             CanCreateModel(type, ref create);
             return create;
@@ -275,10 +275,13 @@ namespace TemplateCodeGenerator.Logic.Generation
             result.Add("}");
             result.Add(string.Empty);
 
-            foreach (var propertyInfo in generateProperties)
+            foreach (var modelItem in generateProperties)
             {
-                CreateModelPropertyAttributes(propertyInfo, result.Source);
-                result.AddRange(CreateDelegateProperty(propertyInfo, "Source", propertyInfo));
+                if (QueryModelSetting<bool>(unitType, Common.ItemType.ModelProperty, modelItem.DeclaringName(), StaticLiterals.Generate, "True"))
+                {
+                    CreateModelPropertyAttributes(modelItem, result.Source);
+                    result.AddRange(CreateDelegateProperty(modelItem, "Source", modelItem));
+                }
             }
             if (unitType == Common.UnitType.Logic)
             {

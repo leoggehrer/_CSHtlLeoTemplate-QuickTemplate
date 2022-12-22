@@ -14,12 +14,11 @@ namespace QuickTemplate.AspMvc
         public static void BeforeBuild(WebApplicationBuilder builder)
         {
 #if ACCOUNT_ON
-            builder.Services.AddTransient<QuickTemplate.Logic.Contracts.Account.IIdentitiesAccess<QuickTemplate.Logic.Models.Account.Identity>, QuickTemplate.Logic.Facades.Account.IdentitiesFacade>();
-            builder.Services.AddTransient<QuickTemplate.Logic.Contracts.Account.IRolesAccess<QuickTemplate.Logic.Models.Account.Role>, QuickTemplate.Logic.Facades.Account.RolesFacade>();
-            builder.Services.AddTransient<QuickTemplate.Logic.Contracts.Account.IUsersAccess<QuickTemplate.Logic.Models.Account.User>, QuickTemplate.Logic.Facades.Account.UsersFacade>();
-
+            builder.Services.AddTransient<Logic.Contracts.Account.IRolesAccess<Logic.Models.Account.Role>, Logic.Facades.Account.RolesFacade>();
+            builder.Services.AddTransient<Logic.Contracts.Account.IUsersAccess<Logic.Models.Account.User>, Logic.Facades.Account.UsersFacade>();
+            builder.Services.AddTransient<Logic.Contracts.Account.IIdentitiesAccess<Logic.Models.Account.Identity>, Logic.Facades.Account.IdentitiesFacade>();
 #if ACCESSRULES_ON
-            builder.Services.AddTransient<QuickTemplate.Logic.Contracts.Account.IAccessRulesAccess<QuickTemplate.Logic.Models.Account.AccessRule>, QuickTemplate.Logic.Facades.Account.AccessRulesFacade>();
+            builder.Services.AddTransient<Logic.Contracts.Access.IAccessRulesAccess<Logic.Models.Access.AccessRule>, Logic.Facades.Access.AccessRulesFacade>();
 #endif
 #endif
             AddServices(builder);

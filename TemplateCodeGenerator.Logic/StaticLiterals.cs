@@ -7,6 +7,7 @@ namespace TemplateCodeGenerator.Logic
     public static partial class StaticLiterals
     {
         #region Code-Generation
+        public static string AllItems => "All";
         public static string GeneratedCodeFileName => "_GeneratedCode.cs";
         public static string SourceFileExtensions => CommonStaticLiterals.SourceFileExtensions;
         public static string CSharpFileExtension => CommonStaticLiterals.CSharpFileExtension;
@@ -71,11 +72,13 @@ namespace TemplateCodeGenerator.Logic
         public static string Visibility => nameof(Visibility);
         public static string Attributes => nameof(Attributes);
         public static string ControllerGenericType => nameof(ControllerGenericType);
+        public static string FacadeGenericType => nameof(FacadeGenericType);
         public static string ServiceGenericType => nameof(ServiceGenericType);
         #endregion Settings
 
         #region Modules
         public static string Account => nameof(Account);
+        public static string Access => nameof(Access);
         public static string Logging => nameof(Logging);
         public static string Revision => nameof(Revision);
         public static string SecureIdentity => nameof(SecureIdentity);

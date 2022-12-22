@@ -5,35 +5,38 @@ namespace TemplateCodeGenerator.Logic.Common
     [Flags]
     public enum ItemType : ulong
     {
-        Enum = 1,
-        Entity = 2 * Enum,
-        Model = 2 * Entity,
-        EditModel = 2 * Model,
-        FilterModel = 2 * EditModel,
+        Model,
+        ModelProperty,
+        EditModel,
+        EditProperty,
+        FilterModel,
+        FilterProperty,
 
-        AccessContract = 2 * FilterModel,
-        ServiceContract = 2 * AccessContract,
+        AccessContract,
+        ServiceContract,
 
-        Property = 2 * ServiceContract,
+        Property,
 
-        DbContext = 2 * Property,
+        DbContext,
 
-        Controller = 2 * DbContext,
-        Service = 2 * Controller,
-        Facade = 2 * Service,
+        Controller,
+        Service,
+        Facade,
 
-        Factory = 2 * Facade,
-        FactoryControllerMethode = 2 * Factory,
-        FactoryFacadeMethode = 2 * FactoryControllerMethode,
+        Factory,
+        FactoryControllerMethode,
+        FactoryFacadeMethode,
 
-        AddServices = 2 * FactoryFacadeMethode,
+        AddServices,
 
-        View = 2 * AddServices,
-        ViewItem = 2 * View,
+        View,
+        ViewTableProperty,
+        ViewFilterProperty,
+        ViewEditProperty,
 
-        TypeScriptEnum = 2 * ViewItem,
-        TypeScriptModel = 2 * TypeScriptEnum,
-        TypeScriptService = 2 * TypeScriptModel,
+        TypeScriptEnum,
+        TypeScriptModel,
+        TypeScriptService,
     }
 }
 //MdEnd

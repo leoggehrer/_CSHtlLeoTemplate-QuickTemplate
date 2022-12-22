@@ -3,6 +3,7 @@
 #if ACCOUNT_ON
 namespace QuickTemplate.Logic.Models.Account
 {
+    using Microsoft.VisualBasic;
     using TEntity = Entities.Account.Role;
     using TModel = Models.Account.Role;
     public partial class Role : VersionObject, Contracts.Account.IRole
@@ -91,7 +92,11 @@ namespace QuickTemplate.Logic.Models.Account
         }
         public override int GetHashCode()
         {
+#if ROWVERSION_ON
             return HashCode.Combine(Guid, Designation, Description, RowVersion, Id);
+#else
+            return HashCode.Combine(Guid, Designation, Description, Id);
+#endif
         }
 
         public static TModel Create()

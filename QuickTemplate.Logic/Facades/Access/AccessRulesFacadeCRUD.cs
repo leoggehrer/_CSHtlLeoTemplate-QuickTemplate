@@ -1,10 +1,12 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON && ACCESSRULES_ON
-namespace QuickTemplate.Logic.Facades.Account
+namespace QuickTemplate.Logic.Facades.Access
 {
+    using TOutModel = Models.Access.AccessRule;
     partial class AccessRulesFacade
     {
+        new private Contracts.Access.IAccessRulesAccess<TOutModel> Controller => (ControllerObject as Contracts.Access.IAccessRulesAccess<TOutModel>)!;
         public Task<bool> CanBeCreatedAsync(Type type, Contracts.Account.IIdentity identity)
         {
             return Controller.CanBeCreatedAsync(type, identity);

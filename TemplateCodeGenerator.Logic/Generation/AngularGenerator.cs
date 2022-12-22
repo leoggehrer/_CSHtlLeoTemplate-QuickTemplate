@@ -41,7 +41,7 @@ namespace TemplateCodeGenerator.Logic.Generation
         }
         private bool CanCreate(Type type)
         {
-            bool create = EntityProject.IsAccountOrLoggingOrRevisionEntity(type) ? false : true;
+            bool create = EntityProject.IsNotAGenerationEntity(type) ? false : true;
 
             CanCreateModel(type, ref create);
             return create;
@@ -108,7 +108,8 @@ namespace TemplateCodeGenerator.Logic.Generation
 
             foreach (var type in entityProject.EntityTypes)
             {
-                if (CanCreate(type) && QuerySetting<bool>(Common.ItemType.TypeScriptModel, type, StaticLiterals.Generate, GenerateModels.ToString()))
+                if (CanCreate(type)
+                    && QuerySetting<bool>(Common.ItemType.TypeScriptModel, type, StaticLiterals.Generate, GenerateModels.ToString()))
                 {
                     result.Add(CreateModelFromType(type, entityProject.EntityTypes));
                 }
@@ -131,7 +132,7 @@ namespace TemplateCodeGenerator.Logic.Generation
             };
 
             StartCreateModel(type, result.Source);
-            result.Add($"export interface {entityName}" + " {");
+            result.Add($"export interface {entityName} extends IVersionEntity" + " {");
 
             foreach (var item in typeProperties)
             {
@@ -139,16 +140,9 @@ namespace TemplateCodeGenerator.Logic.Generation
                 {
                     declarationTypeName = item.DeclaringType.Name;
                 }
-                result.AddRange(CreateTypeScriptProperty(item));
+                result.AddRange(CreateTypeScriptProperty(item, types));
             }
 
-            foreach (var item in CreateModelToModelFromModels(type, types))
-            {
-                if (result.Source.Contains(item) == false)
-                {
-                    result.Add(item);
-                }
-            }
             result.Add("}");
 
             result.Source.Insert(result.Source.Count - 1, StaticLiterals.AngularCustomCodeBeginLabel);
@@ -157,6 +151,7 @@ namespace TemplateCodeGenerator.Logic.Generation
 
             var imports = new List<string>();
 
+            imports.Add("import { IVersionEntity } from '@app-core-models/i-version-entity';");
             imports.AddRange(CreateTypeImports(type, types));
             imports.AddRange(CreateModelToModelImports(type, types));
             imports.Add(StaticLiterals.AngularCustomImportBeginLabel);
@@ -390,37 +385,42 @@ namespace TemplateCodeGenerator.Logic.Generation
             }
             return result.Distinct();
         }
-        public static IEnumerable<string> CreateTypeScriptProperty(PropertyInfo propertyInfo)
+        public static IEnumerable<string> CreateTypeScriptProperty(PropertyInfo propertyInfo, IEnumerable<Type> types)
         {
             var result = new List<string>();
             var tsPropertyName = ItemProperties.CreateTSPropertyName(propertyInfo);
+            var navigationType = types.FirstOrDefault(t => t.FullName!.Equals(propertyInfo.PropertyType.FullName));
 
-            if (propertyInfo.PropertyType.IsEnum)
+            if (navigationType != null)
             {
-                var enumName = $"{propertyInfo.PropertyType.Name}";
+                result.Add($"  {tsPropertyName}: {ItemProperties.CreateEntityName(navigationType)};");
+            }
+            else if (propertyInfo.PropertyType.IsEnum)
+            {
+                var enumName = $"  {propertyInfo.PropertyType.Name}";
 
-                result.Add($"{tsPropertyName}: {enumName};");
+                result.Add($"  {tsPropertyName}: {enumName};");
             }
             else if (propertyInfo.PropertyType == typeof(DateTime)
                      || propertyInfo.PropertyType == typeof(DateTime?))
             {
-                result.Add($"{tsPropertyName}: Date;");
+                result.Add($"  {tsPropertyName}: Date;");
             }
             else if (propertyInfo.PropertyType == typeof(string))
             {
-                result.Add($"{tsPropertyName}: string;");
+                result.Add($"  {tsPropertyName}: string;");
             }
             else if (propertyInfo.PropertyType == typeof(Guid))
             {
-                result.Add($"{tsPropertyName}: string;");
+                result.Add($"  {tsPropertyName}: string;");
             }
             else if (propertyInfo.PropertyType == typeof(bool))
             {
-                result.Add($"{tsPropertyName}: boolean;");
+                result.Add($" {tsPropertyName}: boolean;");
             }
             else if (propertyInfo.PropertyType.IsNumericType())
             {
-                result.Add($"{tsPropertyName}: number;");
+                result.Add($"  {tsPropertyName}: number;");
             }
             else if (propertyInfo.PropertyType.IsGenericType)
             {
@@ -428,24 +428,24 @@ namespace TemplateCodeGenerator.Logic.Generation
 
                 if (subType.IsInterface)
                 {
-                    result.Add($"{tsPropertyName}: {subType.Name[1..]}[];");
+                    result.Add($"  {tsPropertyName}: {subType.Name[1..]}[];");
                 }
                 else if (subType == typeof(Guid))
                 {
-                    result.Add($"{tsPropertyName}: string;");
+                    result.Add($"  {tsPropertyName}: string;");
                 }
                 else
                 {
-                    result.Add($"{tsPropertyName}: {subType.Name}[];");
+                    result.Add($"  {tsPropertyName}: {subType.Name}[];");
                 }
             }
             else if (propertyInfo.PropertyType.IsInterface)
             {
-                result.Add($"{tsPropertyName}: {propertyInfo.PropertyType.Name[1..]};");
+                result.Add($"  {tsPropertyName}: {propertyInfo.PropertyType.Name[1..]};");
             }
             else
             {
-                //result.Add($"{tsPropertyName}: any;");
+                System.Diagnostics.Debug.WriteLine($"Unknown property type: {propertyInfo.PropertyType.FullName}");
             }
             return result;
         }
@@ -454,97 +454,20 @@ namespace TemplateCodeGenerator.Logic.Generation
             var result = new List<string>();
             var typeName = ItemProperties.CreateEntityName(type);
 
-            foreach (var other in types)
-            {
-                var otherName = ItemProperties.CreateEntityName(other);
-
-                foreach (var pi in other.GetProperties())
-                {
-                    if (pi.Name.Equals($"{typeName}Id"))
-                    {
-                        var refTypeName = ItemProperties.CreateEntityName(other);
-                        var subPath = GeneratorObject.CreateSubPathFromType(other).ToLower();
-
-                        result.Add(CreateImport("@app-core-models", refTypeName, subPath));
-                    }
-                }
-            }
             foreach (var pi in type.GetProperties())
             {
-                foreach (var other in types)
+                var other = types.FirstOrDefault(t => t == pi.PropertyType);
+
+                if (other != null && other != type)
                 {
-                    var otherName = ItemProperties.CreateEntityName(other);
+                    var refTypeName = ItemProperties.CreateEntityName(other);
+                    var subPath = GeneratorObject.CreateSubPathFromType(other).ToLower();
 
-                    if (pi.Name.Equals($"{otherName}Id"))
-                    {
-                        var refTypeName = ItemProperties.CreateEntityName(other);
-                        var subPath = GeneratorObject.CreateSubPathFromType(other).ToLower();
-
-                        result.Add(CreateImport("@app-core-models", refTypeName, subPath));
-                    }
-                    else if (pi.Name.StartsWith($"{otherName}Id_"))
-                    {
-                        var data = pi.Name.Split("_");
-
-                        if (data.Length == 2)
-                        {
-                            var refTypeName = ItemProperties.CreateEntityName(other);
-                            var subPath = GeneratorObject.CreateSubPathFromType(other).ToLower();
-
-                            result.Add(CreateImport("@app-core-models", refTypeName, subPath));
-                        }
-                    }
+                    result.Add(CreateImport("@app-core-models", refTypeName, subPath));
                 }
             }
             return result.Distinct();
         }
-        private static IEnumerable<string> CreateModelToModelFromModels(Type type, IEnumerable<Type> types)
-        {
-            var result = new List<string>();
-            var typeName = ItemProperties.CreateEntityName(type);
-
-            foreach (var other in types)
-            {
-                var otherName = ItemProperties.CreateEntityName(other);
-
-                foreach (var pi in other.GetProperties())
-                {
-                    if (pi.Name.Equals($"{typeName}Id"))
-                    {
-                        var name = $"{otherName}s";
-
-                        result.Add($"{char.ToLower(name[0])}{name[1..]}: {otherName}[];");
-                    }
-                }
-            }
-            foreach (var pi in type.GetProperties())
-            {
-                foreach (var other in types)
-                {
-                    var otherName = ItemProperties.CreateEntityName(other);
-
-                    if (pi.Name.Equals($"{otherName}Id"))
-                    {
-                        var name = $"{otherName}";
-
-                        result.Add($"{char.ToLower(name[0])}{name[1..]}: {otherName};");
-                    }
-                    else if (pi.Name.StartsWith($"{otherName}Id_"))
-                    {
-                        var data = pi.Name.Split("_");
-
-                        if (data.Length == 2)
-                        {
-                            var name = $"{otherName}_{data[1]}";
-
-                            result.Add($"{char.ToLower(name[0])}{name[1..]}: {otherName};");
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-
         #endregion Helpers
     }
 }

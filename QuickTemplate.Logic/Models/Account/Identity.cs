@@ -5,7 +5,7 @@ namespace QuickTemplate.Logic.Models.Account
 {
     using TEntity = Entities.Account.Identity;
     using TModel = Models.Account.Identity;
-    public partial class Identity : VersionObject, Contracts.Account.IIdentity
+    public partial class Identity : Models.VersionObject
     {
         static Identity()
         {

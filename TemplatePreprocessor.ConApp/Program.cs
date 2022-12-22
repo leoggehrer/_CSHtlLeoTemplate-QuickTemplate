@@ -33,6 +33,8 @@ namespace TemplatePreprocessor.ConApp
                 "IDINT_ON",
                 "IDLONG_OFF",
                 "IDGUID_OFF",
+                "SQLSERVER_ON",
+                "SQLITE_OFF"
             };
             ClassConstructed();
         }
@@ -49,6 +51,7 @@ namespace TemplatePreprocessor.ConApp
 
         private static void Main(/*string[] args*/)
         {
+            Console.ForegroundColor = ConsoleColor.Gray;
             RunApp();
         }
 
@@ -71,7 +74,7 @@ namespace TemplatePreprocessor.ConApp
 
                 runBusyProgress = false;
                 Console.Clear();
-                Console.ForegroundColor = ConsoleColor.White;
+                Console.ForegroundColor = saveForeColor;
                 Console.WriteLine("Template Preprocessor");
                 Console.WriteLine("=====================");
                 Console.WriteLine();
@@ -158,7 +161,9 @@ namespace TemplatePreprocessor.ConApp
                 {
                     if (defines[idx].StartsWith("IDINT_") == false
                         && defines[idx].StartsWith("IDLONG_") == false
-                        && defines[idx].StartsWith("IDGUID_") == false)
+                        && defines[idx].StartsWith("IDGUID_") == false
+                        && defines[idx].StartsWith("SQLSERVER_") == false
+                        && defines[idx].StartsWith("SQLITE_") == false)
                     {
                         defines[idx] = defines[idx].Replace("_ON", "_OFF");
                     }
@@ -182,6 +187,16 @@ namespace TemplatePreprocessor.ConApp
                         SwitchDefine(defines, "IDINT_", "OFF");
                         SwitchDefine(defines, "IDLONG_", "OFF");
                         SwitchDefine(defines, "IDGUID_", "ON");
+                    }
+                    else if (defines[idx].StartsWith("SQLSERVER_") == true)
+                    {
+                        SwitchDefine(defines, "SQLITE_", "OFF");
+                        SwitchDefine(defines, "SQLSERVER_", "ON");
+                    }
+                    else if (defines[idx].StartsWith("SQLITE_") == true)
+                    {
+                        SwitchDefine(defines, "SQLSERVER_", "OFF");
+                        SwitchDefine(defines, "SQLITE_", "ON");
                     }
                     else
                     {
@@ -249,7 +264,7 @@ namespace TemplatePreprocessor.ConApp
             }
             else
             {
-                Console.ForegroundColor = saveColor;
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
             }
             Console.Write($"{define}");
             Console.ForegroundColor = saveColor;
@@ -265,16 +280,33 @@ namespace TemplatePreprocessor.ConApp
             {
                 if (defines[i].EndsWith("_ON"))
                 {
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.Write($"[{++menuIndex,-2}] Set definition ");
+
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"[{++menuIndex,-2}] Set definition {defines[i],-15} ==> {defines[i].Replace("_ON", "_OFF")}");
+                    Console.Write($"{defines[i],-15}");
+
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.Write(" ==> ");
+
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    Console.WriteLine($"{defines[i].Replace("_ON", "_OFF")}");
                 }
                 else
                 {
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.Write($"[{++menuIndex,-2}] Set definition ");
+
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.WriteLine($"[{++menuIndex,-2}] Set definition {defines[i],-15} ==> {defines[i].Replace("_OFF", "_ON")}");
+                    Console.Write($"{defines[i],-15}");
+
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.Write(" ==> ");
+
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"{defines[i].Replace("_OFF", "_ON")}");
                 }
             }
-
             Console.ForegroundColor = saveColor;
             Console.WriteLine($"[{++menuIndex,-2}] Start assignment process...");
             Console.WriteLine("[x|X] Exit");

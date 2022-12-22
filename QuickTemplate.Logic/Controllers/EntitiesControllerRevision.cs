@@ -8,7 +8,7 @@ namespace QuickTemplate.Logic.Controllers
     using System.Linq;
     using System.Text.Json;
     using System.Threading.Tasks;
-    partial class GenericController<TEntity>
+    partial class EntitiesController<TEntity, TOutModel>
     {
         private enum RevisionType
         {

@@ -1,9 +1,10 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON && ACCESSRULES_ON
-namespace QuickTemplate.Logic.Contracts.Account
+namespace QuickTemplate.Logic.Contracts.Access
 {
-    public partial interface IAccessRulesAccess<T> : IDataAccess<T>
+    using QuickTemplate.Logic.Contracts.Account;
+    public partial interface IAccessRulesAccess<T>
     {
         Task<bool> CanBeCreatedAsync(Type type, IIdentity identity);
         Task<bool> CanBeReadAsync(IIdentifyable item, IIdentity identity);

@@ -402,9 +402,10 @@ namespace CommonBase.Extensions
             return false;
         }
 
-        public static bool IsNullable(this PropertyInfo property) => IsNullableHelper(property.PropertyType, property.DeclaringType, property.CustomAttributes);
-        public static bool IsNullable(this FieldInfo field) => IsNullableHelper(field.FieldType, field.DeclaringType, field.CustomAttributes);
-        public static bool IsNullable(this ParameterInfo parameter) => IsNullableHelper(parameter.ParameterType, parameter.Member, parameter.CustomAttributes);
+        public static string DeclaringName(this PropertyInfo source) => $"{source.DeclaringType!.Name}.{source.Name}";
+        public static bool IsNullable(this PropertyInfo source) => IsNullableHelper(source.PropertyType, source.DeclaringType, source.CustomAttributes);
+        public static bool IsNullable(this FieldInfo source) => IsNullableHelper(source.FieldType, source.DeclaringType, source.CustomAttributes);
+        public static bool IsNullable(this ParameterInfo source) => IsNullableHelper(source.ParameterType, source.Member, source.CustomAttributes);
         private static bool IsNullableHelper(Type memberType, MemberInfo? declaringType, IEnumerable<CustomAttributeData> customAttributes)
         {
             if (memberType.IsValueType)
@@ -444,7 +445,6 @@ namespace CommonBase.Extensions
             // Couldn't find a suitable attribute
             return false;
         }
-
     }
 }
 //MdEnd

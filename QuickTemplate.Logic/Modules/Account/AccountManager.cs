@@ -68,9 +68,9 @@ namespace QuickTemplate.Logic.Modules.Account
                         Role = role,
                     };
 
-                    await rolesCtrl.InsertAsync(role).ConfigureAwait(false);
-                    await identityXRolesCtrl.InsertAsync(IdentityXRole).ConfigureAwait(false);
-                    await identitiesCtrl.InsertAsync(identity).ConfigureAwait(false);
+                    await rolesCtrl.ExecuteInsertAsync(role).ConfigureAwait(false);
+                    await identityXRolesCtrl.ExecuteInsertAsync(IdentityXRole).ConfigureAwait(false);
+                    await identitiesCtrl.ExecuteInsertAsync(identity).ConfigureAwait(false);
                     await identitiesCtrl.SaveChangesAsync().ConfigureAwait(false);
                 }
                 catch (Exception)
@@ -218,26 +218,40 @@ namespace QuickTemplate.Logic.Modules.Account
 
             try
             {
+                var saveChanges = false;
+                var logoutTime = DateTime.UtcNow;
                 using var sessionCtrl = new Controllers.Account.LoginSessionsController()
                 {
                     SessionToken = Authorization.SystemAuthorizationToken
                 };
-                var session = await sessionCtrl.EntitySet
-                                               .FirstOrDefaultAsync(e => e.SessionToken.Equals(sessionToken))
-                                               .ConfigureAwait(false);
+                var dbSessions = await sessionCtrl.EntitySet
+                                                  .Where(e => e.SessionToken.Equals(sessionToken))
+                                                  .ToArrayAsync()
+                                                  .ConfigureAwait(false);
 
-                if (session != null && session.IsActive)
+                foreach (var dbSession in dbSessions)
                 {
-                    session.LogoutTime = DateTime.UtcNow;
+                    if (dbSession != null && dbSession.IsActive)
+                    {
+                        saveChanges = true;
+                        dbSession.LogoutTime = logoutTime;
 
-                    await sessionCtrl.UpdateAsync(session).ConfigureAwait(false);
+                        await sessionCtrl.UpdateAsync(dbSession).ConfigureAwait(false);
+                    }
+                }
+                if (saveChanges)
+                {
                     await sessionCtrl.SaveChangesAsync().ConfigureAwait(false);
                 }
-                var querySession = LoginSessions.SingleOrDefault(ls => ls.SessionToken.Equals(sessionToken));
 
-                if (querySession != null)
+                var memSessions = LoginSessions.Where(ls => ls.SessionToken.Equals(sessionToken));
+
+                foreach (var memSession in memSessions)
                 {
-                    querySession.LogoutTime = session?.LogoutTime;
+                    if (memSession != null)
+                    {
+                        memSession.LogoutTime = logoutTime;
+                    }
                 }
             }
             catch (AuthorizationException ex)
@@ -567,38 +581,37 @@ namespace QuickTemplate.Logic.Modules.Account
                         var uncheckSessions = LoginSessions.Where(i => dbSessions.Any() == false
                                                                     || dbSessions.Any(e => e.Id != i.Id));
 
-                        foreach (var dbItem in dbSessions)
+                        foreach (var dbSession in dbSessions)
                         {
-                            var itemUpdate = false;
-                            var memItemRemove = false;
-                            var memItem = LoginSessions.FirstOrDefault(e => e.Id == dbItem.Id);
+                            var dbUpdate = false;
+                            var memSessionRemove = false;
+                            var memSession = LoginSessions.FirstOrDefault(e => e.Id == dbSession.Id);
 
-                            if (memItem != null && memItem.HasChanged)
+                            if (memSession != null && dbSession.LastAccess != memSession.LastAccess)
                             {
-                                itemUpdate = true;
-                                memItem.HasChanged = false;
-                                dbItem.LastAccess = memItem.LastAccess;
+                                dbUpdate = true;
+                                dbSession.LastAccess = memSession.LastAccess;
                             }
-                            if (dbItem.IsTimeout)
+                            if (dbSession.IsTimeout)
                             {
-                                itemUpdate = true;
-                                if (memItem != null)
+                                dbUpdate = true;
+                                if (memSession != null)
                                 {
-                                    memItemRemove = true;
+                                    memSessionRemove = true;
                                 }
-                                if (dbItem.LogoutTime.HasValue == false)
+                                if (dbSession.LogoutTime.HasValue == false)
                                 {
-                                    dbItem.LogoutTime = DateTime.UtcNow;
+                                    dbSession.LogoutTime = DateTime.UtcNow;
                                 }
                             }
-                            if (itemUpdate)
+                            if (dbUpdate)
                             {
                                 saveChanges = true;
-                                await sessionsCtrl.UpdateAsync(dbItem).ConfigureAwait(false);
+                                await sessionsCtrl.UpdateAsync(dbSession).ConfigureAwait(false);
                             }
-                            if (memItemRemove && memItem != null)
+                            if (memSessionRemove && memSession != null)
                             {
-                                LoginSessions.Remove(memItem);
+                                LoginSessions.Remove(memSession);
                             }
                         }
                         if (saveChanges)
@@ -607,14 +620,14 @@ namespace QuickTemplate.Logic.Modules.Account
                         }
                         foreach (var memItem in uncheckSessions)
                         {
-                            var dbItem = await sessionsCtrl.EntitySet
-                                                          .FirstOrDefaultAsync(e => e.Id == memItem.Id)
-                                                          .ConfigureAwait(false);
+                            var dbSession = await sessionsCtrl.EntitySet
+                                                              .FirstOrDefaultAsync(e => e.Id == memItem.Id)
+                                                              .ConfigureAwait(false);
 
-                            if (dbItem != null)
+                            if (dbSession != null)
                             {
-                                memItem.LastAccess = dbItem.LastAccess;
-                                memItem.LogoutTime = dbItem.LogoutTime;
+                                memItem.LastAccess = dbSession.LastAccess;
+                                memItem.LogoutTime = dbSession.LogoutTime;
                             }
                         }
                     }

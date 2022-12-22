@@ -11,8 +11,9 @@ namespace QuickTemplate.Logic.Controllers
 #if ACCOUNT_ON
     [Modules.Security.Authorize]
 #endif
-    public abstract partial class GenericController<TEntity> : ControllerObject, Contracts.IDataAccess<TEntity>
+    public abstract partial class EntitiesController<TEntity, TOutModel> : ControllerObject, Contracts.IDataAccess<TOutModel>
         where TEntity : Entities.EntityObject, new()
+        where TOutModel : Models.ModelObject, new()
     {
         protected enum ActionType
         {
@@ -21,7 +22,7 @@ namespace QuickTemplate.Logic.Controllers
             Delete,
             Save,
         }
-        static GenericController()
+        static EntitiesController()
         {
             BeforeClassInitialize();
 
@@ -65,7 +66,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <summary>
         /// Creates an instance.
         /// </summary>
-        public GenericController()
+        public EntitiesController()
             : base(new DataContext.ProjectDbContext())
         {
 
@@ -74,7 +75,7 @@ namespace QuickTemplate.Logic.Controllers
         /// Creates an instance.
         /// </summary>
         /// <param name="other">A reference to an other controller</param>
-        public GenericController(ControllerObject other)
+        public EntitiesController(ControllerObject other)
             : base(other)
         {
 
@@ -87,12 +88,12 @@ namespace QuickTemplate.Logic.Controllers
         public virtual int MaxPageSize => StaticLiterals.MaxPageSize;
 
         /// <summary>
-        /// Creates a new element of type T.
+        /// Creates a new element of type TModel.
         /// </summary>
-        /// <returns>The new element.</returns>
-        public TEntity Create()
+        /// <returns>The new model.</returns>
+        public TOutModel Create()
         {
-            return new TEntity();
+            return ToModel(new TEntity());
         }
 
         /// <summary>
@@ -173,9 +174,36 @@ namespace QuickTemplate.Logic.Controllers
         }
         #endregion  MaxPageSize and Count
 
+        #region Converts
+        /// <summary>
+        /// Converts the entity type to the facade type.
+        /// </summary>
+        /// <param name="entity">Entity type</param>
+        /// <returns>The facade type</returns>
+        internal virtual TOutModel ToModel(TEntity entity)
+        {
+            var result = new TOutModel
+            {
+                Source = entity
+            };
+            return result;
+        }
+        /// <summary>
+        /// Converts the model type to the entity type.
+        /// </summary>
+        /// <param name="model">Model type</param>
+        /// <returns>The entity type</returns>
+        internal virtual TEntity ToEntity(TOutModel model)
+        {
+            var result = model.Source as TEntity;
+
+            return result!;
+        }
+        #endregion Converts
+
         #region Before-Return
-        protected virtual TEntity BeforeReturn(TEntity entity) => entity;
-        protected virtual IEnumerable<TEntity> BeforeReturn(IEnumerable<TEntity> entities) => entities;
+        internal virtual TOutModel BeforeReturn(TEntity entity) => ToModel(entity);
+        internal virtual IEnumerable<TOutModel> BeforeReturn(IEnumerable<TEntity> entities) => entities.Select(e => ToModel(e));
         #endregion Before-Return
 
         #region Get
@@ -184,7 +212,7 @@ namespace QuickTemplate.Logic.Controllers
         /// </summary>
         /// <param name="id">The identification.</param>
         /// <returns>The element of the type T with the corresponding identification.</returns>
-        public virtual async Task<TEntity?> GetByIdAsync(IdType id)
+        public virtual async Task<TOutModel?> GetByIdAsync(IdType id)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetByIdAsync), id.ToString()).ConfigureAwait(false);
@@ -199,7 +227,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="id">The identification.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>The element of the type T with the corresponding identification (with includes).</returns>
-        public virtual async Task<TEntity?> GetByIdAsync(IdType id, params string[] includeItems)
+        public virtual async Task<TOutModel?> GetByIdAsync(IdType id, params string[] includeItems)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetByIdAsync), id.ToString()).ConfigureAwait(false);
@@ -214,42 +242,42 @@ namespace QuickTemplate.Logic.Controllers
         /// </summary>
         /// <param name="includeItems">The include items</param>
         /// <returns>All items in accordance with the parameters.</returns>
-        public virtual async Task<TEntity[]> GetAllAsync()
+        public virtual async Task<TOutModel[]> GetAllAsync()
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetAllAsync)).ConfigureAwait(false);
 #endif
             var result = await ExecuteGetAllAsync().ConfigureAwait(false);
 
-            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TEntity>();
+            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TOutModel>();
         }
         /// <summary>
         /// Gets all items from the repository.
         /// </summary>
         /// <param name="includeItems">The include items</param>
         /// <returns>All items in accordance with the parameters.</returns>
-        public virtual async Task<TEntity[]> GetAllAsync(params string[] includeItems)
+        public virtual async Task<TOutModel[]> GetAllAsync(params string[] includeItems)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetAllAsync)).ConfigureAwait(false);
 #endif
             var result = await ExecuteGetAllAsync(includeItems).ConfigureAwait(false);
 
-            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TEntity>();
+            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TOutModel>();
         }
         /// <summary>
         /// Gets all items from the repository.
         /// </summary>
         /// <param name="orderBy">Sorts the elements of a sequence according to a sort clause.</param>
         /// <returns>All items in accordance with the parameters.</returns>
-        public virtual async Task<TEntity[]> GetAllAsync(string orderBy)
+        public virtual async Task<TOutModel[]> GetAllAsync(string orderBy)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetAllAsync)).ConfigureAwait(false);
 #endif
             var result = await ExecuteGetAllAsync(orderBy).ConfigureAwait(false);
 
-            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TEntity>();
+            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TOutModel>();
         }
         /// <summary>
         /// Gets all items from the repository.
@@ -257,14 +285,14 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="orderBy">Sorts the elements of a sequence according to a sort clause.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>All items in accordance with the parameters.</returns>
-        public virtual async Task<TEntity[]> GetAllAsync(string orderBy, params string[] includeItems)
+        public virtual async Task<TOutModel[]> GetAllAsync(string orderBy, params string[] includeItems)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(GetAllAsync)).ConfigureAwait(false);
 #endif
             var result = await ExecuteGetAllAsync(orderBy, includeItems).ConfigureAwait(false);
 
-            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TEntity>();
+            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TOutModel>();
         }
 
         /// <summary>
@@ -273,7 +301,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="pageIndex">0 based page index.</param>
         /// <param name="pageSize">The pagesize.</param>
         /// <returns>Subset in accordance with the parameters.</returns>
-        public virtual async Task<TEntity[]> GetPageListAsync(int pageIndex, int pageSize)
+        public virtual async Task<TOutModel[]> GetPageListAsync(int pageIndex, int pageSize)
         {
             CheckPageParams(pageIndex, pageSize);
 #if ACCOUNT_ON
@@ -281,7 +309,7 @@ namespace QuickTemplate.Logic.Controllers
 #endif
             var result = await ExecuteGetPageListAsync(pageIndex, pageSize).ConfigureAwait(false);
 
-            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TEntity>();
+            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TOutModel>();
         }
         /// <summary>
         /// Gets a subset of items from the repository.
@@ -290,7 +318,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="pageSize">The pagesize.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>Subset in accordance with the parameters.</returns>
-        public virtual async Task<TEntity[]> GetPageListAsync(int pageIndex, int pageSize, params string[] includeItems)
+        public virtual async Task<TOutModel[]> GetPageListAsync(int pageIndex, int pageSize, params string[] includeItems)
         {
             CheckPageParams(pageIndex, pageSize);
 #if ACCOUNT_ON
@@ -298,7 +326,7 @@ namespace QuickTemplate.Logic.Controllers
 #endif
             var result = await ExecuteGetPageListAsync(pageIndex, pageSize, includeItems).ConfigureAwait(false);
 
-            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TEntity>();
+            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TOutModel>();
         }
         /// <summary>
         /// Gets a subset of items from the repository.
@@ -307,7 +335,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="pageIndex">0 based page index.</param>
         /// <param name="pageSize">The pagesize.</param>
         /// <returns>Subset in accordance with the parameters.</returns>
-        public virtual async Task<TEntity[]> GetPageListAsync(string orderBy, int pageIndex, int pageSize)
+        public virtual async Task<TOutModel[]> GetPageListAsync(string orderBy, int pageIndex, int pageSize)
         {
             CheckPageParams(pageIndex, pageSize);
 #if ACCOUNT_ON
@@ -315,7 +343,7 @@ namespace QuickTemplate.Logic.Controllers
 #endif
             var result = await ExecuteGetPageListAsync(orderBy, pageIndex, pageSize).ConfigureAwait(false);
 
-            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TEntity>();
+            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TOutModel>();
         }
         /// <summary>
         /// Gets a subset of items from the repository.
@@ -325,7 +353,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="pageSize">The pagesize.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>Subset in accordance with the parameters.</returns>
-        public virtual async Task<TEntity[]> GetPageListAsync(string orderBy, int pageIndex, int pageSize, params string[] includeItems)
+        public virtual async Task<TOutModel[]> GetPageListAsync(string orderBy, int pageIndex, int pageSize, params string[] includeItems)
         {
             CheckPageParams(pageIndex, pageSize);
 #if ACCOUNT_ON
@@ -333,7 +361,7 @@ namespace QuickTemplate.Logic.Controllers
 #endif
             var result = await ExecuteGetPageListAsync(orderBy, pageIndex, pageSize, includeItems).ConfigureAwait(false);
 
-            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TEntity>();
+            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TOutModel>();
         }
 
         /// <summary>
@@ -462,7 +490,7 @@ namespace QuickTemplate.Logic.Controllers
         /// </summary>
         /// <param name="predicate">A string to test each element for a condition.</param>
         /// <returns>The filter result.</returns>
-        public virtual async Task<TEntity[]> QueryAsync(string predicate)
+        public virtual async Task<TOutModel[]> QueryAsync(string predicate)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(QueryAsync), predicate).ConfigureAwait(false);
@@ -483,7 +511,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="predicate">A string to test each element for a condition.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>The filter result.</returns>
-        public virtual async Task<TEntity[]> QueryAsync(string predicate, params string[] includeItems)
+        public virtual async Task<TOutModel[]> QueryAsync(string predicate, params string[] includeItems)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(QueryAsync), predicate).ConfigureAwait(false);
@@ -504,7 +532,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="predicate">A string to test each element for a condition.</param>
         /// <param name="orderBy">Sorts the elements of a sequence according to a sort clause.</param>
         /// <returns>The filter result.</returns>
-        public virtual async Task<TEntity[]> QueryAsync(string predicate, string orderBy)
+        public virtual async Task<TOutModel[]> QueryAsync(string predicate, string orderBy)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(QueryAsync), predicate).ConfigureAwait(false);
@@ -526,7 +554,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="orderBy">Sorts the elements of a sequence according to a sort clause.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>The filter result.</returns>
-        public virtual async Task<TEntity[]> QueryAsync(string predicate, string orderBy, params string[] includeItems)
+        public virtual async Task<TOutModel[]> QueryAsync(string predicate, string orderBy, params string[] includeItems)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(QueryAsync), predicate).ConfigureAwait(false);
@@ -548,7 +576,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="pageIndex">0 based page index.</param>
         /// <param name="pageSize">The pagesize.</param>
         /// <returns>The filter result.</returns>
-        public virtual async Task<TEntity[]> QueryAsync(string predicate, int pageIndex, int pageSize)
+        public virtual async Task<TOutModel[]> QueryAsync(string predicate, int pageIndex, int pageSize)
         {
             CheckPageParams(pageIndex, pageSize);
 #if ACCOUNT_ON
@@ -556,7 +584,7 @@ namespace QuickTemplate.Logic.Controllers
 #endif
             var result = await ExecuteQueryAsync(predicate, pageIndex, pageSize).ConfigureAwait(false);
 
-            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TEntity>();
+            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TOutModel>();
         }
         /// <summary>
         /// Filters a sequence of values based on a predicate.
@@ -566,7 +594,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="pageSize">The pagesize.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>The filter result.</returns>
-        public virtual async Task<TEntity[]> QueryAsync(string predicate, int pageIndex, int pageSize, params string[] includeItems)
+        public virtual async Task<TOutModel[]> QueryAsync(string predicate, int pageIndex, int pageSize, params string[] includeItems)
         {
             CheckPageParams(pageIndex, pageSize);
 #if ACCOUNT_ON
@@ -574,7 +602,7 @@ namespace QuickTemplate.Logic.Controllers
 #endif
             var result = await ExecuteQueryAsync(predicate, pageIndex, pageSize, includeItems).ConfigureAwait(false);
 
-            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TEntity>();
+            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TOutModel>();
         }
         /// <summary>
         /// Filters a sequence of values based on a predicate.
@@ -584,7 +612,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="pageIndex">0 based page index.</param>
         /// <param name="pageSize">The pagesize.</param>
         /// <returns>The filter result.</returns>
-        public virtual async Task<TEntity[]> QueryAsync(string predicate, string orderBy, int pageIndex, int pageSize)
+        public virtual async Task<TOutModel[]> QueryAsync(string predicate, string orderBy, int pageIndex, int pageSize)
         {
             CheckPageParams(pageIndex, pageSize);
 #if ACCOUNT_ON
@@ -592,7 +620,7 @@ namespace QuickTemplate.Logic.Controllers
 #endif
             var result = await ExecuteQueryAsync(predicate, orderBy, pageIndex, pageSize).ConfigureAwait(false);
 
-            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TEntity>();
+            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TOutModel>();
         }
         /// <summary>
         /// Filters a sequence of values based on a predicate.
@@ -603,7 +631,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="pageSize">The pagesize.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>The filter result.</returns>
-        public virtual async Task<TEntity[]> QueryAsync(string predicate, string orderBy, int pageIndex, int pageSize, params string[] includeItems)
+        public virtual async Task<TOutModel[]> QueryAsync(string predicate, string orderBy, int pageIndex, int pageSize, params string[] includeItems)
         {
             CheckPageParams(pageIndex, pageSize);
 #if ACCOUNT_ON
@@ -611,7 +639,7 @@ namespace QuickTemplate.Logic.Controllers
 #endif
             var result = await ExecuteQueryAsync(predicate, orderBy, pageIndex, pageSize, includeItems).ConfigureAwait(false);
 
-            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TEntity>();
+            return result != null ? BeforeReturn(result).ToArray() : Array.Empty<TOutModel>();
         }
 
         /// <summary>
@@ -620,7 +648,7 @@ namespace QuickTemplate.Logic.Controllers
         /// <param name="predicate">A string to test each element for a condition.</param>
         /// <param name="includeItems">The include items</param>
         /// <returns>The filter result.</returns>
-        internal virtual Task<TEntity[]> ExecuteQueryAsync(string predicate, params string[] includeItems)
+        internal virtual Task<TOutModel[]> ExecuteQueryAsync(string predicate, params string[] includeItems)
         {
             var query = EntitySet.AsQueryable();
 
@@ -628,7 +656,7 @@ namespace QuickTemplate.Logic.Controllers
             {
                 query = query.Include(includeItem);
             }
-            return query.Where(predicate).AsNoTracking().ToArrayAsync();
+            return query.Where(predicate).AsNoTracking().Select(e => ToModel(e)).ToArrayAsync();
         }
         /// <summary>
         /// Filters a sequence of values based on a predicate (without authorization).
@@ -744,16 +772,28 @@ namespace QuickTemplate.Logic.Controllers
         /// <summary>
         /// The entity is being tracked by the context but does not yet exist in the repository. 
         /// </summary>
-        /// <param name="entity">The entity which is to be inserted.</param>
-        /// <returns>The inserted entity.</returns>
-        public virtual async Task<TEntity> InsertAsync(TEntity entity)
+        /// <param name="model">The model which is to be inserted.</param>
+        /// <returns>The inserted model.</returns>
+        public virtual async Task<TOutModel> InsertAsync(TOutModel model)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(InsertAsync)).ConfigureAwait(false);
 #endif
-            var result = await ExecuteInsertAsync(entity).ConfigureAwait(false);
+            var result = await ExecuteInsertAsync(ToEntity(model)).ConfigureAwait(false);
 
             return BeforeReturn(result);
+        }
+        /// <summary>
+        /// The entity is being tracked by the context but does not yet exist in the repository. 
+        /// </summary>
+        /// <param name="entity">The entity which is to be inserted.</param>
+        /// <returns>The inserted entity.</returns>
+        internal virtual async Task<TEntity> InsertAsync(TEntity entity)
+        {
+#if ACCOUNT_ON
+            await CheckAuthorizationAsync(GetType(), nameof(InsertAsync)).ConfigureAwait(false);
+#endif
+            return await ExecuteInsertAsync(entity).ConfigureAwait(false);
         }
         /// <summary>
         /// The entity is being tracked by the context but does not yet exist in the repository (without authorization). 
@@ -774,13 +814,14 @@ namespace QuickTemplate.Logic.Controllers
         /// <summary>
         /// The entities are being tracked by the context but does not yet exist in the repository. 
         /// </summary>
-        /// <param name="entities">The entities which are to be inserted.</param>
-        /// <returns>The inserted entities.</returns>
-        public virtual async Task<IEnumerable<TEntity>> InsertAsync(IEnumerable<TEntity> entities)
+        /// <param name="models">The models which are to be inserted.</param>
+        /// <returns>The inserted models.</returns>
+        public virtual async Task<IEnumerable<TOutModel>> InsertAsync(IEnumerable<TOutModel> models)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(InsertAsync), "Array").ConfigureAwait(false);
 #endif
+            var entities = models.Select(m => ToEntity(m));
             var result = await ExecuteInsertAsync(entities).ConfigureAwait(false);
 
             return BeforeReturn(result);
@@ -813,21 +854,36 @@ namespace QuickTemplate.Logic.Controllers
 
         #region Update
         /// <summary>
-        /// The entity is being tracked by the context and exists in the repository, and some or all of its property values have been modified.
+        /// The model is being tracked by the context and exists in the repository, and some or all of its property values have been modified.
         /// </summary>
-        /// <param name="entity">The entity which is to be updated.</param>
-        /// <returns>The the modified entity.</returns>
-        public virtual async Task<TEntity> UpdateAsync(TEntity entity)
+        /// <param name="model">The model which is to be updated.</param>
+        /// <returns>The the modified model.</returns>
+        public virtual async Task<TOutModel> UpdateAsync(TOutModel model)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(UpdateAsync)).ConfigureAwait(false);
-            var result = ExecuteUpdate(entity);
+            var result = ExecuteUpdate(ToEntity(model));
 
             return BeforeReturn(result);
 #else
-            var result = ExecuteUpdate(entity);
+            var result = ExecuteUpdate(ToEntity(model));
 
             return await Task.Run(() => BeforeReturn(result)).ConfigureAwait(false);
+#endif
+        }
+        /// <summary>
+        /// The entity is being tracked by the context and exists in the repository, and some or all of its property values have been modified.
+        /// </summary>
+        /// <param name="model">The model which is to be updated.</param>
+        /// <returns>The the modified model.</returns>
+        internal virtual async Task<TEntity> UpdateAsync(TEntity entity)
+        {
+#if ACCOUNT_ON
+            await CheckAuthorizationAsync(GetType(), nameof(UpdateAsync)).ConfigureAwait(false);
+            
+            return ExecuteUpdate(entity);
+#else
+            return await Task.Run(() =>ExecuteUpdate(entity)).ConfigureAwait(false);
 #endif
         }
         /// <summary>
@@ -849,17 +905,17 @@ namespace QuickTemplate.Logic.Controllers
         /// <summary>
         /// The entities are being tracked by the context and exists in the repository, and some or all of its property values have been modified.
         /// </summary>
-        /// <param name="entities">The entities which are to be updated.</param>
-        /// <returns>The updated entities.</returns>
-        public virtual async Task<IEnumerable<TEntity>> UpdateAsync(IEnumerable<TEntity> entities)
+        /// <param name="models">The models which are to be updated.</param>
+        /// <returns>The updated models.</returns>
+        public virtual async Task<IEnumerable<TOutModel>> UpdateAsync(IEnumerable<TOutModel> models)
         {
 #if ACCOUNT_ON
             await CheckAuthorizationAsync(GetType(), nameof(UpdateAsync), "Array").ConfigureAwait(false);
-            var result = ExecuteUpdate(entities);
+            var result = ExecuteUpdate(models.Select(m => ToEntity(m)));
 
             return BeforeReturn(result);
 #else
-            var result = ExecuteUpdate(entities);
+            var result = ExecuteUpdate(models.Select(m => ToEntity(m)));
 
             return await Task.Run(() => BeforeReturn(result)).ConfigureAwait(false);
 #endif

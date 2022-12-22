@@ -3,15 +3,31 @@
 #if ACCOUNT_ON
 namespace QuickTemplate.Logic.Controllers.Account
 {
+    using TEntity = Entities.Account.LoginSession;
+    using TOutModel = Models.Account.LoginSession;
+
     [Modules.Security.Authorize("SysAdmin", "AppAdmin")]
-    internal sealed partial class LoginSessionsController : GenericController<Entities.Account.LoginSession>
+    internal sealed partial class LoginSessionsController : EntitiesController<TEntity, TOutModel>, Contracts.Account.ILoginSessionsAccess<TOutModel>
     {
+        static LoginSessionsController()
+        {
+            ClassConstructing();
+            ClassConstructed();
+        }
+        static partial void ClassConstructing();
+        static partial void ClassConstructed();
         public LoginSessionsController()
         {
+            Constructing();
+            Constructed();
         }
-
-        public LoginSessionsController(ControllerObject other) : base(other)
+        partial void Constructing();
+        partial void Constructed();
+        public LoginSessionsController(ControllerObject other)
+        : base(other)
         {
+            Constructing();
+            Constructed();
         }
 
         protected override void BeforeActionExecute(ActionType actionType, Entities.Account.LoginSession entity)
@@ -23,7 +39,7 @@ namespace QuickTemplate.Logic.Controllers.Account
             }
             base.BeforeActionExecute(actionType, entity);
         }
-        public Task<Entities.Account.LoginSession[]> QueryOpenLoginSessionsAsync()
+        public Task<TEntity[]> QueryOpenLoginSessionsAsync()
         {
             return EntitySet.Where(e => e.LogoutTime.HasValue == false)
                             .Include(e => e.Identity)

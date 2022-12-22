@@ -5,7 +5,11 @@ using QuickTemplate.Logic.Contracts.Account;
 
 namespace QuickTemplate.Logic.Entities.Account
 {
+#if SQLITE_ON
+    [Table("IdentityXRoles")]
+#else
     [Table("IdentityXRoles", Schema = "account")]
+#endif
     [Index(nameof(IdentityId), nameof(RoleId), IsUnique = true)]
     public partial class IdentityXRole : VersionObject, IIdentityXRole
     {

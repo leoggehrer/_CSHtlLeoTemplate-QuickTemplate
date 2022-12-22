@@ -1,11 +1,13 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON
-
 namespace QuickTemplate.Logic.Controllers.Account
 {
+    using EntityRole = Entities.Account.Role;
+    using OutModelRole = Models.Account.Role;
+
     [Modules.Security.Authorize("SysAdmin", "AppAdmin")]
-    internal sealed partial class RolesController : GenericController<Entities.Account.Role>, Contracts.Account.IRolesAccess<Entities.Account.Role>
+    internal sealed partial class RolesController : EntitiesController<EntityRole, OutModelRole>, Contracts.Account.IRolesAccess<OutModelRole>
     {
         public RolesController()
         {
@@ -15,7 +17,7 @@ namespace QuickTemplate.Logic.Controllers.Account
         {
         }
 
-        protected override void BeforeActionExecute(ActionType actionType, Entities.Account.Role entity)
+        protected override void BeforeActionExecute(ActionType actionType, EntityRole entity)
         {
             if (actionType == ActionType.Insert)
             {

@@ -3,10 +3,12 @@
 #if ACCOUNT_ON
 namespace QuickTemplate.Logic.Controllers.Account
 {
+    using EntityUser = Entities.Account.User;
+    using OutModelUser = Models.Account.User;
+
     [Modules.Security.Authorize("SysAdmin", "AppAdmin")]
-    internal sealed partial class UsersController : GenericController<Entities.Account.User>, Contracts.Account.IUsersAccess<Entities.Account.User>
+    internal sealed partial class UsersController : EntitiesController<EntityUser, OutModelUser>, Contracts.Account.IUsersAccess<OutModelUser>
     {
-        //internal override IEnumerable<string> Includes => new string[] { "Identity" };
         public UsersController()
         {
         }

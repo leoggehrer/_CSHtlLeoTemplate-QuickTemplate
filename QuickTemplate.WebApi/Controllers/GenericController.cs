@@ -60,9 +60,9 @@ namespace QuickTemplate.WebApi.Controllers
             return result;
         }
         /// <summary>
-        /// Converts all entities to models and copies all properties of the same name from an accessModel to the model.
+        /// Converts all access models to out models and copies all properties of the same name from an accessModel to the model.
         /// </summary>
-        /// <param name="accessModels">The entities to be converted</param>
+        /// <param name="accessModels">The access model to be converted</param>
         /// <returns>The models</returns>
         protected virtual IEnumerable<TOutModel> ToOutModel(IEnumerable<TAccessModel> accessModels)
         {
@@ -101,7 +101,7 @@ namespace QuickTemplate.WebApi.Controllers
         /// Returns the number of quantity in the collection based on a predicate.
         /// </summary>
         /// <param name="predicate">A string to test each element for a condition.</param>
-        /// <returns>Number of entities in the collection.</returns>
+        /// <returns>Number of access models in the collection.</returns>
         [HttpGet("/api/[controller]/CountBy/{predicate}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public virtual async Task<ActionResult<int>> GetCountByAsync(string predicate)
@@ -146,9 +146,9 @@ namespace QuickTemplate.WebApi.Controllers
 #endif
 
         /// <summary>
-        /// Gets a list of models.
+        /// Gets a list of out models.
         /// </summary>
-        /// <returns>List of models</returns>
+        /// <returns>List of out models</returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public virtual async Task<ActionResult<IEnumerable<TOutModel>>> GetAsync()
@@ -159,10 +159,10 @@ namespace QuickTemplate.WebApi.Controllers
         }
 
         /// <summary>
-        /// Returns all entities in the collection.
+        /// Returns all out models in the collection.
         /// </summary>
         /// <param name="orderBy">Sorts the elements of a sequence according to a sort clause.</param>
-        /// <returns>All entities of the collection.</returns>
+        /// <returns>All out models of the collection.</returns>
         [HttpGet("/api/[controller]/Sorted/{orderBy}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public virtual async Task<ActionResult<IEnumerable<TOutModel>>> GetAsync(string orderBy)
@@ -212,9 +212,9 @@ namespace QuickTemplate.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public virtual async Task<ActionResult<IEnumerable<TOutModel>>> QueryAllAsync(string predicate)
         {
-            var entities = await DataAccess.QueryAsync(predicate);
+            var accessModels = await DataAccess.QueryAsync(predicate);
 
-            return Ok(entities.Select(e => ToOutModel(e)));
+            return Ok(accessModels.Select(e => ToOutModel(e)));
         }
 
         /// <summary>
@@ -227,9 +227,9 @@ namespace QuickTemplate.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public virtual async Task<ActionResult<IEnumerable<TOutModel>>> QueryAllAsync(string predicate, string orderBy)
         {
-            var entities = await DataAccess.QueryAsync(predicate, orderBy);
+            var accessModels = await DataAccess.QueryAsync(predicate, orderBy);
 
-            return Ok(entities.Select(e => ToOutModel(e)));
+            return Ok(accessModels.Select(e => ToOutModel(e)));
         }
 
         /// <summary>
@@ -243,9 +243,9 @@ namespace QuickTemplate.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public virtual async Task<ActionResult<IEnumerable<TOutModel>>> QueryAsync(string predicate, int index, int size)
         {
-            var entities = await DataAccess.QueryAsync(predicate, index, size);
+            var accessModels = await DataAccess.QueryAsync(predicate, index, size);
 
-            return Ok(entities.Select(e => ToOutModel(e)));
+            return Ok(accessModels.Select(e => ToOutModel(e)));
         }
 
         /// <summary>
@@ -260,9 +260,9 @@ namespace QuickTemplate.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public virtual async Task<ActionResult<IEnumerable<TOutModel>>> QueryAsync(string predicate, string orderBy, int index, int size)
         {
-            var entities = await DataAccess.QueryAsync(predicate, orderBy, index, size);
+            var accessModels = await DataAccess.QueryAsync(predicate, orderBy, index, size);
 
-            return Ok(entities.Select(e => ToOutModel(e)));
+            return Ok(accessModels.Select(e => ToOutModel(e)));
         }
 
         /// <summary>

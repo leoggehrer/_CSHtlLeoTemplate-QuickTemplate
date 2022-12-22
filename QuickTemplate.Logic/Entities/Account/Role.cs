@@ -3,7 +3,11 @@
 #if ACCOUNT_ON
 namespace QuickTemplate.Logic.Entities.Account
 {
+#if SQLITE_ON
+    [Table("Roles")]
+#else
     [Table("Roles", Schema = "account")]
+#endif
     [Index(nameof(Designation), IsUnique = true)]
     public partial class Role : VersionObject, Contracts.Account.IRole
     {

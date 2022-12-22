@@ -6,7 +6,11 @@ namespace QuickTemplate.Logic.Entities.Account
     using QuickTemplate.Logic.Contracts.Account;
     using QuickTemplate.Logic.Modules.Common;
 
+#if SQLITE_ON
+    [Table("Identities")]
+#else
     [Table("Identities", Schema = "account")]
+#endif
     [Index(nameof(Email), IsUnique = true)]
     public abstract partial class Identity : VersionObject, IIdentity
     {

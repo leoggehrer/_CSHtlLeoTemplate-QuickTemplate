@@ -1,63 +1,59 @@
 ﻿//@CodeCopy
 //MdStart
 #if ACCOUNT_ON && ACCESSRULES_ON
-namespace QuickTemplate.Logic.Controllers.Account
+namespace QuickTemplate.Logic.Controllers.Access
 {
     using QuickTemplate.Logic.Contracts;
-    using QuickTemplate.Logic.Entities.Account;
+    using QuickTemplate.Logic.Modules.Access;
     using QuickTemplate.Logic.Modules.Exceptions;
+    using TEntity = Entities.Access.AccessRule;
+    using TOutModel = Models.Access.AccessRule;
 
     [Modules.Security.Authorize("SysAdmin", "AppAdmin")]
-    internal sealed partial class AccessRulesController : GenericController<AccessRule>, Contracts.Account.IAccessRulesAccess<AccessRule>
+    internal sealed partial class AccessRulesController
     {
-        private List<AccessRule> AccessRules = new List<AccessRule>();
+        private List<TEntity> AccessRules = new List<TEntity>();
 
-        public AccessRulesController()
-        {
-        }
-
-        public AccessRulesController(ControllerObject other) : base(other)
-        {
-        }
-
-        protected override void ValidateEntity(ActionType actionType, AccessRule entity)
+        protected override void ValidateEntity(ActionType actionType, TEntity entity)
         {
             // Check rule type
-            if (entity.Type == Modules.Account.RuleType.EntityType && string.IsNullOrEmpty(entity.EntityValue) == false)
+            if (entity.Type == RuleType.EntityType && string.IsNullOrEmpty(entity.EntityValue) == false)
             {
                 throw new LogicException(ErrorType.InvalidAccessRuleEntityValue);
             }
-            else if (entity.Type == Modules.Account.RuleType.EntityBy && string.IsNullOrEmpty(entity.EntityValue))
+            else if (entity.Type == RuleType.EntityBy && string.IsNullOrEmpty(entity.EntityValue))
             {
                 throw new LogicException(ErrorType.InvalidAccessRuleEntityValue);
             }
-            else if (entity.Type == Modules.Account.RuleType.Entities && string.IsNullOrEmpty(entity.EntityValue) == false)
+            else if (entity.Type == RuleType.Entities && string.IsNullOrEmpty(entity.EntityValue) == false)
             {
                 throw new LogicException(ErrorType.InvalidAccessRuleEntityValue);
             }
             // Check access type
-            else if (entity.AccessType == Modules.Account.AccessType.All && string.IsNullOrEmpty(entity.AccessValue) == false)
+            else if (entity.AccessType == AccessType.All && string.IsNullOrEmpty(entity.AccessValue) == false)
             {
                 throw new LogicException(ErrorType.InvalidAccessRuleAccessValue);
             }
-            else if (entity.AccessType == Modules.Account.AccessType.Identity && string.IsNullOrEmpty(entity.AccessValue))
+            else if (entity.AccessType == AccessType.Identity && string.IsNullOrEmpty(entity.AccessValue))
             {
                 throw new LogicException(ErrorType.InvalidAccessRuleAccessValue);
             }
-            else if (entity.AccessType == Modules.Account.AccessType.Role && string.IsNullOrEmpty(entity.AccessValue))
+            else if (entity.AccessType == AccessType.IdentityRole && string.IsNullOrEmpty(entity.AccessValue))
             {
                 throw new LogicException(ErrorType.InvalidAccessRuleAccessValue);
             }
             base.ValidateEntity(actionType, entity);
         }
-        protected override void BeforeActionExecute(ActionType actionType, AccessRule entity)
+        protected override void BeforeActionExecute(ActionType actionType, TEntity entity)
         {
             if (actionType == ActionType.Insert || actionType == ActionType.Update)
             {
                 var dbAccessRule = EntitySet.FirstOrDefault(e => e.Id != entity.Id
                                                               && e.EntityType == entity.EntityType
+                                                              && e.EntityValue == entity.EntityValue
                                                               && e.RelationshipEntityType == entity.RelationshipEntityType
                                                               && e.AccessType == entity.AccessType
+                                                              && e.AccessRoleType == entity.AccessRoleType
                                                               && e.AccessValue == entity.AccessValue);
                 if (dbAccessRule != null)
                 {
@@ -66,7 +62,7 @@ namespace QuickTemplate.Logic.Controllers.Account
             }
             base.BeforeActionExecute(actionType, entity);
         }
-        private async Task<IEnumerable<AccessRule>> GetAccessRulesAsync(string entityType)
+        private async Task<IEnumerable<TEntity>> GetAccessRulesAsync(string entityType)
         {
             var result = AccessRules.Where(ar => ar.EntityType == entityType).ToList();
 
@@ -96,14 +92,14 @@ namespace QuickTemplate.Logic.Controllers.Account
 
         private async Task<bool> GetCreateAccessAsync(Type type, Contracts.Account.IIdentity identity)
         {
-            Func<AccessRule, bool> getOperation = ar => ar.Creatable;
+            Func<TEntity, bool> getOperation = ar => ar.Creatable;
             var accessRules = await GetAccessRulesAsync(type.Name).ConfigureAwait(false);
 
             return GetEntityTypeAccess(accessRules, identity, getOperation);
         }
         private async Task<bool> GetReadAccessAsync(IIdentifyable item, Contracts.Account.IIdentity identity)
         {
-            Func<AccessRule, bool> getOperation = ar => ar.Readable;
+            Func<TEntity, bool> getOperation = ar => ar.Readable;
             var accessRules = await GetAccessRulesAsync(item.GetType().Name).ConfigureAwait(false);
 
             return GetEntityTypeAccess(accessRules, identity, getOperation) 
@@ -112,7 +108,7 @@ namespace QuickTemplate.Logic.Controllers.Account
         }
         private async Task<bool> GetUpdateAccessAsync(IIdentifyable item, Contracts.Account.IIdentity identity)
         {
-            Func<AccessRule, bool> getOperation = ar => ar.Updatable;
+            Func<TEntity, bool> getOperation = ar => ar.Updatable;
             var accessRules = await GetAccessRulesAsync(item.GetType().Name).ConfigureAwait(false);
 
             return GetEntityTypeAccess(accessRules, identity, getOperation)
@@ -121,7 +117,7 @@ namespace QuickTemplate.Logic.Controllers.Account
         }
         private async Task<bool> GetDeleteAccessAsync(IIdentifyable item, Contracts.Account.IIdentity identity)
         {
-            Func<AccessRule, bool> getOperation = ar => ar.Deletable;
+            Func<TEntity, bool> getOperation = ar => ar.Deletable;
             var accessRules = await GetAccessRulesAsync(item.GetType().Name).ConfigureAwait(false);
 
             return GetEntityTypeAccess(accessRules, identity, getOperation)
@@ -129,25 +125,25 @@ namespace QuickTemplate.Logic.Controllers.Account
                 && GetEntityByAccess(accessRules, item, identity, getOperation);
         }
 
-        private bool GetEntityTypeAccess(IEnumerable<AccessRule> accessRules, Contracts.Account.IIdentity identity, Func<AccessRule, bool> getOperation)
+        private bool GetEntityTypeAccess(IEnumerable<TEntity> accessRules, Contracts.Account.IIdentity identity, Func<TEntity, bool> getOperation)
         {
             var result = false;
-            var typeRules = accessRules.Where(ar => ar.Type == Modules.Account.RuleType.EntityType);
+            var typeRules = accessRules.Where(ar => ar.Type == RuleType.EntityType);
 
             if (typeRules.Any())
             {
-                var accessRule = typeRules.FirstOrDefault(r => r.AccessType == Modules.Account.AccessType.All);
+                var accessRule = typeRules.FirstOrDefault(r => r.AccessType == AccessType.All);
 
                 if (accessRule != null)
                 {
                     result = getOperation(accessRule);
                 }
-                accessRule = typeRules.FirstOrDefault(r => r.AccessType == Modules.Account.AccessType.Identity && r.AccessValue == identity.Guid.ToString());
+                accessRule = typeRules.FirstOrDefault(r => r.AccessType == AccessType.Identity && r.AccessValue == identity.Guid.ToString());
                 if (accessRule != null)
                 {
                     result = getOperation(accessRule);
                 }
-                accessRule = typeRules.FirstOrDefault(r => r.AccessType == Modules.Account.AccessType.Role && identity.HasRole(Guid.Parse(r.AccessValue!)));
+                accessRule = typeRules.FirstOrDefault(r => r.AccessType == AccessType.IdentityRole && identity.HasRole(Guid.Parse(r.AccessValue!)));
                 if (accessRule != null)
                 {
                     result = getOperation(accessRule);
@@ -159,25 +155,25 @@ namespace QuickTemplate.Logic.Controllers.Account
             }
             return result;
         }
-        private bool GetEntitiesAccess(IEnumerable<AccessRule> accessRules, Contracts.Account.IIdentity identity, Func<AccessRule, bool> getOperation)
+        private bool GetEntitiesAccess(IEnumerable<TEntity> accessRules, Contracts.Account.IIdentity identity, Func<TEntity, bool> getOperation)
         {
             var result = false;
-            var typeRules = accessRules.Where(ar => ar.Type == Modules.Account.RuleType.Entities);
+            var typeRules = accessRules.Where(ar => ar.Type == RuleType.Entities);
 
             if (typeRules.Any())
             {
-                var accessRule = typeRules.FirstOrDefault(r => r.AccessType == Modules.Account.AccessType.All);
+                var accessRule = typeRules.FirstOrDefault(r => r.AccessType == AccessType.All);
 
                 if (accessRule != null)
                 {
                     result = getOperation(accessRule);
                 }
-                accessRule = typeRules.FirstOrDefault(r => r.AccessType == Modules.Account.AccessType.Identity && r.AccessValue == identity.Guid.ToString());
+                accessRule = typeRules.FirstOrDefault(r => r.AccessType == AccessType.Identity && r.AccessValue == identity.Guid.ToString());
                 if (accessRule != null)
                 {
                     result = getOperation(accessRule);
                 }
-                accessRule = typeRules.FirstOrDefault(r => r.AccessType == Modules.Account.AccessType.Role && identity.HasRole(Guid.Parse(r.AccessValue!)));
+                accessRule = typeRules.FirstOrDefault(r => r.AccessType == AccessType.IdentityRole && identity.HasRole(Guid.Parse(r.AccessValue!)));
                 if (accessRule != null)
                 {
                     result = getOperation(accessRule);
@@ -189,25 +185,25 @@ namespace QuickTemplate.Logic.Controllers.Account
             }
             return result;
         }
-        private bool GetEntityByAccess(IEnumerable<AccessRule> accessRules, IIdentifyable item, Contracts.Account.IIdentity identity, Func<AccessRule, bool> getOperation)
+        private bool GetEntityByAccess(IEnumerable<TEntity> accessRules, IIdentifyable item, Contracts.Account.IIdentity identity, Func<TEntity, bool> getOperation)
         {
             var result = false;
-            var typeRules = accessRules.Where(ar => ar.Type == Modules.Account.RuleType.EntityBy && ar.EntityValue == item.Id.ToString());
+            var typeRules = accessRules.Where(ar => ar.Type == RuleType.EntityBy && ar.EntityValue == item.Id.ToString());
 
             if (typeRules.Any())
             {
-                var accessRule = typeRules.FirstOrDefault(r => r.AccessType == Modules.Account.AccessType.All);
+                var accessRule = typeRules.FirstOrDefault(r => r.AccessType == AccessType.All);
 
                 if (accessRule != null)
                 {
                     result = getOperation(accessRule);
                 }
-                accessRule = typeRules.FirstOrDefault(r => r.AccessType == Modules.Account.AccessType.Identity && r.AccessValue == identity.Guid.ToString());
+                accessRule = typeRules.FirstOrDefault(r => r.AccessType == AccessType.Identity && r.AccessValue == identity.Guid.ToString());
                 if (accessRule != null)
                 {
                     result = getOperation(accessRule);
                 }
-                accessRule = typeRules.FirstOrDefault(r => r.AccessType == Modules.Account.AccessType.Role && identity.HasRole(Guid.Parse(r.AccessValue!)));
+                accessRule = typeRules.FirstOrDefault(r => r.AccessType == AccessType.IdentityRole && identity.HasRole(Guid.Parse(r.AccessValue!)));
                 if (accessRule != null)
                 {
                     result = getOperation(accessRule);

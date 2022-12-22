@@ -5,7 +5,6 @@ namespace QuickTemplate.WebApi.Controllers
 {
     using Microsoft.AspNetCore.Mvc;
     using QuickTemplate.WebApi.Models.Account;
-
     /// <summary>
     /// A base class for an MVC controller without view support.
     /// </summary>
@@ -18,7 +17,7 @@ namespace QuickTemplate.WebApi.Controllers
         /// </summary>  
         /// <param name="logonModel">The logon data.</param>  
         /// <returns>The logon session object.</returns>  
-        [HttpPost("logon", Name = nameof(LogonByAsync))]
+        [HttpPost("logon")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<Models.Account.LoginSession>> LogonByAsync(
             [FromBody] LogonModel logonModel)
@@ -33,7 +32,7 @@ namespace QuickTemplate.WebApi.Controllers
         /// </summary>  
         /// <param name="sessionToken">The sessionToken.</param>  
         /// <returns>The logon session object.</returns>  
-        [HttpPost("logout", Name = nameof(LogoutByAsync))]
+        [HttpPost("logout")]
         public Task LogoutByAsync([FromQuery(Name = "sessionToken")] string sessionToken)
         {
             return Logic.AccountAccess.LogoutAsync(sessionToken);

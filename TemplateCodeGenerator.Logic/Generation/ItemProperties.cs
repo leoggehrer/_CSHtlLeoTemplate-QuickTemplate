@@ -69,7 +69,6 @@ namespace TemplateCodeGenerator.Logic.Generation
         public string ConvertEntityToModelType(string typeFullname)
         {
             var result = typeFullname;
-            //var genericList = "System.Collections.Generic.List";
             var entitiesFolder = $".{StaticLiterals.EntitiesFolder}.";
             var modelsFolder = $".{StaticLiterals.ModelsFolder}.";
 
@@ -78,13 +77,6 @@ namespace TemplateCodeGenerator.Logic.Generation
                 result = result.Replace(entitiesFolder, modelsFolder);
                 result = result.Replace(StaticLiterals.LogicExtension, ProjectExtension);
             }
-
-            //if (result.Contains(modelsFolder) && result.Contains(genericList))
-            //{
-            //    var genericEnumerable = "System.Collections.Generic.IEnumerable";
-
-            //    result = result.Replace(genericList, genericEnumerable);
-            //}
             return result;
         }
 

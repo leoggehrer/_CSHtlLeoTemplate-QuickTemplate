@@ -1,5 +1,6 @@
 ﻿//@CodeCopy
 //MdStart
+using QuickTemplate.Logic.Contracts;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace QuickTemplate.Logic.UnitTest
         public static int Counter = 0;
 #pragma warning restore CA2211 // Non-constant fields should not be visible
 
-        public abstract Controllers.GenericController<T> CreateController();
+        public abstract IDataAccess<T> CreateController();
 
         public List<string> IgnoreUpdateProperties = new() 
         { 

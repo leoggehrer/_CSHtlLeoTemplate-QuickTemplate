@@ -78,6 +78,21 @@ namespace TemplateCodeGenerator.Logic.Generation
         partial void Constructing();
         partial void Constructed();
 
+        public T QuerySettingValue<T>(string unitType, string itemType, string itemName, string valueName, string defaultValue)
+        {
+            T result;
+
+            try
+            {
+                result = (T)Convert.ChangeType(QuerySettingValue(unitType, itemType, itemName, valueName, defaultValue), typeof(T));
+            }
+            catch (Exception ex)
+            {
+                result = (T)Convert.ChangeType(defaultValue, typeof(T));
+                System.Diagnostics.Debug.WriteLine($"Error in {MethodBase.GetCurrentMethod()!.Name}: {ex.Message}");
+            }
+            return result;
+        }
         public string QuerySettingValue(UnitType unitType, ItemType itemType, string itemName, string valueName, string defaultValue)
         {
             var result = defaultValue;
@@ -103,21 +118,6 @@ namespace TemplateCodeGenerator.Logic.Generation
             if (generationSetting != null)
             {
                 result = generationSetting.Value;
-            }
-            return result;
-        }
-        public T QuerySettingValue<T>(string unitType, string itemType, string itemName, string valueName, string defaultValue)
-        {
-            T result;
-
-            try
-            {
-                result = (T)Convert.ChangeType(QuerySettingValue(unitType, itemType, itemName, valueName, defaultValue), typeof(T));
-            }
-            catch (Exception ex)
-            {
-                result = (T)Convert.ChangeType(defaultValue, typeof(T));
-                System.Diagnostics.Debug.WriteLine($"Error in {MethodBase.GetCurrentMethod()!.Name}: {ex.Message}");
             }
             return result;
         }
